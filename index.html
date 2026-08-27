@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Studio Lavelle | Female Photographer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400..600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2E2532;
+    --paper:#FBF6F2;
+    --rose:#B76E79;
+    --gold:#C9A66B;
+    --sage:#6B8F71;
+    --mute:#8C8389;
+    --line:#E4D9D3;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  header{
+    padding:64px 24px 40px;
+    text-align:center;
+    border-bottom:1px dashed var(--line);
+  }
+  header .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    font-size:12px;
+    color:var(--rose);
+    margin-bottom:14px;
+  }
+  header h1{
+    font-size:clamp(32px,5vw,52px);
+    font-weight:500;
+    font-style:italic;
+    line-height:1.1;
+  }
+  header p{
+    margin-top:12px;
+    color:var(--mute);
+    font-size:15px;
+  }
+
+  .region-wrap{
+    max-width:920px;
+    margin:0 auto;
+    padding:40px 24px 60px;
+  }
+  .region-label{
+    font-size:13px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--mute);
+    margin-bottom:16px;
+  }
+  .region-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:16px;
+  }
+  @media (max-width:640px){ .region-grid{grid-template-columns:repeat(2,1fr);} }
+
+  .region-card{
+    position:relative;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:22px 16px 18px;
+    cursor:pointer;
+    text-align:left;
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  .region-card:hover{
+    transform:translateY(-3px);
+    border-color:var(--rose);
+    box-shadow:0 10px 24px -12px rgba(46,37,50,.25);
+  }
+  .region-card .kode{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--gold);
+    letter-spacing:.06em;
+  }
+  .region-card h3{
+    font-size:22px;
+    margin-top:6px;
+    font-weight:500;
+  }
+  .region-card .tarik{
+    margin-top:10px;
+    font-size:12px;
+    color:var(--mute);
+  }
+  .region-card .badge-loading{
+    display:none;
+    font-size:10px;
+    color:var(--rose);
+    margin-top:4px;
+    animation:pulse 1s ease-in-out infinite;
+  }
+  .region-card.loading .badge-loading{
+    display:block;
+  }
+  .region-card.loading .tarik{
+    display:none;
+  }
+
+  #kotaPage{ display:none; max-width:920px; margin:0 auto; padding:0 24px 100px; }
+  .back-btn{
+    background:none;border:none;color:var(--mute);cursor:pointer;
+    font-size:13px; margin:28px 0 8px; padding:0; font-family:inherit;
+  }
+  .back-btn:hover{color:var(--ink);}
+  .kota-title{ font-size:34px; font-style:italic; font-weight:500; margin-bottom:4px;}
+  .kota-sub{ color:var(--mute); font-size:14px; margin-bottom:32px; }
+
+  section.block{ margin-bottom:48px; }
+  section.block h2{
+    font-size:14px; text-transform:uppercase; letter-spacing:.1em;
+    color:var(--rose); font-family:'Inter',sans-serif; font-weight:600;
+    margin-bottom:16px;
+  }
+
+  .pricelist-frame{
+    border:1px solid var(--line);
+    border-radius:6px;
+    overflow:hidden;
+    background:var(--card);
+    min-height:120px;
+  }
+  .pricelist-empty{
+    padding:24px;
+    color:var(--mute);
+    font-size:14px;
+    text-align:center;
+  }
+
+  .pricelist-scroll {
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+    padding:16px;
+    max-height:650px;
+    overflow-y:auto;
+  }
+  .pricelist-scroll::-webkit-scrollbar {
+    width:6px;
+  }
+  .pricelist-scroll::-webkit-scrollbar-track {
+    background:var(--line);
+    border-radius:4px;
+  }
+  .pricelist-scroll::-webkit-scrollbar-thumb {
+    background:var(--rose);
+    border-radius:4px;
+  }
+  .pricelist-scroll .item {
+    border:1px solid var(--line);
+    border-radius:8px;
+    overflow:hidden;
+    background:var(--card);
+    transition:transform .2s;
+  }
+  .pricelist-scroll .item:hover {
+    transform:scale(1.01);
+  }
+  .pricelist-scroll .item img {
+    width:100%;
+    display:block;
+  }
+  .pricelist-scroll .item .label {
+    padding:10px 16px;
+    font-size:12px;
+    color:var(--mute);
+    text-align:center;
+    border-top:1px solid var(--line);
+    background:var(--paper);
+    font-weight:500;
+  }
+  .pricelist-scroll .item .pdf-container {
+    position:relative;
+    padding-bottom:141.4%;
+    height:0;
+    overflow:hidden;
+  }
+  .pricelist-scroll .item .pdf-container iframe {
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    border:none;
+  }
+
+  .cal-nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .cal-nav button{
+    background:var(--card); border:1px solid var(--line); border-radius:4px;
+    width:32px; height:32px; cursor:pointer; font-size:16px; color:var(--ink);
+    transition:all .2s;
+  }
+  .cal-nav button:disabled{ opacity:.4; cursor:not-allowed; }
+  .cal-nav button:hover:not(:disabled){ background:var(--rose); color:#fff; border-color:var(--rose); }
+  .cal-nav .bulan-label{ font-family:'Fraunces',serif; font-style:italic; font-size:18px; }
+
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+  .cal-hari{ text-align:center; font-size:11px; color:var(--mute); padding-bottom:4px; font-weight:600; }
+  .cal-tanggal{
+    aspect-ratio:1/1; display:flex; align-items:center; justify-content:center;
+    border-radius:4px; font-size:13px; cursor:default;
+    background:transparent; color:var(--mute); border:1px solid transparent;
+    transition:all .15s;
+    position:relative;
+  }
+  .cal-tanggal.available{
+    background:#F4EDE0; color:var(--ink); cursor:pointer; border:1px solid var(--gold);
+    font-weight:600;
+  }
+  .cal-tanggal.available:hover{ background:var(--gold); color:#fff; transform:scale(1.05); }
+  .cal-tanggal.selected{ background:var(--rose)!important; color:#fff!important; border-color:var(--rose); }
+  .cal-tanggal.full{ background:#EFE9E6; color:#C9BFC3; text-decoration:line-through; cursor:not-allowed; }
+  .cal-tanggal.skeleton{
+    background:linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+    background-size:200% 100%;
+    animation:shimmer 1.5s infinite;
+    border-radius:4px;
+    min-height:30px;
+    color:transparent;
+  }
+  @keyframes shimmer{
+    0%{background-position:200% 0;}
+    100%{background-position:-200% 0;}
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .slot-list{ display:flex; flex-wrap:wrap; gap:10px; margin-top:18px; }
+  .slot-btn{
+    font-family:'IBM Plex Mono',monospace;
+    background:var(--card); border:1px solid var(--sage); color:var(--sage);
+    padding:10px 16px; border-radius:30px; cursor:pointer; font-size:13px;
+    transition:all .15s;
+  }
+  .slot-btn:hover{ background:var(--sage); color:#fff; transform:translateY(-2px); box-shadow:0 4px 12px rgba(107,143,113,.2); }
+  .slot-empty{ color:var(--mute); font-size:13px; margin-top:12px; }
+
+  .overlay{
+    display:none; position:fixed; inset:0; background:rgba(46,37,50,.55);
+    align-items:center; justify-content:center; z-index:50; padding:20px;
+    animation:fadeIn .2s;
+  }
+  @keyframes fadeIn{ from{opacity:0;} to{opacity:1;} }
+  .modal{
+    background:var(--paper); border-radius:8px; max-width:480px; width:100%;
+    padding:32px; max-height:90vh; overflow-y:auto;
+  }
+  .modal h3{ font-size:24px; font-style:italic; margin-bottom:4px; }
+  .modal .info-slot{ color:var(--mute); font-size:13px; margin-bottom:20px; }
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-size:12px; color:var(--mute); margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em;}
+  .field input, .field select{
+    width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:4px;
+    font-family:'Inter',sans-serif; font-size:14px; background:#fff; color:var(--ink);
+  }
+  .field input:focus, .field select:focus{ outline:2px solid var(--rose); outline-offset:1px; }
+  .btn-primary{
+    width:100%; padding:14px; background:var(--ink); color:#fff; border:none;
+    border-radius:4px; font-size:14px; cursor:pointer; margin-top:8px; letter-spacing:.02em;
+    transition:background .2s;
+    position:relative;
+  }
+  .btn-primary:hover{ background:var(--rose); }
+  .btn-primary:disabled{
+    opacity:0.6;
+    cursor:not-allowed;
+  }
+  .btn-secondary{
+    width:100%; padding:10px; background:none; color:var(--mute); border:none;
+    font-size:13px; cursor:pointer; margin-top:10px;
+  }
+  .btn-secondary:hover{ color:var(--ink); }
+
+  .btn-loading {
+    position:relative;
+    pointer-events:none;
+    opacity:0.7;
+  }
+  .btn-loading::after {
+    content:"";
+    position:absolute;
+    right:16px;
+    top:50%;
+    transform:translateY(-50%);
+    width:18px;
+    height:18px;
+    border:2px solid #fff;
+    border-top:2px solid transparent;
+    border-radius:50%;
+    animation:spin 0.8s linear infinite;
+  }
+
+  .loading-overlay {
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(46,37,50,0.7);
+    z-index:100;
+    align-items:center;
+    justify-content:center;
+  }
+  .loading-overlay.active {
+    display:flex;
+  }
+  .loading-box {
+    background:var(--paper);
+    border-radius:12px;
+    padding:32px 40px;
+    text-align:center;
+    max-width:320px;
+  }
+  .loading-box .spinner {
+    width:40px;
+    height:40px;
+    border:3px solid var(--line);
+    border-top:3px solid var(--rose);
+    border-radius:50%;
+    animation:spin 0.8s linear infinite;
+    margin:0 auto 16px;
+  }
+  .loading-box .text {
+    font-size:14px;
+    color:var(--mute);
+  }
+  .loading-box .text strong {
+    color:var(--ink);
+  }
+
+  .ticket{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:6px;
+    position:relative;
+    overflow:hidden;
+  }
+  .ticket-top{ padding:24px 24px 18px; }
+  .ticket-top .kode-booking{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:20px;
+    letter-spacing:.03em;
+    color:var(--ink);
+    margin-bottom:2px;
+  }
+  .ticket-top .label{ font-size:11px; color:var(--mute); text-transform:uppercase; letter-spacing:.08em; }
+  .perforasi{
+    border-top:1px dashed var(--line);
+    position:relative;
+    margin:0 24px;
+  }
+  .perforasi::before, .perforasi::after{
+    content:"";
+    position:absolute;
+    top:-9px;
+    width:18px;
+    height:18px;
+    background:var(--paper);
+    border-radius:50%;
+  }
+  .perforasi::before{ left:-33px; }
+  .perforasi::after{ right:-33px; }
+  .ticket-bottom{ padding:18px 24px 24px; display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .ticket-bottom .item .label{ font-size:11px; color:var(--mute); text-transform:uppercase; letter-spacing:.06em; }
+  .ticket-bottom .item .value{ font-size:14px; margin-top:2px; font-weight:500; }
+  .btn-wa{
+    display:block;
+    text-align:center;
+    text-decoration:none;
+    margin-top:20px;
+    background:var(--sage);
+    color:#fff;
+    padding:14px;
+    border-radius:4px;
+    font-size:14px;
+    transition:background .2s;
+  }
+  .btn-wa:hover{ background:#597A5F; }
+  .btn-wa:disabled{
+    opacity:0.6;
+    cursor:not-allowed;
+  }
+
+  #errorBox{ color:#B3413E; font-size:13px; margin-top:8px; display:none; background:#FDE8E8; padding:10px; border-radius:4px; }
+
+  .toast{
+    position:fixed;
+    bottom:20px;
+    left:50%;
+    transform:translateX(-50%);
+    background:var(--ink);
+    color:#fff;
+    padding:12px 24px;
+    border-radius:8px;
+    font-size:14px;
+    z-index:100;
+    animation:slideUp .3s;
+  }
+  @keyframes slideUp{ from{transform:translate(-50%,20px);opacity:0;} to{transform:translate(-50%,0);opacity:1;} }
+
+  .loading-spinner {
+    display:inline-block;
+    width:16px;
+    height:16px;
+    border:2px solid var(--line);
+    border-top:2px solid var(--rose);
+    border-radius:50%;
+    animation:spin 0.8s linear infinite;
+    margin-right:8px;
+    vertical-align:middle;
+  }
+  @keyframes spin {
+    0%{transform:rotate(0deg);}
+    100%{transform:rotate(360deg);}
+  }
+
+  .field-group {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  @media (max-width:480px){
+    .field-group{grid-template-columns:1fr;}
+  }
+
+  .status-badge {
+    display:inline-block;
+    padding:4px 12px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:600;
+  }
+  .status-badge.pending {
+    background:#FEF3C7;
+    color:#92400E;
+  }
+  .status-badge.paid {
+    background:#D1FAE5;
+    color:#065F46;
+  }
+  .status-badge.expired {
+    background:#FEE2E2;
+    color:#991B1B;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Foto Wisuda &middot; Booking Sesi</div>
+  <h1>Studio Lavelle</h1>
+  <p>Female Photographer</p>
+</header>
+
+<div class="region-wrap" id="regionPage">
+  <div class="region-label">Booking untuk wilayah</div>
+  <div class="region-grid" id="regionGrid"></div>
+</div>
+
+<div id="kotaPage">
+  <button class="back-btn" onclick="kembaliKeHome()">&larr; kembali pilih wilayah</button>
+  <div class="kota-title" id="kotaTitle"></div>
+  <div class="kota-sub">Lihat pricelist, pilih jadwal, booking langsung.</div>
+
+  <section class="block">
+    <h2>📄 Pricelist</h2>
+    <div class="pricelist-frame" id="pricelistFrame">
+      <div class="pricelist-empty">⏳ Memuat pricelist...</div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>📅 Jadwal Tersedia</h2>
+    <div class="cal-nav">
+      <button id="btnBulanPrev" onclick="ubahBulan(-1)">&larr;</button>
+      <div class="bulan-label" id="bulanLabel"></div>
+      <button id="btnBulanNext" onclick="ubahBulan(1)">&rarr;</button>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div id="slotArea"></div>
+  </section>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <div class="text">⏳ <strong id="loadingText">Memproses Booking...</strong><br>Mohon tunggu sebentar</div>
+  </div>
+</div>
+
+<!-- MODAL FORM BOOKING -->
+<div class="overlay" id="formOverlay">
+  <div class="modal">
+    <h3>📝 Isi Data Booking</h3>
+    <div class="info-slot" id="infoSlot"></div>
+
+    <div class="field">
+      <label>Nama Lengkap *</label>
+      <input type="text" id="fNama" placeholder="Nama lengkap kamu">
+    </div>
+    <div class="field">
+      <label>Kampus / Universitas *</label>
+      <input type="text" id="fKampus" placeholder="Nama kampus">
+    </div>
+    <div class="field">
+      <label>Lokasi Foto *</label>
+      <input type="text" id="fLokasi" placeholder="Titik lokasi pemotretan">
+    </div>
+    <div class="field-group">
+      <div class="field">
+        <label>📱 Instagram</label>
+        <input type="text" id="fIg" placeholder="@username">
+      </div>
+      <div class="field">
+        <label>📧 Email</label>
+        <input type="email" id="fEmail" placeholder="email@domain.com">
+      </div>
+    </div>
+    <div class="field">
+      <label>📦 Pilih Paket *</label>
+      <select id="fPaket"></select>
+    </div>
+
+    <button class="btn-primary" id="btnBooking" onclick="submitBooking()">🎯 Booking Sekarang</button>
+    <button class="btn-secondary" onclick="tutupForm()">Batal</button>
+    <div id="errorBox"></div>
+  </div>
+</div>
+
+<!-- MODAL INVOICE / TIKET -->
+<div class="overlay" id="invoiceOverlay">
+  <div class="modal">
+    <div class="ticket">
+      <div class="ticket-top">
+        <div class="label" style="font-size:13px; color:var(--rose); font-weight:600;">🎓 Lavelle Graduation Shot</div>
+        <div class="kode-booking mono" id="invKode" style="font-size:18px; margin-top:4px;"></div>
+        <div style="margin-top:6px;">
+          <span class="status-badge pending" id="invStatus">⏳ Pending</span>
+          <span style="font-size:11px; color:var(--mute); margin-left:8px;" id="invExpiry"></span>
+        </div>
+      </div>
+      <div class="perforasi"></div>
+      <div class="ticket-bottom" style="grid-template-columns:1fr 1fr; gap:10px;">
+        <div class="item"><div class="label">📅 Tanggal</div><div class="value" id="invTanggal"></div></div>
+        <div class="item"><div class="label">⏰ Jam</div><div class="value" id="invJam"></div></div>
+        <div class="item"><div class="label">📍 Kota</div><div class="value" id="invKota"></div></div>
+        <div class="item"><div class="label">📦 Paket</div><div class="value" id="invPaket"></div></div>
+        <div class="item" style="grid-column:1/3;"><div class="label">📝 Nama</div><div class="value" id="invNama"></div></div>
+        <div class="item" style="grid-column:1/3;"><div class="label">🏛️ Kampus</div><div class="value" id="invKampus"></div></div>
+        <div class="item" style="grid-column:1/3;"><div class="label">📍 Lokasi</div><div class="value" id="invLokasi"></div></div>
+        <div class="item"><div class="label">📱 IG</div><div class="value" id="invIg"></div></div>
+        <div class="item"><div class="label">📧 Email</div><div class="value" id="invEmail"></div></div>
+        <div class="item" style="grid-column:1/3; border-top:1px solid var(--line); padding-top:10px; margin-top:4px;">
+          <div class="label">💰 Total</div>
+          <div class="value" id="invTotal" style="font-size:18px; color:var(--rose);"></div>
+        </div>
+      </div>
+    </div>
+
+    <a href="#" target="_blank" class="btn-wa" id="btnWa">📱 Lanjutkan Booking via WhatsApp</a>
+    <button class="btn-secondary" onclick="tutupInvoice()">Tutup</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// KONFIGURASI
+// ============================================================
+const CONFIG = {
+  API_URL: "https://script.google.com/macros/s/AKfycbzl80RHhERFFo12ziWTaCeTI8LE5UqzRJ6gvEiJVf6SYRbWFtE2p0AIIVMa3CQbnJTS/exec",
+  ADMIN_WA: "6283112053117"
+};
+
+const REGIONS = [
+  { kota: "Jogja",    kode: "JGY" },
+  { kota: "Solo",     kode: "SLO" },
+  { kota: "Surabaya", kode: "SBY" },
+  { kota: "Jakarta",  kode: "JKT" }
+];
+
+// Batas berapa bulan ke depan yang boleh dibuka (biar tidak spam fetch ke masa depan jauh)
+const MAKS_BULAN_KE_DEPAN = 6;
+
+// ============================================================
+// CACHE
+// ============================================================
+const CACHE = {
+  allData: {},   // "kota" -> {data, timestamp}  (khusus data awal: pricelist, paket, 14 hari pertama)
+  kalenderBulan: {}, // "kota|YYYY-MM" -> {data, timestamp}
+  slot: {}       // "kota|YYYY-MM-DD" -> {data, timestamp}
+};
+
+function isCacheValid(timestamp) {
+  const today = new Date().toDateString();
+  const cacheDate = new Date(timestamp).toDateString();
+  return today === cacheDate;
+}
+
+function formatDate(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  kotaAktif: null,
+  bulanAktif: new Date(),
+  tanggalTerpilih: null,
+  slotTerpilih: null,
+  paketList: [],
+  allData: null,          // { pricelist, pricelistMedia, kalender: {tgl:{tersedia,jumlah_slot}}, slot: {...} }
+  isLoading: false
+};
+
+// ============================================================
+// JSONP Helper
+// ============================================================
+function jsonp(url, callbackName) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    const callback = callbackName || 'jsonp_callback_' + Date.now() + '_' + Math.floor(Math.random()*100000);
+
+    window[callback] = function(data) {
+      delete window[callback];
+      document.body.removeChild(script);
+      resolve(data);
+    };
+
+    script.src = url + '&callback=' + callback;
+    script.onerror = function() {
+      delete window[callback];
+      document.body.removeChild(script);
+      reject(new Error('JSONP request failed'));
+    };
+
+    document.body.appendChild(script);
+  });
+}
+
+// ============================================================
+// LOADING FUNCTIONS
+// ============================================================
+function showLoading(text = 'Memproses Booking...') {
+  document.getElementById('loadingText').innerText = text;
+  document.getElementById('loadingOverlay').classList.add('active');
+}
+
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('active');
+}
+
+// ============================================================
+// RENDER REGIONS
+// ============================================================
+function renderRegions(){
+  const grid = document.getElementById('regionGrid');
+  grid.innerHTML = REGIONS.map(r => `
+    <div class="region-card" data-kota="${r.kota}" onclick="pilihKota('${r.kota}')">
+      <div class="kode mono">${r.kode}</div>
+      <h3>${r.kota}</h3>
+      <div class="tarik">📅 Lihat jadwal</div>
+      <div class="badge-loading"><span class="loading-spinner"></span>Memuat...</div>
+    </div>
+  `).join('');
+}
+renderRegions();
+
+// ============================================================
+// NAVIGASI
+// ============================================================
+async function pilihKota(kota){
+  if (state.isLoading) return;
+  state.isLoading = true;
+
+  console.log('📍 Pilih kota:', kota);
+
+  const card = document.querySelector(`.region-card[data-kota="${kota}"]`);
+  if (card) card.classList.add('loading');
+
+  state.kotaAktif = kota;
+  state.tanggalTerpilih = null;
+  state.slotTerpilih = null;
+  state.bulanAktif = new Date();
+  state.allData = { pricelist: [], pricelistMedia: [], kalender: {}, slot: {} };
+  state.paketList = [];
+
+  document.getElementById('regionPage').style.display = 'none';
+  document.getElementById('kotaPage').style.display = 'block';
+  document.getElementById('kotaTitle').innerText = kota;
+
+  tampilkanSkeleton();
+
+  const y = state.bulanAktif.getFullYear();
+  const m = state.bulanAktif.getMonth();
+  document.getElementById('bulanLabel').innerText = `${NAMA_BULAN[m]} ${y}`;
+
+  // 🔥 PENTING: 3 request ini dijalankan BERSAMAAN (paralel), bukan berurutan.
+  // Ini yang paling besar dampaknya ke kecepatan - sebelumnya nunggu 'all' selesai
+  // dulu baru fetch kalenderBulk, sekarang jalan bareng jadi total waktu tunggu
+  // kurang lebih sama dengan request PALING LAMBAT saja, bukan jumlah semuanya.
+  const pPricelist = jsonp(`${CONFIG.API_URL}?action=pricelist&kota=${encodeURIComponent(kota)}`)
+    .catch(() => []);
+  const pPricelistMedia = jsonp(`${CONFIG.API_URL}?action=pricelistMedia&kota=${encodeURIComponent(kota)}`)
+    .catch(() => []);
+  const pKalender = fetchKalenderBulanKota(kota, y, m);
+
+  // Pricelist biasanya paling cepat selesai (nggak ada perhitungan slot) -
+  // begitu dia selesai, langsung tampilkan tanpa nunggu kalender.
+  pPricelist.then(data => { state.paketList = Array.isArray(data) ? data : []; });
+  pPricelistMedia.then(data => tampilkanPricelist(Array.isArray(data) ? data : []));
+
+  await Promise.all([pPricelist, pPricelistMedia, pKalender]);
+
+  renderKalender(y, m);
+
+  if (card) card.classList.remove('loading');
+  state.isLoading = false;
+  console.log('✅ Selesai load', kota);
+  window.scrollTo(0,0);
+}
+
+// Fetch kalender 1 bulan penuh untuk kota tertentu, pakai cache per-bulan.
+// Dipakai baik saat pilih kota pertama kali maupun saat pindah bulan.
+async function fetchKalenderBulanKota(kota, y, m) {
+  const bulanStr = `${y}-${String(m+1).padStart(2,'0')}`;
+  const totalHari = new Date(y, m+1, 0).getDate();
+  const cacheKey = `${kota}|${bulanStr}`;
+
+  const cached = CACHE.kalenderBulan[cacheKey];
+  if (cached && isCacheValid(cached.timestamp)) {
+    Object.assign(state.allData.kalender, cached.data);
+    return cached.data;
+  }
+
+  const tanggalMulai = `${bulanStr}-01`;
+  try {
+    const url = `${CONFIG.API_URL}?action=kalenderBulk&kota=${encodeURIComponent(kota)}&tanggal_mulai=${tanggalMulai}&jumlah_hari=${totalHari}`;
+    const data = await jsonp(url);
+    if (data.error) {
+      showToast('❌ ' + data.error, 3000);
+      return {};
+    }
+    CACHE.kalenderBulan[cacheKey] = { data, timestamp: Date.now() };
+    Object.assign(state.allData.kalender, data);
+    return data;
+  } catch(err) {
+    console.error('❌ Gagal fetch kalenderBulk:', err);
+    showToast('❌ Gagal memuat kalender.', 3000);
+    return {};
+  }
+}
+
+function tampilkanSkeleton() {
+  const grid = document.getElementById('calGrid');
+  const y = state.bulanAktif.getFullYear();
+  const m = state.bulanAktif.getMonth();
+  const totalHari = new Date(y, m+1, 0).getDate();
+  const hariPertama = new Date(y, m, 1).getDay();
+
+  let html = NAMA_HARI.map(h => `<div class="cal-hari">${h}</div>`).join('');
+  for(let i=0;i<hariPertama;i++){ html += `<div></div>`; }
+  for(let d=1; d<=totalHari; d++){
+    html += `<div class="cal-tanggal skeleton">${d}</div>`;
+  }
+  grid.innerHTML = html;
+  document.getElementById('slotArea').innerHTML = '';
+}
+
+function kembaliKeHome(){
+  document.getElementById('kotaPage').style.display = 'none';
+  document.getElementById('regionPage').style.display = 'block';
+}
+
+// (fungsi loadAllData/applyAllData/pastikanKalenderBulanLengkap versi lama sudah digantikan
+//  oleh pilihKota() + fetchKalenderBulanKota() di atas yang jalan paralel — lebih cepat)
+
+// ============================================================
+// TAMPILKAN PRICELIST - SUPPORT PDF & IMAGE
+// ============================================================
+function tampilkanPricelist(data) {
+  const frame = document.getElementById('pricelistFrame');
+
+  console.log('📷 Data pricelist:', data);
+
+  if(!data || !data.length){
+    frame.innerHTML = '<div class="pricelist-empty">📄 Pricelist belum tersedia untuk wilayah ini.</div>';
+    return;
+  }
+
+  const pdfs = data.filter(item => item.tipe === 'pdf');
+  const images = data.filter(item => item.tipe === 'image' || !item.tipe);
+
+  if (pdfs.length > 0) {
+    let html = '<div class="pricelist-scroll">';
+
+    pdfs.forEach(function(item, index) {
+      const label = item.nama || `Pricelist ${index + 1}`;
+      let pdfUrl = item.url_file;
+
+      if (pdfUrl.includes('drive.google.com')) {
+        if (!pdfUrl.includes('/preview')) {
+          const match = pdfUrl.match(/\/d\/([^\/]+)/);
+          if (match) {
+            pdfUrl = `https://drive.google.com/file/d/${match[1]}/preview`;
+          }
+        }
+      }
+
+      html += `
+        <div class="item">
+          <div class="pdf-container">
+            <iframe src="${pdfUrl}" allowfullscreen loading="lazy"></iframe>
+          </div>
+          <div class="label">📄 ${label}</div>
+        </div>
+      `;
+    });
+
+    html += '</div>';
+    frame.innerHTML = html;
+    console.log('✅ PDF Pricelist rendered!');
+    return;
+  }
+
+  if (images.length === 0) {
+    frame.innerHTML = '<div class="pricelist-empty">📷 Tidak ada pricelist untuk wilayah ini.</div>';
+    return;
+  }
+
+  let html = '<div class="pricelist-scroll">';
+
+  images.forEach(function(item, index) {
+    const label = item.nama || `Pricelist ${index + 1}`;
+    let imageUrl = item.url_file;
+
+    html += `
+      <div class="item">
+        <img src="${imageUrl}" alt="${label}" loading="lazy"
+             onerror="this.style.display='none'; this.parentElement.querySelector('.label').innerHTML='❌ Gambar tidak bisa dimuat'">
+        <div class="label">${label}</div>
+      </div>
+    `;
+  });
+
+  html += '</div>';
+  frame.innerHTML = html;
+
+  console.log('✅ Pricelist rendered!');
+}
+
+// ============================================================
+// KALENDER
+// ============================================================
+const NAMA_BULAN = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+const NAMA_HARI = ["Min","Sen","Sel","Rab","Kam","Jum","Sab"];
+
+function updateTombolNavigasiBulan() {
+  const today = new Date();
+  const batasMaks = new Date(today.getFullYear(), today.getMonth() + MAKS_BULAN_KE_DEPAN, 1);
+  const bulanDilihat = new Date(state.bulanAktif.getFullYear(), state.bulanAktif.getMonth(), 1);
+  const bulanIni = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  document.getElementById('btnBulanPrev').disabled = bulanDilihat <= bulanIni;
+  document.getElementById('btnBulanNext').disabled = bulanDilihat >= batasMaks;
+}
+
+async function ubahBulan(delta){
+  const calonBulan = new Date(state.bulanAktif);
+  calonBulan.setMonth(calonBulan.getMonth() + delta);
+
+  const today = new Date();
+  const batasMaks = new Date(today.getFullYear(), today.getMonth() + MAKS_BULAN_KE_DEPAN, 1);
+  const bulanIni = new Date(today.getFullYear(), today.getMonth(), 1);
+  const calonBulanAwal = new Date(calonBulan.getFullYear(), calonBulan.getMonth(), 1);
+
+  if (calonBulanAwal < bulanIni || calonBulanAwal > batasMaks) return; // di luar rentang, abaikan
+
+  state.bulanAktif = calonBulan;
+  state.tanggalTerpilih = null;
+  document.getElementById('slotArea').innerHTML = '';
+
+  const y = state.bulanAktif.getFullYear();
+  const m = state.bulanAktif.getMonth();
+  document.getElementById('bulanLabel').innerText = `${NAMA_BULAN[m]} ${y}`;
+  updateTombolNavigasiBulan();
+
+  tampilkanSkeleton();
+
+  await fetchKalenderBulanKota(state.kotaAktif, y, m);
+  renderKalender(y, m);
+}
+
+function renderKalender(y, m) {
+  const grid = document.getElementById('calGrid');
+  const hariPertama = new Date(y, m, 1).getDay();
+  const totalHari = new Date(y, m+1, 0).getDate();
+
+  let html = NAMA_HARI.map(h => `<div class="cal-hari">${h}</div>`).join('');
+  for(let i=0;i<hariPertama;i++){ html += `<div></div>`; }
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const kalenderData = state.allData?.kalender || {};
+
+  for(let d=1; d<=totalHari; d++){
+    const tanggalObj = new Date(y, m, d);
+    tanggalObj.setHours(0,0,0,0);
+    const tanggalStr = formatDate(tanggalObj);
+
+    const sudahLewat = tanggalObj < today;
+    const isSelected = state.tanggalTerpilih === tanggalStr;
+
+    const kalenderInfo = kalenderData[tanggalStr];
+    const tersedia = kalenderInfo ? kalenderInfo.tersedia : false;
+
+    let kelas = 'cal-tanggal';
+    if (sudahLewat) {
+      kelas += ' full';
+    } else if (kalenderInfo === undefined) {
+      kelas += ' skeleton';
+    } else if (tersedia) {
+      kelas += ' available';
+      if (isSelected) kelas += ' selected';
+    } else {
+      kelas += ' full';
+    }
+
+    const klik = !sudahLewat && tersedia ? `onclick="pilihTanggal('${tanggalStr}')"` : '';
+
+    html += `<div class="${kelas}" ${klik} data-tanggal="${tanggalStr}">${d}</div>`;
+  }
+  grid.innerHTML = html;
+  updateTombolNavigasiBulan();
+}
+
+// ============================================================
+// PILIH TANGGAL
+// ============================================================
+async function pilihTanggal(tanggal){
+  console.log('📅 Pilih tanggal:', tanggal);
+  state.tanggalTerpilih = tanggal;
+
+  const y = state.bulanAktif.getFullYear();
+  const m = state.bulanAktif.getMonth();
+  renderKalender(y, m);
+
+  const area = document.getElementById('slotArea');
+
+  const cacheKey = `${state.kotaAktif}|${tanggal}`;
+  const cacheData = CACHE.slot[cacheKey];
+
+  if (cacheData && isCacheValid(cacheData.timestamp)) {
+    console.log('✅ Slot dari cache!');
+    renderSlots(cacheData.data, area);
+    return;
+  }
+
+  area.innerHTML = '<div class="slot-empty"><span class="loading-spinner"></span> Memuat jam tersedia...</div>';
+
+  try {
+    const url = `${CONFIG.API_URL}?action=slot&kota=${encodeURIComponent(state.kotaAktif)}&tanggal=${tanggal}`;
+    const slots = await jsonp(url);
+
+    CACHE.slot[cacheKey] = {
+      data: slots,
+      timestamp: Date.now()
+    };
+
+    renderSlots(slots || [], area);
+  } catch(err) {
+    area.innerHTML = '<div class="slot-empty">❌ Gagal memuat jam tersedia.</div>';
+    console.error(err);
+  }
+}
+
+function renderSlots(slots, area) {
+  if(!slots || !slots.length){
+    area.innerHTML = '<div class="slot-empty">😔 Tidak ada jam tersedia di tanggal ini.</div>';
+    return;
+  }
+  area.innerHTML = '<div class="slot-list">' + slots.map(s => `
+    <button class="slot-btn" onclick='bukaForm(${JSON.stringify(s)})'>${s.jam_mulai} - ${s.jam_selesai}</button>
+  `).join('') + '</div>';
+}
+
+// ============================================================
+// FORM BOOKING
+// ============================================================
+function bukaForm(slot){
+  state.slotTerpilih = slot;
+  document.getElementById('infoSlot').innerHTML = `
+    📍 <strong>${state.kotaAktif}</strong> &middot;
+    📅 ${state.tanggalTerpilih} &middot;
+    ⏰ ${slot.jam_mulai} - ${slot.jam_selesai}
+  `;
+
+  const select = document.getElementById('fPaket');
+  if (state.paketList && state.paketList.length > 0) {
+    select.innerHTML = state.paketList.map(p =>
+      `<option value="${p.nama_paket}" data-harga="${p.harga}">${p.nama_paket} — Rp${Number(p.harga).toLocaleString('id-ID')}</option>`
+    ).join('');
+  } else {
+    select.innerHTML = '<option value="">Paket belum tersedia</option>';
+  }
+
+  document.getElementById('fNama').value = '';
+  document.getElementById('fKampus').value = '';
+  document.getElementById('fLokasi').value = '';
+  document.getElementById('fIg').value = '';
+  document.getElementById('fEmail').value = '';
+  document.getElementById('errorBox').style.display = 'none';
+  document.getElementById('formOverlay').style.display = 'flex';
+}
+
+function tutupForm(){
+  document.getElementById('formOverlay').style.display = 'none';
+}
+
+// ============================================================
+// SUBMIT BOOKING
+// ============================================================
+async function submitBooking(){
+  const btn = document.getElementById('btnBooking');
+  const nama = document.getElementById('fNama').value.trim();
+  const kampus = document.getElementById('fKampus').value.trim();
+  const lokasi = document.getElementById('fLokasi').value.trim();
+  const ig = document.getElementById('fIg').value.trim();
+  const email = document.getElementById('fEmail').value.trim();
+  const selectEl = document.getElementById('fPaket');
+  const paket = selectEl.value;
+  const harga = selectEl.selectedOptions[0]?.dataset.harga || 0;
+  const errorBox = document.getElementById('errorBox');
+
+  if(!nama || !kampus || !lokasi || !paket){
+    errorBox.innerText = '⚠️ Semua data wajib diisi (Nama, Kampus, Lokasi, Paket).';
+    errorBox.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.classList.add('btn-loading');
+  showLoading('Membuat Booking...');
+  errorBox.style.display = 'none';
+
+  try {
+    const params = new URLSearchParams({
+      action: 'booking',
+      kota: state.kotaAktif,
+      tanggal: state.tanggalTerpilih,
+      jam_mulai: state.slotTerpilih.jam_mulai,
+      jam_selesai: state.slotTerpilih.jam_selesai,
+      nama_client: nama,
+      kampus: kampus,
+      lokasi: lokasi,
+      paket: paket,
+      total_harga: harga,
+      ig: ig,
+      email: email
+    });
+
+    const url = `${CONFIG.API_URL}?${params.toString()}`;
+    const data = await jsonp(url);
+
+    hideLoading();
+    btn.disabled = false;
+    btn.classList.remove('btn-loading');
+
+    if(data.error){
+      errorBox.innerText = '❌ ' + data.error;
+      errorBox.style.display = 'block';
+      return;
+    }
+
+    data.nama_client = nama;
+    data.kampus = kampus;
+    data.lokasi = lokasi;
+    data.ig = ig;
+    data.email = email;
+
+    tutupForm();
+    tampilkanInvoice(data);
+
+    // Hapus cache tanggal ini & data awal kota ini supaya kalender ke-refresh
+    const tanggalCacheKey = `${state.kotaAktif}|${state.tanggalTerpilih}`;
+    delete CACHE.slot[tanggalCacheKey];
+    delete CACHE.allData[state.kotaAktif];
+
+    const bulanStr = state.tanggalTerpilih.substring(0, 7);
+    delete CACHE.kalenderBulan[`${state.kotaAktif}|${bulanStr}`];
+
+    if (state.allData && state.allData.kalender && state.allData.kalender[state.tanggalTerpilih]) {
+      delete state.allData.kalender[state.tanggalTerpilih];
+    }
+
+  } catch(err) {
+    hideLoading();
+    btn.disabled = false;
+    btn.classList.remove('btn-loading');
+    errorBox.innerText = '❌ Gagal mengirim booking. Cek koneksi.';
+    errorBox.style.display = 'block';
+    console.error(err);
+  }
+}
+
+// ============================================================
+// TAMPILKAN INVOICE
+// ============================================================
+function tampilkanInvoice(data){
+  document.getElementById('invKode').innerText = data.booking_id || 'Pending';
+  document.getElementById('invStatus').innerText = '⏳ Pending';
+  document.getElementById('invStatus').className = 'status-badge pending';
+  document.getElementById('invExpiry').innerText = `⏳ Berlaku ${data.expired_in || '24 jam'}`;
+  document.getElementById('invTanggal').innerText = data.tanggal || '-';
+  document.getElementById('invJam').innerText = `${data.jam_mulai || ''} - ${data.jam_selesai || ''}`;
+  document.getElementById('invKota').innerText = data.kota || '-';
+  document.getElementById('invPaket').innerText = data.paket || '-';
+  document.getElementById('invNama').innerText = data.nama_client || '-';
+  document.getElementById('invKampus').innerText = data.kampus || '-';
+  document.getElementById('invLokasi').innerText = data.lokasi || '-';
+  document.getElementById('invIg').innerText = data.ig || '-';
+  document.getElementById('invEmail').innerText = data.email || '-';
+  document.getElementById('invTotal').innerText = 'Rp' + Number(data.total_harga || 0).toLocaleString('id-ID');
+
+  const totalHarga = Number(data.total_harga || 0);
+  const pesan =
+`🎓 *Lavelle Graduation Shot*
+
+📋 *Detail Booking:*
+
+Kode Booking : ${data.booking_id || 'Pending'}
+Nama         : ${data.nama_client || '-'}
+Kampus       : ${data.kampus || '-'}
+Lokasi       : ${data.lokasi || '-'}
+Instagram    : ${data.ig || '-'}
+Email        : ${data.email || '-'}
+📅 Tanggal    : ${data.tanggal || '-'}
+⏰ Jam        : ${data.jam_mulai || ''} - ${data.jam_selesai || ''}
+📍 Kota       : ${data.kota || '-'}
+📦 Paket      : ${data.paket || '-'}
+💰 Total      : Rp${totalHarga.toLocaleString('id-ID')}
+
+Saya mau konfirmasi booking. Terima kasih! 🙏`;
+
+  const waUrl = `https://api.whatsapp.com/send/?phone=${CONFIG.ADMIN_WA}&text=${encodeURIComponent(pesan)}&type=phone_number&app_absent=0`;
+  const btnWa = document.getElementById('btnWa');
+
+  btnWa.href = waUrl;
+  btnWa.dataset.bookingId = data.booking_id;
+  btnWa.dataset.kota = data.kota;
+
+  document.getElementById('invoiceOverlay').style.display = 'flex';
+}
+
+// ============================================================
+// HANDLE CLICK WHATSAPP - AUTO RELOAD
+// ============================================================
+document.addEventListener('click', function(e) {
+  const btnWa = document.getElementById('btnWa');
+  if (e.target === btnWa || btnWa.contains(e.target)) {
+    e.preventDefault();
+
+    btnWa.disabled = true;
+    showLoading('Mengarahkan ke WhatsApp...');
+
+    window.open(btnWa.href, '_blank');
+
+    setTimeout(function() {
+      hideLoading();
+      setTimeout(function() {
+        window.location.reload();
+      }, 1000);
+    }, 3000);
+  }
+});
+
+// ============================================================
+// TUTUP INVOICE
+// ============================================================
+function tutupInvoice(){
+  document.getElementById('invoiceOverlay').style.display = 'none';
+  const btnWa = document.getElementById('btnWa');
+  btnWa.disabled = false;
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(message, duration = 3000) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerText = message;
+  document.body.appendChild(toast);
+
+  setTimeout(() => toast.remove(), duration);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('DOMContentLoaded', () => {
+  showToast('📷 Studio Lavelle - Pilih wilayah untuk booking', 2000);
+});
+</script>
+</body>
+</html>
