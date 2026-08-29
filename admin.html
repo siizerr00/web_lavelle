@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin | Studio Lavelle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400..600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2E2532;
+    --paper:#FBF6F2;
+    --rose:#B76E79;
+    --gold:#C9A66B;
+    --sage:#6B8F71;
+    --mute:#8C8389;
+    --line:#E4D9D3;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  .container{max-width:1100px;margin:0 auto;padding:24px;}
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:24px;
+    box-shadow:0 4px 24px rgba(46,37,50,.06);
+    margin-bottom:20px;
+  }
+  .card-header{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:16px;flex-wrap:wrap;gap:12px;
+  }
+  .card-header h2{font-size:20px;font-weight:500;}
+
+  .logo{
+    text-align:center;padding:20px 0;
+  }
+  .logo h1{font-size:28px;font-style:italic;font-weight:500;}
+  .logo p{color:var(--mute);font-size:14px;margin-top:4px;}
+
+  .login-box{max-width:400px;margin:40px auto;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12px;color:var(--mute);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+  .field input{
+    width:100%;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+    font-family:'Inter',sans-serif;font-size:14px;background:#fff;color:var(--ink);
+  }
+  .field input:focus{outline:none;border-color:var(--rose);box-shadow:0 0 0 3px rgba(183,110,121,.15);}
+  
+  .btn-primary{
+    padding:12px 24px;background:var(--ink);color:#fff;border:none;border-radius:8px;
+    font-size:14px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;
+    transition:background .2s;
+  }
+  .btn-primary:hover{background:var(--rose);}
+  .btn-primary:disabled{opacity:0.6;cursor:not-allowed;}
+  .btn-primary.btn-sm{padding:6px 14px;font-size:12px;}
+  
+  .btn-secondary{
+    padding:10px 20px;background:none;color:var(--mute);border:1px solid var(--line);border-radius:8px;
+    font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;
+  }
+  .btn-secondary:hover{color:var(--ink);border-color:var(--ink);}
+  
+  .btn-success{
+    padding:6px 14px;background:var(--sage);color:#fff;border:none;border-radius:6px;
+    font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;
+    transition:background .2s;
+  }
+  .btn-success:hover{background:#597A5F;}
+  
+  .btn-danger{
+    padding:6px 14px;background:#B3413E;color:#fff;border:none;border-radius:6px;
+    font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;
+    transition:background .2s;
+  }
+  .btn-danger:hover{background:#991B1B;}
+  .btn-warning{
+    padding:6px 14px;background:#D97706;color:#fff;border:none;border-radius:6px;
+    font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;
+    transition:background .2s;
+  }
+  .btn-warning:hover{background:#B45309;}
+
+  .btn-gdrive{
+    padding:6px 14px;background:#4285F4;color:#fff;border:none;border-radius:6px;
+    font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;
+    transition:background .2s;
+  }
+  .btn-gdrive:hover{background:#3367D6;}
+
+  .btn-copy{
+    padding:6px 14px;background:#8B5CF6;color:#fff;border:none;border-radius:6px;
+    font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;
+    transition:background .2s;
+  }
+  .btn-copy:hover{background:#7C3AED;}
+  .btn-copy:disabled{opacity:0.6;cursor:not-allowed;}
+
+  .error-box{display:none;color:#B3413E;font-size:13px;padding:10px 14px;background:#FDE8E8;border-radius:8px;margin-top:8px;}
+  .success-box{display:none;color:#065F46;font-size:13px;padding:10px 14px;background:#D1FAE5;border-radius:8px;margin-top:8px;}
+
+  .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{
+    background:var(--paper);padding:10px 12px;text-align:left;font-weight:600;
+    color:var(--mute);font-size:11px;text-transform:uppercase;letter-spacing:.04em;
+    border-bottom:2px solid var(--line);
+    position:sticky;top:0;z-index:2;
+  }
+  td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  tr:hover td{background:#FAF8F6;}
+  
+  .badge{
+    display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;
+  }
+  .badge-booking{background:#FEF3C7;color:#92400E;}
+  .badge-dp{background:#DBEAFE;color:#1E40AF;}
+  .badge-pelunasan{background:#D1FAE5;color:#065F46;}
+  .badge-upload{background:#FEF3C7;color:#92400E;}
+  .badge-proses_edit{background:#FCE7F3;color:#9D174D;}
+  .badge-selesai{background:#D1FAE5;color:#065F46;font-weight:700;}
+  .badge-expired{background:#FEE2E2;color:#991B1B;}
+
+  .status-actions{display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
+  .status-actions .btn-sm{font-size:10px;padding:4px 10px;}
+
+  .empty-state{text-align:center;padding:40px;color:var(--mute);}
+
+  .filter-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px;}
+  .filter-bar select,.filter-bar input{
+    padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;background:#fff;
+  }
+  .filter-bar select:focus,.filter-bar input:focus{outline:none;border-color:var(--rose);}
+
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:100;animation:slideUp .3s;
+  }
+  @keyframes slideUp{from{transform:translate(-50%,20px);opacity:0;}to{transform:translate(-50%,0);opacity:1;}}
+  @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+  .btn-loading{position:relative;pointer-events:none;opacity:0.7;}
+  .btn-loading::after{
+    content:"";position:absolute;right:10px;top:50%;transform:translateY(-50%);
+    width:14px;height:14px;border:2px solid #fff;border-top:2px solid transparent;border-radius:50%;animation:spin 0.8s linear infinite;
+  }
+
+  .loading-spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--line);border-top:2px solid var(--rose);border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:8px;}
+
+  .text-muted{color:var(--mute);font-size:12px;}
+  .text-center{text-align:center;}
+  .mt-12{margin-top:12px;}
+  .mb-8{margin-bottom:8px;}
+  .flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+
+  .modal-overlay{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;
+    align-items:center;justify-content:center;padding:20px;
+  }
+  .modal-overlay.active{display:flex;}
+  .modal-box{
+    background:var(--paper);border-radius:12px;padding:32px;max-width:500px;width:100%;
+    box-shadow:0 20px 60px rgba(0,0,0,0.3);
+  }
+  .modal-box h3{font-size:22px;font-style:italic;margin-bottom:4px;}
+  .modal-box .sub{color:var(--mute);font-size:14px;margin-bottom:20px;}
+  .modal-box .field{margin-bottom:16px;}
+  .modal-box .field label{display:block;font-size:12px;color:var(--mute);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+  .modal-box .field input,.modal-box .field textarea{
+    width:100%;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+    font-family:'Inter',sans-serif;font-size:14px;background:#fff;color:var(--ink);
+  }
+  .modal-box .field input:focus,.modal-box .field textarea:focus{outline:none;border-color:var(--rose);box-shadow:0 0 0 3px rgba(183,110,121,.15);}
+  .modal-box .field textarea{resize:vertical;min-height:80px;}
+  .modal-actions{display:flex;gap:12px;margin-top:20px;}
+  .modal-actions .btn-primary{flex:1;}
+  .modal-actions .btn-secondary{flex:1;text-align:center;}
+
+  /* 🔥 PROGRESS BAR COPY */
+  .copy-progress-container {
+    margin-top:8px;
+    padding:8px 12px;
+    background:var(--paper);
+    border-radius:6px;
+    border:1px solid var(--line);
+  }
+  .copy-progress-container .progress-text {
+    font-size:12px;
+    font-weight:500;
+  }
+  .copy-progress-container .progress-bar {
+    height:4px;
+    background:var(--line);
+    border-radius:4px;
+    margin-top:4px;
+    overflow:hidden;
+  }
+  .copy-progress-container .progress-bar .fill {
+    height:100%;
+    background:var(--rose);
+    border-radius:4px;
+    transition:width .3s;
+  }
+  .copy-progress-container .progress-detail {
+    font-size:11px;
+    color:var(--mute);
+    margin-top:4px;
+  }
+  .copy-result {
+    font-size:11px;
+    margin-top:4px;
+    padding:4px 8px;
+    border-radius:4px;
+  }
+  .copy-result.success { background:#D1FAE5; color:#065F46; }
+  .copy-result.failed { background:#FDE8E8; color:#B3413E; }
+  .copy-result.partial { background:#FEF3C7; color:#92400E; }
+
+  /* 🔥 DAFTAR DETAIL FOTO */
+  .detail-photo-list {
+    margin-top:6px;
+    max-height:100px;
+    overflow-y:auto;
+    font-size:11px;
+  }
+  .detail-photo-list .item {
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:2px 4px;
+    border-bottom:1px solid var(--line);
+  }
+  .detail-photo-list .item.success { color:#065F46; }
+  .detail-photo-list .item.failed { color:#B3413E; }
+
+  @media (max-width:640px){
+    .card{padding:16px;}
+    .card-header{flex-direction:column;align-items:flex-start;}
+    td,th{padding:6px 8px;font-size:12px;}
+    .filter-bar{flex-direction:column;align-items:stretch;}
+    .status-actions .btn-sm{font-size:9px;padding:3px 8px;}
+    .modal-box{padding:20px;}
+  }
+  /* 🔥 TOMBOL EDIT */
+  .btn-edit{
+    padding:6px 14px;
+    background:#8B5CF6;
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    font-size:12px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+    font-weight:500;
+    transition:background .2s;
+  }
+  .btn-edit:hover{background:#7C3AED;}
+  .btn-edit:disabled{opacity:0.6;cursor:not-allowed;}
+
+  /* 🔥 TOMBOL MAGIC LINK */
+  .btn-link{
+    padding:4px 10px;
+    background:#4285F4;
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    font-size:10px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+    font-weight:500;
+    transition:background .2s;
+  }
+  .btn-link:hover{background:#3367D6;}
+</style>
+</head>
+<body>
+
+<div class="container" id="app">
+
+  <!-- LOGIN SECTION -->
+  <div id="loginSection">
+    <div class="logo">
+      <h1>Studio Lavelle</h1>
+      <p>Admin Panel</p>
+    </div>
+    <div class="card login-box">
+      <div class="field">
+        <label>🔑 Password</label>
+        <input type="password" id="adminPassword" placeholder="Masukkan password admin">
+      </div>
+      <button class="btn-primary" onclick="loginAdmin()" style="width:100%;">Login</button>
+      <div class="error-box" id="loginError"></div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboardSection" style="display:none;">
+
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h1 style="font-size:24px;font-style:italic;font-weight:500;">📋 Admin Panel</h1>
+        <span class="text-muted">Kelola status booking client</span>
+      </div>
+      <div class="flex">
+        <span class="text-muted" id="adminInfo">👤 Admin</span>
+        <button class="btn-secondary" onclick="logoutAdmin()" style="padding:6px 16px;">🚪 Logout</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:20px;" id="statsContainer">
+      <div class="card" style="padding:16px;text-align:center;">
+        <div style="font-size:24px;font-weight:700;" id="statTotal">0</div>
+        <div class="text-muted" style="font-size:12px;">Total Booking</div>
+      </div>
+      <div class="card" style="padding:16px;text-align:center;border-left:3px solid #FEF3C7;">
+        <div style="font-size:24px;font-weight:700;color:#92400E;" id="statBooking">0</div>
+        <div class="text-muted" style="font-size:12px;">Booking</div>
+      </div>
+      <div class="card" style="padding:16px;text-align:center;border-left:3px solid #DBEAFE;">
+        <div style="font-size:24px;font-weight:700;color:#1E40AF;" id="statDp">0</div>
+        <div class="text-muted" style="font-size:12px;">DP</div>
+      </div>
+      <div class="card" style="padding:16px;text-align:center;border-left:3px solid #D1FAE5;">
+        <div style="font-size:24px;font-weight:700;color:#065F46;" id="statSelesai">0</div>
+        <div class="text-muted" style="font-size:12px;">Selesai</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="filter-bar">
+        <select id="filterStatus" onchange="loadBookings()">
+          <option value="all">📋 Semua Status</option>
+          <option value="booking">📋 Booking</option>
+          <option value="dp">💰 DP</option>
+          <option value="lunas">✅ Lunas</option>
+          <option value="upload_gdrive">📁 Upload Gdrive</option>
+          <option value="edit_foto">🎨 Edit Foto</option>
+          <option value="done_edit">🎉 Selesai</option>
+          <option value="expired">⏰ Expired</option>
+        </select>
+        <select id="filterKota" onchange="loadBookings()">
+          <option value="all">📍 Semua Kota</option>
+          <option value="Jogja">Jogja</option>
+          <option value="Solo">Solo</option>
+          <option value="Surabaya">Surabaya</option>
+          <option value="Jakarta">Jakarta</option>
+        </select>
+        <input type="text" id="searchInput" placeholder="🔍 Cari nama / booking ID" oninput="loadBookings()" style="flex:1;min-width:150px;">
+        <button class="btn-primary btn-sm" onclick="loadBookings()" style="white-space:nowrap;">🔄 Refresh</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>📋 Daftar Booking</h2>
+        <span class="text-muted" id="resultCount">0 data</span>
+      </div>
+      <div class="table-wrap" id="tableContainer">
+        <div class="text-center" style="padding:40px;"><span class="loading-spinner"></span> Memuat data...</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL UPLOAD GDRIVE -->
+<div class="modal-overlay" id="modalGdrive">
+  <div class="modal-box">
+    <h3>📁 Upload Link Gdrive</h3>
+    <div class="sub">Masukkan link Google Drive untuk booking <strong id="modalBookingId">-</strong></div>
+    
+    <div class="field">
+      <label>🔗 Link Google Drive</label>
+      <input type="url" id="inputGdriveLink" placeholder="https://drive.google.com/drive/folders/...">
+    </div>
+    
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeGdriveModal()">Batal</button>
+      <button class="btn-primary" id="btnGdriveSubmit" onclick="submitGdrive()">📤 Upload Link</button>
+    </div>
+    <div class="error-box" id="gdriveError"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// KONFIGURASI
+// ============================================================
+const CONFIG = {
+  API_URL: "https://script.google.com/macros/s/AKfycby39gEd8A6qPB98YmiIbvrOeR-aDmr1g-hkn78okq2nXVnDcEdwO9iT_AHHkhca0hzU/exec",
+  ADMIN_PASSWORD: "1234",
+  EDIT_FOTO_DAYS: 10
+};
+
+let bookings = [];
+let isLoggedIn = false;
+let gdriveBookingId = null;
+
+
+// ============================================================
+// JSONP Helper - DENGAN TIMEOUT
+// ============================================================
+function jsonp(url, callbackName, timeout = 60000) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    const callback = callbackName || 'jsonp_callback_' + Date.now();
+    
+    // 🔥 TIMEOUT
+    const timer = setTimeout(() => {
+      delete window[callback];
+      document.body.removeChild(script);
+      reject(new Error('Request timeout'));
+    }, timeout);
+    
+    window[callback] = function(data) {
+      clearTimeout(timer);
+      delete window[callback];
+      document.body.removeChild(script);
+      resolve(data);
+    };
+    
+    script.src = url + '&callback=' + callback;
+    script.onerror = function() {
+      clearTimeout(timer);
+      delete window[callback];
+      document.body.removeChild(script);
+      reject(new Error('JSONP request failed'));
+    };
+    
+    document.body.appendChild(script);
+  });
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(message, duration = 3000) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerText = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), duration);
+}
+
+// ============================================================
+// LOGIN
+// ============================================================
+function loginAdmin() {
+  const passwordInput = document.getElementById('adminPassword');
+  if (!passwordInput) {
+    console.error('Element adminPassword tidak ditemukan!');
+    return;
+  }
+  
+  const password = passwordInput.value.trim();
+  const errorBox = document.getElementById('loginError');
+  if (!errorBox) {
+    console.error('Element loginError tidak ditemukan!');
+    return;
+  }
+  
+  errorBox.style.display = 'none';
+  
+  if (!password) {
+    errorBox.innerText = '⚠️ Password wajib diisi.';
+    errorBox.style.display = 'block';
+    return;
+  }
+  
+  if (password === CONFIG.ADMIN_PASSWORD) {
+    isLoggedIn = true;
+    const loginSection = document.getElementById('loginSection');
+    const dashboardSection = document.getElementById('dashboardSection');
+    if (loginSection) loginSection.style.display = 'none';
+    if (dashboardSection) dashboardSection.style.display = 'block';
+    loadBookings();
+    showToast('✅ Selamat datang, Admin!');
+  } else {
+    errorBox.innerText = '❌ Password salah.';
+    errorBox.style.display = 'block';
+  }
+}
+
+// ============================================================
+// LOGOUT
+// ============================================================
+function logoutAdmin() {
+  isLoggedIn = false;
+  const loginSection = document.getElementById('loginSection');
+  const dashboardSection = document.getElementById('dashboardSection');
+  if (loginSection) loginSection.style.display = 'block';
+  if (dashboardSection) dashboardSection.style.display = 'none';
+  
+  const passwordInput = document.getElementById('adminPassword');
+  if (passwordInput) passwordInput.value = '';
+  
+  showToast('👋 Logout berhasil');
+}
+
+// ============================================================
+// LOAD BOOKINGS
+// ============================================================
+async function loadBookings() {
+  if (!isLoggedIn) return;
+  
+  const container = document.getElementById('tableContainer');
+  if (!container) return;
+  
+  container.innerHTML = '<div class="text-center" style="padding:40px;"><span class="loading-spinner"></span> Memuat data...</div>';
+  
+  try {
+    // 🔥 PAKAI TIMEOUT LEBIH LAMA (60 detik)
+    const bookingsUrl = `${CONFIG.API_URL}?action=getAllBookings`;
+    const result = await jsonp(bookingsUrl, null, 60000); // 60 detik timeout
+    
+    if (result.error) {
+      container.innerHTML = `<div class="empty-state">❌ ${result.error}</div>`;
+      return;
+    }
+    
+    bookings = result.data || [];
+    
+    // 🔥 TAMPILKAN INFORMASI JUMLAH DATA
+    if (result.total > result.limit) {
+      console.log(`📊 Menampilkan ${result.limit} dari ${result.total} booking`);
+    }
+    
+    renderBookings();
+    
+  } catch(err) {
+    console.error(err);
+    container.innerHTML = `
+      <div class="empty-state">
+        ❌ Gagal memuat data: ${err.message}
+        <br><br>
+        <button class="btn-primary btn-sm" onclick="loadBookings()">🔄 Coba Lagi</button>
+      </div>
+    `;
+  }
+}
+// ============================================================
+// RENDER BOOKINGS
+// ============================================================
+function renderBookings() {
+  const container = document.getElementById('tableContainer');
+  if (!container) return;
+  
+  const filterStatus = document.getElementById('filterStatus');
+  const filterKota = document.getElementById('filterKota');
+  const searchInput = document.getElementById('searchInput');
+  
+  const filterStatusVal = filterStatus ? filterStatus.value : 'all';
+  const filterKotaVal = filterKota ? filterKota.value : 'all';
+  const searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : '';
+  
+  let filtered = [...bookings];
+  
+  // 🔥 FILTER: HANYA TAMPILKAN BOOKING YANG BELUM SELESAI
+  // (status !== 'done_edit')
+  filtered = filtered.filter(b => b.status !== 'done_edit');
+  
+  if (filterStatusVal !== 'all') {
+    if (filterStatusVal === 'expired') {
+      filtered = filtered.filter(b => b.status === 'expired');
+    } else {
+      filtered = filtered.filter(b => b.status === filterStatusVal);
+    }
+  }
+  
+  if (filterKotaVal !== 'all') {
+    filtered = filtered.filter(b => b.kota === filterKotaVal);
+  }
+  
+  if (searchQuery) {
+    filtered = filtered.filter(b => 
+      (b.booking_id || '').toLowerCase().includes(searchQuery) ||
+      (b.nama_client || '').toLowerCase().includes(searchQuery) ||
+      (b.kampus || '').toLowerCase().includes(searchQuery)
+    );
+  }
+  
+  filtered.sort((a, b) => (b.tanggal_dibuat || '').localeCompare(a.tanggal_dibuat || ''));
+  
+  const resultCount = document.getElementById('resultCount');
+  if (resultCount) resultCount.innerText = filtered.length + ' data';
+  
+  updateStats();
+  
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty-state">📭 Tidak ada booking aktif</div>';
+    return;
+  }
+  
+  let html = `
+    <table>
+      <thead>
+        <tr>
+          <th>Booking ID</th>
+          <th>Client</th>
+          <th>Kampus</th>
+          <th>Kota</th>
+          <th>Tanggal Foto</th>
+          <th>Status</th>
+          <th style="min-width:250px;">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+  
+  filtered.forEach(b => {
+    const statusBadge = getStatusBadge(b.status);
+    const statusActions = getStatusActions(b);
+    
+    const folderName = b.folder_name || '';
+    const folderDisplay = folderName ? `<div style="font-size:10px;color:var(--mute);">📁 ${folderName}</div>` : '';
+    
+    html += `
+      <tr>
+        <td>
+          <span class="mono" style="font-size:12px;">${b.booking_id || '-'}</span>
+          ${folderDisplay}
+        </td>
+        <td><strong>${b.nama_client || '-'}</strong></td>
+        <td>${b.kampus || '-'}</td>
+        <td>${b.kota || '-'}</td>
+        <td>${b.tanggal || '-'}</td>
+        <td>${statusBadge}</td>
+        <td>
+          <div class="status-actions">
+            ${statusActions}
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+  
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+// ============================================================
+// GET STATUS BADGE
+// ============================================================
+function getStatusBadge(status) {
+  const map = {
+    'booking': { class: 'badge-booking', label: '📋 Booking' },
+    'dp': { class: 'badge-dp', label: '💰 DP' },
+    'lunas': { class: 'badge-pelunasan', label: '✅ Lunas' },
+    'upload_gdrive': { class: 'badge-upload', label: '📁 Upload Gdrive' },
+    'edit_foto': { class: 'badge-proses_edit', label: '🎨 Edit Foto' },
+    'done_edit': { class: 'badge-selesai', label: '🎉 Selesai' },
+    'expired': { class: 'badge-expired', label: '⏰ Expired' }
+  };
+  const s = map[status] || map['booking'];
+  return `<span class="badge ${s.class}">${s.label}</span>`;
+}
+
+// ============================================================
+// GET STATUS ACTIONS - LENGKAP DENGAN SEMUA TOMBOL
+// ============================================================
+function getStatusActions(booking) {
+  const status = booking.status;
+  const actions = [];
+  
+  // 🔥 ===== STATUS: BOOKING =====
+  if (status === 'booking') {
+    actions.push(`<button class="btn-success btn-sm" onclick="updateStatus('${booking.booking_id}','dp')">💰 DP</button>`);
+    actions.push(`<button class="btn-primary btn-sm" onclick="updateStatus('${booking.booking_id}','lunas')" style="background:var(--sage);">✅ Lunas</button>`);
+    actions.push(`<button class="btn-danger btn-sm" onclick="deleteBooking('${booking.booking_id}')">🗑️</button>`);
+  }
+  
+  // 🔥 ===== STATUS: DP =====
+  else if (status === 'dp') {
+    actions.push(`<button class="btn-success btn-sm" onclick="updateStatus('${booking.booking_id}','lunas')">✅ Lunas</button>`);
+    actions.push(`<button class="btn-warning btn-sm" onclick="updateStatus('${booking.booking_id}','booking')">↺ Reset</button>`);
+  }
+  
+  // 🔥 ===== STATUS: LUNAS =====
+  else if (status === 'lunas') {
+    actions.push(`<button class="btn-gdrive btn-sm" onclick="openGdriveModal('${booking.booking_id}')">📁 Upload Gdrive</button>`);
+    actions.push(`<button class="btn-warning btn-sm" onclick="updateStatus('${booking.booking_id}','booking')">↺ Reset</button>`);
+  }
+  
+  // 🔥 ===== STATUS: UPLOAD_GDRIVE =====
+  else if (status === 'upload_gdrive') {
+    // 🔥 CEK APAKAH COPY SUDAH SELESAI
+    const isCopyDone = booking.copy_done === true || booking.status === 'edit_foto' || booking.status === 'done_edit';
+    
+    if (isCopyDone) {
+      // 🔥 COPY SELESAI → TAMPILKAN TOMBOL EDIT FOTO
+      actions.push(`<button class="btn-edit btn-sm" onclick="updateStatus('${booking.booking_id}','edit_foto')" style="background:#8B5CF6;color:#fff;">🎨 Edit Foto</button>`);
+    } else {
+      // 🔥 COPY BELUM SELESAI
+      let hasFotoList = false;
+      try {
+        const fotoList = JSON.parse(booking.foto_list || '[]');
+        hasFotoList = fotoList.length > 0 && fotoList.some(f => f && f.trim() !== '');
+      } catch(e) {
+        hasFotoList = false;
+      }
+      
+      if (hasFotoList) {
+        if (booking.copy_status === 'processing') {
+          const pct = Math.round((booking.copy_progress / booking.copy_total) * 100) || 0;
+          actions.push(`<span class="text-muted" style="font-size:11px;">⏳ Copy ${pct}%</span>`);
+        } else {
+          actions.push(`<button class="btn-copy btn-sm" onclick="startCopyProcess('${booking.booking_id}')">📁 Copy Foto</button>`);
+        }
+      } else {
+        actions.push(`<span class="text-muted" style="font-size:10px;">📭 Client belum isi list</span>`);
+      }
+    }
+    
+    // 🔥 TAMBAHKAN TOMBOL MAGIC LINK (selalu muncul)
+    actions.push(`<button class="btn-sm" onclick="copyMagicLink('${booking.booking_id}')" style="background:#4285F4;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:10px;cursor:pointer;">🔗 Link</button>`);
+    
+    const sisaHari = getSisaHariEdit(booking);
+    actions.push(`<span class="text-muted">⏳ ${sisaHari} hari lagi</span>`);
+    actions.push(`<button class="btn-warning btn-sm" onclick="updateStatus('${booking.booking_id}','booking')">↺ Reset</button>`);
+  }
+  
+  // 🔥 ===== STATUS: EDIT_FOTO =====
+  else if (status === 'edit_foto') {
+    // 🔥 TOMBOL DONE EDIT
+    actions.push(`<button class="btn-success btn-sm" onclick="updateStatus('${booking.booking_id}','done_edit')">🎉 Done Edit</button>`);
+    
+    // 🔥 TOMBOL MAGIC LINK
+    actions.push(`<button class="btn-sm" onclick="copyMagicLink('${booking.booking_id}')" style="background:#4285F4;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:10px;cursor:pointer;">🔗 Link</button>`);
+    
+    actions.push(`<button class="btn-warning btn-sm" onclick="updateStatus('${booking.booking_id}','booking')">↺ Reset</button>`);
+  }
+  
+  // 🔥 ===== STATUS: DONE_EDIT =====
+  else if (status === 'done_edit') {
+    // 🔥 HANYA BADGE SELESAI (tidak tampil di daftar)
+    actions.push(`<span class="badge badge-selesai" style="font-size:11px;">🎉 Selesai</span>`);
+    actions.push(`<button class="btn-warning btn-sm" onclick="updateStatus('${booking.booking_id}','edit_foto')">↺ Reset</button>`);
+  }
+  
+  // 🔥 ===== STATUS: EXPIRED =====
+  else if (status === 'expired') {
+    actions.push(`<span class="badge badge-expired" style="font-size:11px;">⏰ Expired</span>`);
+    actions.push(`<button class="btn-danger btn-sm" onclick="deleteBooking('${booking.booking_id}')">🗑️</button>`);
+  }
+  
+  // 🔥 ===== DEFAULT / UNKNOWN =====
+  else {
+    actions.push(`<span class="text-muted">-</span>`);
+  }
+  
+  return actions.join('');
+}
+
+// ============================================================
+// 🔥 COPY MAGIC LINK KE CLIPBOARD
+// ============================================================
+function copyMagicLink(bookingId) {
+  const booking = bookings.find(b => b.booking_id === bookingId);
+  if (!booking || !booking.token) {
+    showToast('❌ Token tidak ditemukan', 3000);
+    return;
+  }
+  
+  // 🔥 GUNAKAN DOMAIN DINAMIS (otomatis localhost atau domain asli)
+  const baseUrl = window.location.origin + '/status.html';
+  const link = `${baseUrl}?token=${booking.token}`;
+  
+  // 🔥 COPY KE CLIPBOARD
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(link).then(() => {
+      showToast('✅ Link disalin! Kirim ke client.', 2000);
+    }).catch(() => {
+      fallbackCopy(link);
+    });
+  } else {
+    fallbackCopy(link);
+  }
+}
+
+// ============================================================
+// 🔥 FALLBACK COPY (jika clipboard tidak support)
+// ============================================================
+function fallbackCopy(text) {
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.left = '-9999px';
+  textArea.style.top = '-9999px';
+  document.body.appendChild(textArea);
+  textArea.select();
+  
+  try {
+    document.execCommand('copy');
+    showToast('✅ Link disalin! Kirim ke client.', 2000);
+  } catch(e) {
+    prompt('Salin link ini:', text);
+  }
+  
+  document.body.removeChild(textArea);
+}
+// ============================================================
+// 🔥 FALLBACK COPY (jika clipboard tidak support)
+// ============================================================
+function fallbackCopy(text) {
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.left = '-9999px';
+  textArea.style.top = '-9999px';
+  document.body.appendChild(textArea);
+  textArea.select();
+  
+  try {
+    document.execCommand('copy');
+    showToast('✅ Link disalin! Kirim ke client.', 2000);
+  } catch(e) {
+    prompt('Salin link ini:', text);
+  }
+  
+  document.body.removeChild(textArea);
+}
+
+// ============================================================
+// GET SISA HARI EDIT
+// ============================================================
+function getSisaHariEdit(booking) {
+  if (!booking.tanggal_edit_mulai) return '?';
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const editDate = new Date(booking.tanggal_edit_mulai + 'T00:00:00');
+  const diffTime = editDate - today;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays > 0 ? diffDays : 0;
+}
+
+// ============================================================
+// 🔥 START COPY PROCESS (ADMIN) - DENGAN PROGRESS & UPDATE STATUS
+// ============================================================
+let copyInterval = null;
+
+async function startCopyProcess(bookingId) {
+  if (!confirm(`Copy foto untuk booking ${bookingId}? Proses akan berjalan di background.`)) return;
+  
+  const row = document.querySelector(`[onclick*="startCopyProcess('${bookingId}')"]`)?.closest('tr');
+  const actionsCell = row?.querySelector('.status-actions');
+  
+  // Hapus progress container lama jika ada
+  const oldProgress = document.getElementById('copyProgress_' + bookingId);
+  if (oldProgress) oldProgress.remove();
+  
+  // Buat container progress baru
+  let progressContainer = document.createElement('div');
+  progressContainer.id = 'copyProgress_' + bookingId;
+  progressContainer.className = 'copy-progress-container';
+  progressContainer.innerHTML = `
+    <div class="progress-text">⏳ Memulai proses...</div>
+    <div class="progress-bar"><div class="fill" style="width:0%;"></div></div>
+    <div class="progress-detail">0/0 foto</div>
+  `;
+  if (actionsCell) {
+    actionsCell.appendChild(progressContainer);
+  }
+  
+  const btn = document.querySelector(`[onclick*="startCopyProcess('${bookingId}')"]`);
+  if (btn) { 
+    btn.disabled = true; 
+    btn.classList.add('btn-loading'); 
+    btn.innerText = '⏳ Proses...'; 
+  }
+  
+  try {
+    // 🔥 1. PANGGIL ENDPOINT startCopyQueueAdmin
+    const params = new URLSearchParams({
+      action: 'startCopyQueueAdmin',
+      booking_id: bookingId
+    });
+    
+    const url = `${CONFIG.API_URL}?${params.toString()}`;
+    const result = await jsonp(url);
+    
+    if (result.error) {
+      showToast('❌ ' + result.error, 3000);
+      if (btn) { 
+        btn.disabled = false; 
+        btn.classList.remove('btn-loading'); 
+        btn.innerText = '📁 Copy Foto'; 
+      }
+      if (progressContainer) {
+        progressContainer.innerHTML = `<div class="copy-result failed">❌ ${result.error}</div>`;
+      }
+      return;
+    }
+    
+    showToast(`✅ ${result.message}`, 3000);
+    
+    // 🔥 2. UPDATE PROGRESS SETIAP 3 DETIK
+    if (copyInterval) clearInterval(copyInterval);
+    copyInterval = setInterval(async function() {
+      try {
+        const statusUrl = `${CONFIG.API_URL}?action=getQueueStatus&booking_id=${encodeURIComponent(bookingId)}`;
+        const statusResult = await jsonp(statusUrl);
+        
+        const progressText = document.querySelector(`#copyProgress_${bookingId} .progress-text`);
+        const progressBar = document.querySelector(`#copyProgress_${bookingId} .fill`);
+        const progressDetail = document.querySelector(`#copyProgress_${bookingId} .progress-detail`);
+        
+        if (statusResult.status === 'pending') {
+          if (progressText) progressText.innerText = '⏳ Menunggu antrian...';
+        } 
+        else if (statusResult.status === 'processing') {
+          const pct = Math.round(statusResult.persentase || 0);
+          if (progressText) progressText.innerText = `📁 Copy foto ${statusResult.progress}/${statusResult.total}`;
+          if (progressBar) progressBar.style.width = pct + '%';
+          if (progressDetail) progressDetail.innerText = `⏳ ${pct}% selesai (${statusResult.progress}/${statusResult.total} foto)`;
+          
+          if (btn) btn.innerText = `⏳ ${pct}% (${statusResult.progress}/${statusResult.total})`;
+        } 
+        else if (statusResult.status === 'done' || statusResult.status === 'failed') {
+          // 🔥 3. HENTIKAN INTERVAL
+          clearInterval(copyInterval);
+          copyInterval = null;
+          
+          // 🔥 4. TAMPILKAN HASIL AKHIR
+          let resultClass = 'success';
+          let resultIcon = '✅';
+          if (statusResult.result && statusResult.result.includes('gagal')) {
+            resultClass = 'partial';
+            resultIcon = '⚠️';
+          }
+          
+          if (progressText) progressText.innerText = `${resultIcon} ${statusResult.result || 'Selesai'}`;
+          if (progressBar) progressBar.style.width = '100%';
+          if (progressDetail) progressDetail.innerText = 'Selesai';
+          
+          // 🔥 5. TAMPILKAN DETAIL PER FOTO
+          if (statusResult.detail && statusResult.detail.length > 0) {
+            let detailHtml = '<div class="detail-photo-list">';
+            statusResult.detail.forEach(function(item) {
+              const cls = item.status === 'success' ? 'success' : 'failed';
+              const icon = item.status === 'success' ? '✅' : '❌';
+              detailHtml += `<div class="item ${cls}">${icon} ${item.foto} ${item.status === 'success' ? 'Berhasil' : 'Gagal: ' + (item.error || '')}</div>`;
+            });
+            detailHtml += '</div>';
+            if (progressDetail) progressDetail.innerHTML = detailHtml;
+          }
+          
+          // 🔥 6. UPDATE STATUS BOOKING MENJADI "edit_foto" (jika berhasil)
+          if (statusResult.status === 'done' && statusResult.result && !statusResult.result.includes('gagal')) {
+            try {
+              const updateUrl = `${CONFIG.API_URL}?action=updateStatus&booking_id=${encodeURIComponent(bookingId)}&status=edit_foto`;
+              const updateResult = await jsonp(updateUrl);
+              console.log('✅ Status berubah menjadi edit_foto:', updateResult);
+              
+              // 🔥 UPDATE DATA BOOKING LOKAL
+              const bookingIndex = bookings.findIndex(b => b.booking_id === bookingId);
+              if (bookingIndex !== -1) {
+                bookings[bookingIndex].status = 'edit_foto';
+                bookings[bookingIndex].copy_done = true;
+              }
+              
+            } catch(e) {
+              console.log('⚠️ Gagal update status:', e);
+            }
+          } else if (statusResult.status === 'failed') {
+            // Jika gagal, biarkan status tetap upload_gdrive
+            console.log('⚠️ Proses copy gagal, status tetap upload_gdrive');
+          }
+          
+          // 🔥 7. UPDATE TOMBOL
+          if (btn) {
+            btn.disabled = false;
+            btn.classList.remove('btn-loading');
+            
+            if (statusResult.status === 'done' && statusResult.result && !statusResult.result.includes('gagal')) {
+              btn.innerText = '✅ Selesai';
+              // Sembunyikan tombol setelah 3 detik
+              setTimeout(() => {
+                if (btn) btn.style.display = 'none';
+              }, 3000);
+            } else {
+              btn.innerText = statusResult.result?.includes('gagal') ? '⚠️ Selesai' : '✅ Selesai';
+              setTimeout(() => {
+                if (btn) btn.style.display = 'none';
+              }, 3000);
+            }
+          }
+          
+          // 🔥 8. NOTIFIKASI
+          showToast(statusResult.result || 'Proses selesai', 5000);
+          
+          // 🔥 9. REFRESH TABEL
+          setTimeout(() => {
+            loadBookings();
+          }, 1000);
+        }
+      } catch(e) {
+        console.error('Error checking queue status:', e);
+      }
+    }, 3000);
+    
+  } catch(err) {
+    showToast('❌ Gagal: ' + err.message, 3000);
+    if (btn) { 
+      btn.disabled = false; 
+      btn.classList.remove('btn-loading'); 
+      btn.innerText = '📁 Copy Foto'; 
+    }
+    if (progressContainer) {
+      progressContainer.innerHTML = `<div class="copy-result failed">❌ ${err.message}</div>`;
+    }
+  }
+}
+
+// ============================================================
+// MODAL GDRIVE
+// ============================================================
+function openGdriveModal(bookingId) {
+  gdriveBookingId = bookingId;
+  const modalId = document.getElementById('modalBookingId');
+  if (modalId) modalId.innerText = bookingId;
+  
+  const inputLink = document.getElementById('inputGdriveLink');
+  if (inputLink) inputLink.value = '';
+  
+  const errorBox = document.getElementById('gdriveError');
+  if (errorBox) errorBox.style.display = 'none';
+  
+  const modal = document.getElementById('modalGdrive');
+  if (modal) modal.classList.add('active');
+}
+
+function closeGdriveModal() {
+  const modal = document.getElementById('modalGdrive');
+  if (modal) modal.classList.remove('active');
+  gdriveBookingId = null;
+}
+
+async function submitGdrive() {
+  const linkInput = document.getElementById('inputGdriveLink');
+  const errorBox = document.getElementById('gdriveError');
+  
+  if (!linkInput || !errorBox) return;
+  
+  const link = linkInput.value.trim();
+  errorBox.style.display = 'none';
+  
+  if (!link) {
+    errorBox.innerText = '⚠️ Link Google Drive wajib diisi.';
+    errorBox.style.display = 'block';
+    return;
+  }
+  
+  if (!link.includes('drive.google.com')) {
+    errorBox.innerText = '⚠️ Harap masukkan link Google Drive yang valid.';
+    errorBox.style.display = 'block';
+    return;
+  }
+  
+  const btn = document.getElementById('btnGdriveSubmit');
+  if (btn) { btn.disabled = true; btn.classList.add('btn-loading'); }
+  
+  try {
+    const url = `${CONFIG.API_URL}?action=updateGdrive&booking_id=${encodeURIComponent(gdriveBookingId)}&link_gdrive=${encodeURIComponent(link)}`;
+    const result = await jsonp(url);
+    
+    if (btn) { btn.disabled = false; btn.classList.remove('btn-loading'); }
+    
+    if (result.error) {
+      errorBox.innerText = '❌ ' + result.error;
+      errorBox.style.display = 'block';
+      return;
+    }
+    
+    closeGdriveModal();
+    showToast('✅ ' + result.message, 3000);
+    loadBookings();
+    
+  } catch(err) {
+    if (btn) { btn.disabled = false; btn.classList.remove('btn-loading'); }
+    errorBox.innerText = '❌ Gagal upload link: ' + err.message;
+    errorBox.style.display = 'block';
+  }
+}
+
+// ============================================================
+// UPDATE STATUS
+// ============================================================
+async function updateStatus(bookingId, newStatus) {
+  if (!confirm(`Ubah status booking ${bookingId} menjadi "${newStatus}"?`)) return;
+  
+  const btn = document.querySelector(`[onclick*="updateStatus('${bookingId}','${newStatus}')"]`);
+  if (btn) { btn.disabled = true; btn.classList.add('btn-loading'); }
+  
+  try {
+    const url = `${CONFIG.API_URL}?action=updateStatus&booking_id=${encodeURIComponent(bookingId)}&status=${encodeURIComponent(newStatus)}`;
+    const result = await jsonp(url);
+    
+    if (result.error) {
+      showToast('❌ ' + result.error, 3000);
+    } else {
+      showToast('✅ ' + result.message, 2000);
+      loadBookings();
+    }
+  } catch(err) {
+    showToast('❌ Gagal update status: ' + err.message, 3000);
+  }
+  
+  if (btn) { btn.disabled = false; btn.classList.remove('btn-loading'); }
+}
+
+// ============================================================
+// DELETE BOOKING
+// ============================================================
+async function deleteBooking(bookingId) {
+  if (!confirm(`Hapus booking ${bookingId}?`)) return;
+  
+  try {
+    const url = `${CONFIG.API_URL}?action=deleteBooking&booking_id=${encodeURIComponent(bookingId)}`;
+    const result = await jsonp(url);
+    
+    if (result.error) {
+      showToast('❌ ' + result.error, 3000);
+    } else {
+      showToast('✅ Booking berhasil dihapus', 2000);
+      loadBookings();
+    }
+  } catch(err) {
+    showToast('❌ Gagal hapus booking: ' + err.message, 3000);
+  }
+}
+
+// ============================================================
+// UPDATE STATS
+// ============================================================
+function updateStats() {
+  // 🔥 HANYA HITUNG BOOKING YANG BELUM SELESAI
+  const activeBookings = bookings.filter(b => b.status !== 'done_edit');
+  
+  const total = activeBookings.length;
+  const booking = activeBookings.filter(b => b.status === 'booking').length;
+  const dp = activeBookings.filter(b => b.status === 'dp').length;
+  const selesai = bookings.filter(b => b.status === 'done_edit').length; // Total selesai (untuk info)
+  
+  const statTotal = document.getElementById('statTotal');
+  const statBooking = document.getElementById('statBooking');
+  const statDp = document.getElementById('statDp');
+  const statSelesai = document.getElementById('statSelesai');
+  
+  if (statTotal) statTotal.innerText = total;
+  if (statBooking) statBooking.innerText = booking;
+  if (statDp) statDp.innerText = dp;
+  if (statSelesai) statSelesai.innerText = selesai;
+}
+
+// ============================================================
+// EVENT LISTENERS
+// ============================================================
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !isLoggedIn) {
+    loginAdmin();
+  }
+});
+
+document.getElementById('modalGdrive')?.addEventListener('click', function(e) {
+  if (e.target === this) closeGdriveModal();
+});
+</script>
+</body>
+</html>

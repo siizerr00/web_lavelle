@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fotografer | Studio Lavelle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400..600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2E2532;
+    --paper:#FBF6F2;
+    --rose:#B76E79;
+    --gold:#C9A66B;
+    --sage:#6B8F71;
+    --mute:#8C8389;
+    --line:#E4D9D3;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  .container{
+    max-width:480px;
+    width:100%;
+    padding:24px;
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:32px;
+    box-shadow:0 4px 24px rgba(46,37,50,.08);
+  }
+  .card .logo{
+    text-align:center;
+    margin-bottom:24px;
+  }
+  .card .logo h1{
+    font-size:28px;
+    font-style:italic;
+    font-weight:500;
+  }
+  .card .logo p{
+    color:var(--mute);
+    font-size:14px;
+    margin-top:4px;
+  }
+
+  .field{
+    margin-bottom:16px;
+  }
+  .field label{
+    display:block;
+    font-size:12px;
+    color:var(--mute);
+    margin-bottom:6px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    font-weight:600;
+  }
+  .field input{
+    width:100%;
+    padding:10px 14px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    background:#fff;
+    color:var(--ink);
+    transition:border .2s;
+  }
+  .field input:focus{
+    outline:none;
+    border-color:var(--rose);
+    box-shadow:0 0 0 3px rgba(183,110,121,.15);
+  }
+  .field input:disabled{
+    background:var(--paper);
+    color:var(--mute);
+  }
+
+  .btn-primary{
+    width:100%;
+    padding:14px;
+    background:var(--ink);
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    font-size:14px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+    font-weight:500;
+    transition:background .2s;
+    margin-top:8px;
+    position:relative;
+  }
+  .btn-primary:hover{ background:var(--rose); }
+  .btn-primary:disabled{
+    opacity:0.6;
+    cursor:not-allowed;
+  }
+
+  .btn-loading{
+    position:relative;
+    pointer-events:none;
+    opacity:0.7;
+  }
+  .btn-loading::after{
+    content:"";
+    position:absolute;
+    right:16px;
+    top:50%;
+    transform:translateY(-50%);
+    width:18px;
+    height:18px;
+    border:2px solid #fff;
+    border-top:2px solid transparent;
+    border-radius:50%;
+    animation:spin 0.8s linear infinite;
+  }
+
+  .btn-secondary{
+    width:100%;
+    padding:10px;
+    background:none;
+    color:var(--mute);
+    border:none;
+    font-size:13px;
+    cursor:pointer;
+    margin-top:8px;
+    font-family:'Inter',sans-serif;
+  }
+  .btn-secondary:hover{ color:var(--ink); }
+
+  .error-box{
+    display:none;
+    color:#B3413E;
+    font-size:13px;
+    margin-top:8px;
+    background:#FDE8E8;
+    padding:10px 14px;
+    border-radius:6px;
+  }
+  .success-box{
+    display:none;
+    color:#065F46;
+    font-size:13px;
+    margin-top:8px;
+    background:#D1FAE5;
+    padding:10px 14px;
+    border-radius:6px;
+  }
+
+  .divider{
+    border:none;
+    border-top:1px solid var(--line);
+    margin:20px 0;
+  }
+
+  .form-jadwal{
+    display:none;
+  }
+  .form-jadwal.active{
+    display:block;
+  }
+
+  .row-2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+
+  .info-fotografer{
+    background:var(--paper);
+    border-radius:8px;
+    padding:12px 16px;
+    margin-bottom:20px;
+    border:1px solid var(--line);
+  }
+  .info-fotografer .label{
+    font-size:11px;
+    color:var(--mute);
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+  .info-fotografer .value{
+    font-size:15px;
+    font-weight:500;
+    margin-top:2px;
+  }
+
+  .toast{
+    position:fixed;
+    bottom:20px;
+    left:50%;
+    transform:translateX(-50%);
+    background:var(--ink);
+    color:#fff;
+    padding:12px 24px;
+    border-radius:8px;
+    font-size:14px;
+    z-index:100;
+    animation:slideUp .3s;
+  }
+  @keyframes slideUp{
+    from{transform:translate(-50%,20px);opacity:0;}
+    to{transform:translate(-50%,0);opacity:1;}
+  }
+
+  @keyframes spin{
+    0%{transform:rotate(0deg);}
+    100%{transform:rotate(360deg);}
+  }
+
+  .table-wrap{
+    max-height:250px;
+    overflow-y:auto;
+    margin-top:12px;
+    border:1px solid var(--line);
+    border-radius:6px;
+  }
+  .table-wrap table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+  }
+  .table-wrap th{
+    background:var(--paper);
+    padding:8px 10px;
+    text-align:left;
+    font-weight:600;
+    color:var(--mute);
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    position:sticky;
+    top:0;
+    z-index:2;
+    border-bottom:1px solid var(--line);
+  }
+  .table-wrap td{
+    padding:8px 10px;
+    border-bottom:1px solid var(--line);
+  }
+  .table-wrap tr:last-child td{
+    border-bottom:none;
+  }
+  .badge-vendor{
+    display:inline-block;
+    padding:2px 8px;
+    border-radius:12px;
+    font-size:10px;
+    font-weight:600;
+    background:#FEF3C7;
+    color:#92400E;
+  }
+  .badge-studio{
+    display:inline-block;
+    padding:2px 8px;
+    border-radius:12px;
+    font-size:10px;
+    font-weight:600;
+    background:#D1FAE5;
+    color:#065F46;
+  }
+
+  .no-data{
+    text-align:center;
+    color:var(--mute);
+    padding:16px;
+    font-size:13px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- 🔥 CARD LOGIN -->
+  <div class="card" id="loginCard">
+    <div class="logo">
+      <h1>Studio Lavelle</h1>
+      <p>Fotografer Login</p>
+    </div>
+
+    <div class="field">
+      <label>👤 Nama</label>
+      <input type="text" id="loginNama" placeholder="Masukkan nama kamu">
+    </div>
+    <div class="field">
+      <label>🔑 PIN</label>
+      <input type="password" id="loginPin" placeholder="Masukkan PIN" maxlength="4" inputmode="numeric">
+    </div>
+
+    <button class="btn-primary" id="btnLogin" onclick="handleLogin()">Login</button>
+    <div class="error-box" id="loginError"></div>
+  </div>
+
+  <!-- 🔥 CARD JADWAL (Setelah Login) -->
+  <div class="card" id="jadwalCard" style="display:none;">
+    <div class="logo">
+      <h1>Studio Lavelle</h1>
+      <p id="fotograferInfo">👋 Halo, <strong id="namaFotografer">-</strong></p>
+    </div>
+
+    <div class="info-fotografer">
+      <div class="label">📍 Kota</div>
+      <div class="value" id="kotaFotografer">-</div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- FORM INPUT JADWAL -->
+    <div class="form-jadwal active">
+      <p style="font-size:13px; color:var(--mute); margin-bottom:16px;">
+        📅 Input jadwal untuk <strong>job dari vendor lain</strong>
+      </p>
+
+      <div class="field">
+        <label>📅 Tanggal</label>
+        <input type="date" id="inputTanggal">
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label>⏰ Jam Mulai</label>
+          <input type="time" id="inputJamMulai">
+        </div>
+        <div class="field">
+          <label>⏰ Jam Selesai</label>
+          <input type="time" id="inputJamSelesai">
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btnSimpan" onclick="simpanJadwal()">💾 Simpan Jadwal</button>
+      <div class="error-box" id="formError"></div>
+      <div class="success-box" id="formSuccess"></div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- DAFTAR JADWAL -->
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-size:13px; font-weight:600;">📋 Jadwalku</span>
+        <button class="btn-secondary" style="width:auto; padding:4px 12px; margin:0;" onclick="loadJadwal()">🔄 Refresh</button>
+      </div>
+      <div class="table-wrap" id="tableJadwal">
+        <div class="no-data">Memuat jadwal...</div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <button class="btn-secondary" onclick="handleLogout()">🚪 Logout</button>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// KONFIGURASI
+// ============================================================
+const CONFIG = {
+  API_URL: "https://script.google.com/macros/s/AKfycbzl80RHhERFFo12ziWTaCeTI8LE5UqzRJ6gvEiJVf6SYRbWFtE2p0AIIVMa3CQbnJTS/exec"
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let fotografer = null; // { fotografer_id, nama, kota }
+
+// ============================================================
+// JSONP Helper
+// ============================================================
+function jsonp(url, callbackName) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    const callback = callbackName || 'jsonp_callback_' + Date.now();
+    
+    window[callback] = function(data) {
+      delete window[callback];
+      document.body.removeChild(script);
+      resolve(data);
+    };
+    
+    script.src = url + '&callback=' + callback;
+    script.onerror = function() {
+      delete window[callback];
+      document.body.removeChild(script);
+      reject(new Error('JSONP request failed'));
+    };
+    
+    document.body.appendChild(script);
+  });
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(message, duration = 3000) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerText = message;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => toast.remove(), duration);
+}
+
+// ============================================================
+// LOGIN
+// ============================================================
+async function handleLogin() {
+  const nama = document.getElementById('loginNama').value.trim();
+  const pin = document.getElementById('loginPin').value.trim();
+  const errorBox = document.getElementById('loginError');
+  
+  if (!nama || !pin) {
+    errorBox.innerText = '⚠️ Nama dan PIN wajib diisi.';
+    errorBox.style.display = 'block';
+    return;
+  }
+  
+  const btn = document.getElementById('btnLogin');
+  btn.disabled = true;
+  btn.classList.add('btn-loading');
+  errorBox.style.display = 'none';
+  
+  try {
+    // 🔥 CEK LOGIN KE SHEET FOTOGRAFER
+    const url = `${CONFIG.API_URL}?action=fotografLogin&nama=${encodeURIComponent(nama)}&pin=${encodeURIComponent(pin)}`;
+    const data = await jsonp(url);
+    
+    btn.disabled = false;
+    btn.classList.remove('btn-loading');
+    
+    if (data.error) {
+      errorBox.innerText = '❌ ' + data.error;
+      errorBox.style.display = 'block';
+      return;
+    }
+    
+    fotografer = data;
+    showToast('✅ Selamat datang, ' + fotografer.nama + '!');
+    showJadwalCard();
+    
+  } catch(err) {
+    btn.disabled = false;
+    btn.classList.remove('btn-loading');
+    errorBox.innerText = '❌ Gagal login. Cek koneksi.';
+    errorBox.style.display = 'block';
+    console.error(err);
+  }
+}
+
+// ============================================================
+// SHOW JADWAL CARD
+// ============================================================
+function showJadwalCard() {
+  document.getElementById('loginCard').style.display = 'none';
+  document.getElementById('jadwalCard').style.display = 'block';
+  document.getElementById('namaFotografer').innerText = fotografer.nama;
+  document.getElementById('kotaFotografer').innerText = fotografer.kota;
+  
+  // Set default tanggal = hari ini
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('inputTanggal').value = today;
+  
+  loadJadwal();
+}
+
+// ============================================================
+// LOGOUT
+// ============================================================
+function handleLogout() {
+  fotografer = null;
+  document.getElementById('jadwalCard').style.display = 'none';
+  document.getElementById('loginCard').style.display = 'block';
+  document.getElementById('loginNama').value = '';
+  document.getElementById('loginPin').value = '';
+  showToast('👋 Logout berhasil');
+}
+
+// ============================================================
+// SIMPAN JADWAL (vendor_lain)
+// ============================================================
+async function simpanJadwal() {
+  const tanggal = document.getElementById('inputTanggal').value;
+  const jamMulai = document.getElementById('inputJamMulai').value;
+  const jamSelesai = document.getElementById('inputJamSelesai').value;
+  const errorBox = document.getElementById('formError');
+  const successBox = document.getElementById('formSuccess');
+  
+  errorBox.style.display = 'none';
+  successBox.style.display = 'none';
+  
+  if (!tanggal || !jamMulai || !jamSelesai) {
+    errorBox.innerText = '⚠️ Semua field wajib diisi.';
+    errorBox.style.display = 'block';
+    return;
+  }
+  
+  if (jamMulai >= jamSelesai) {
+    errorBox.innerText = '⚠️ Jam selesai harus lebih besar dari jam mulai.';
+    errorBox.style.display = 'block';
+    return;
+  }
+  
+  const btn = document.getElementById('btnSimpan');
+  btn.disabled = true;
+  btn.classList.add('btn-loading');
+  
+  try {
+    const params = new URLSearchParams({
+      action: 'simpanJadwal',
+      fotografer_id: fotografer.fotografer_id,
+      kota: fotografer.kota,
+      tanggal: tanggal,
+      jam_mulai: jamMulai,
+      jam_selesai: jamSelesai,
+      sumber: 'vendor_lain'
+    });
+    
+    const url = `${CONFIG.API_URL}?${params.toString()}`;
+    const data = await jsonp(url);
+    
+    btn.disabled = false;
+    btn.classList.remove('btn-loading');
+    
+    if (data.error) {
+      errorBox.innerText = '❌ ' + data.error;
+      errorBox.style.display = 'block';
+      return;
+    }
+    
+    successBox.innerText = '✅ Jadwal berhasil disimpan!';
+    successBox.style.display = 'block';
+    
+    // Reset form
+    document.getElementById('inputTanggal').value = new Date().toISOString().split('T')[0];
+    document.getElementById('inputJamMulai').value = '';
+    document.getElementById('inputJamSelesai').value = '';
+    
+    loadJadwal();
+    showToast('✅ Jadwal vendor lain berhasil disimpan!');
+    
+  } catch(err) {
+    btn.disabled = false;
+    btn.classList.remove('btn-loading');
+    errorBox.innerText = '❌ Gagal menyimpan. Cek koneksi.';
+    errorBox.style.display = 'block';
+    console.error(err);
+  }
+}
+
+// ============================================================
+// LOAD JADWAL FOTOGRAFER
+// ============================================================
+async function loadJadwal() {
+  const container = document.getElementById('tableJadwal');
+  container.innerHTML = '<div class="no-data">⏳ Memuat...</div>';
+  
+  if (!fotografer) return;
+  
+  try {
+    const url = `${CONFIG.API_URL}?action=jadwalFotografer&fotografer_id=${encodeURIComponent(fotografer.fotografer_id)}`;
+    const data = await jsonp(url);
+    
+    if (data.error) {
+      container.innerHTML = '<div class="no-data">❌ Gagal memuat jadwal</div>';
+      return;
+    }
+    
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="no-data">📭 Belum ada jadwal</div>';
+      return;
+    }
+    
+    // Sort by tanggal
+    data.sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+    
+    let html = `
+      <table>
+        <thead>
+          <tr>
+            <th>Tanggal</th>
+            <th>Jam</th>
+            <th>Sumber</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    
+    data.forEach(row => {
+      const sumber = row.sumber || 'vendor_lain';
+      const badgeClass = sumber === 'studio_lavelle' ? 'badge-studio' : 'badge-vendor';
+      const badgeText = sumber === 'studio_lavelle' ? 'Studio' : 'Vendor Lain';
+      
+      html += `
+        <tr>
+          <td>${row.tanggal}</td>
+          <td>${row.jam_mulai} - ${row.jam_selesai}</td>
+          <td><span class="${badgeClass}">${badgeText}</span></td>
+        </tr>
+      `;
+    });
+    
+    html += '</tbody></table>';
+    container.innerHTML = html;
+    
+  } catch(err) {
+    container.innerHTML = '<div class="no-data">❌ Gagal memuat jadwal</div>';
+    console.error(err);
+  }
+}
+
+// ============================================================
+// ENTER KEY SUPPORT
+// ============================================================
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    if (document.getElementById('loginCard').style.display !== 'none') {
+      handleLogin();
+    }
+  }
+});
+
+// ============================================================
+// PIN INPUT - ONLY NUMBERS
+// ============================================================
+document.getElementById('loginPin').addEventListener('input', function() {
+  this.value = this.value.replace(/\D/g, '');
+});
+
+// ============================================================
+// TAMBAHKAN STATUS CHECK (opsional)
+// ============================================================
+// Fungsi ini bisa ditambahkan di backend untuk mengecek status fotografer
+// Jika status 'paused', login ditolak
+</script>
+</body>
+</html>

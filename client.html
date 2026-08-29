@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cek Status | Studio Lavelle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400..600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2E2532;
+    --paper:#FBF6F2;
+    --rose:#B76E79;
+    --gold:#C9A66B;
+    --sage:#6B8F71;
+    --mute:#8C8389;
+    --line:#E4D9D3;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  .container{max-width:800px;margin:0 auto;padding:24px;}
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:24px;
+    box-shadow:0 4px 24px rgba(46,37,50,.08);
+    margin-bottom:20px;
+  }
+  .logo{
+    text-align:center;padding:12px 0 8px;
+  }
+  .logo h1{font-size:28px;font-style:italic;font-weight:500;}
+  .logo p{color:var(--mute);font-size:14px;margin-top:4px;}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12px;color:var(--mute);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+  .field input{
+    width:100%;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+    font-family:'Inter',sans-serif;font-size:14px;background:#fff;color:var(--ink);
+  }
+  .field input:focus{outline:none;border-color:var(--rose);box-shadow:0 0 0 3px rgba(183,110,121,.15);}
+  
+  .btn-primary{
+    width:100%;padding:12px;background:var(--ink);color:#fff;border:none;border-radius:8px;
+    font-size:14px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;
+    transition:background .2s;
+  }
+  .btn-primary:hover{background:var(--rose);}
+  .btn-primary:disabled{opacity:0.6;cursor:not-allowed;}
+  
+  .btn-secondary{
+    padding:10px 20px;background:none;color:var(--mute);border:1px solid var(--line);border-radius:8px;
+    font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;
+  }
+  .btn-secondary:hover{color:var(--ink);border-color:var(--ink);}
+
+  .btn-save-foto{
+    width:100%;padding:12px;background:var(--sage);color:#fff;border:none;border-radius:8px;
+    font-size:14px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;
+    transition:background .2s;margin-top:12px;
+  }
+  .btn-save-foto:hover{background:#597A5F;}
+  .btn-save-foto:disabled{opacity:0.6;cursor:not-allowed;}
+
+  .error-box{display:none;color:#B3413E;font-size:13px;padding:10px 14px;background:#FDE8E8;border-radius:8px;margin-top:8px;}
+  .success-box{display:none;color:#065F46;font-size:13px;padding:10px 14px;background:#D1FAE5;border-radius:8px;margin-top:8px;}
+
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:100;animation:slideUp .3s;
+  }
+  @keyframes slideUp{from{transform:translate(-50%,20px);opacity:0;}to{transform:translate(-50%,0);opacity:1;}}
+  @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+  .btn-loading{position:relative;pointer-events:none;opacity:0.7;}
+  .btn-loading::after{
+    content:"";position:absolute;right:16px;top:50%;transform:translateY(-50%);
+    width:18px;height:18px;border:2px solid #fff;border-top:2px solid transparent;border-radius:50%;animation:spin 0.8s linear infinite;
+  }
+  .loading-spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--line);border-top:2px solid var(--rose);border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:8px;}
+
+  .status-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px;}
+  .status-header .booking-id{font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--mute);}
+  .status-icon{font-size:48px;text-align:center;margin:8px 0;}
+  .status-label{font-size:22px;font-weight:600;text-align:center;color:var(--rose);}
+  .status-desc{text-align:center;color:var(--mute);font-size:14px;margin-top:4px;}
+  
+  .progress-bar{background:var(--line);border-radius:8px;height:8px;overflow:hidden;margin:16px 0;}
+  .progress-bar .fill{background:var(--rose);height:100%;border-radius:8px;transition:width .5s;}
+  .progress-steps{display:flex;justify-content:space-between;font-size:10px;color:var(--mute);margin-top:4px;}
+
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;}
+  .info-grid .item{background:var(--paper);border-radius:8px;padding:12px;border:1px solid var(--line);}
+  .info-grid .item .label{font-size:10px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;}
+  .info-grid .item .value{font-size:14px;font-weight:500;margin-top:4px;}
+  .info-grid .item .value a{color:var(--rose);text-decoration:none;word-break:break-all;}
+  .info-grid .item .value a:hover{text-decoration:underline;}
+  .info-grid .item.full{grid-column:1/3;}
+
+  .countdown{text-align:center;padding:12px;background:var(--paper);border-radius:8px;border:1px solid var(--gold);margin-top:12px;font-weight:500;}
+
+  .foto-list{margin-top:16px;}
+  .foto-list .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .foto-list .header h3{font-size:16px;font-weight:500;}
+  .foto-list .header .counter{font-size:12px;color:var(--mute);}
+  .foto-item{
+    display:flex;align-items:center;gap:12px;padding:10px 14px;
+    border:1px solid var(--line);border-radius:8px;margin-bottom:8px;
+    background:var(--card);transition:all .2s;
+  }
+  .foto-item:hover{background:var(--paper);}
+  .foto-item .number{font-size:12px;color:var(--mute);min-width:30px;font-weight:600;}
+  .foto-item input{
+    flex:1;border:none;background:transparent;padding:6px 0;
+    font-family:'Inter',sans-serif;font-size:14px;color:var(--ink);
+    transition:border .2s;
+  }
+  .foto-item input:focus{outline:none;border-bottom:2px solid var(--rose);}
+  .foto-item input::placeholder{color:#C9BFC3;}
+  .foto-item .status-badge{font-size:10px;padding:2px 10px;border-radius:12px;font-weight:600;white-space:nowrap;}
+  .foto-item .status-badge.done{background:#D1FAE5;color:#065F46;}
+  .foto-item .status-badge.pending{background:#FEF3C7;color:#92400E;}
+
+  .gdrive-box{
+    background:var(--paper);border-radius:8px;padding:16px;border:1px solid var(--sage);margin-top:12px;
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  }
+  .gdrive-box .icon{font-size:24px;}
+  .gdrive-box .link{flex:1;word-break:break-all;}
+  .gdrive-box .link a{color:var(--rose);text-decoration:none;}
+  .gdrive-box .link a:hover{text-decoration:underline;}
+
+  .empty-state{text-align:center;padding:20px;color:var(--mute);}
+
+  .foto-item.saved{background:#F0FAF0;border-color:var(--sage);}
+  .foto-item .save-indicator{font-size:12px;color:var(--sage);display:none;}
+  .foto-item.saved .save-indicator{display:inline;}
+
+  .keyboard-hint{
+    font-size:11px;color:var(--mute);text-align:center;margin-top:8px;
+    padding:6px 12px;background:var(--paper);border-radius:6px;border:1px dashed var(--line);
+  }
+  .keyboard-hint kbd{
+    background:var(--card);padding:2px 8px;border-radius:4px;
+    border:1px solid var(--line);font-family:'IBM Plex Mono',monospace;font-size:10px;
+  }
+
+  @media (max-width:640px){
+    .card{padding:16px;}
+    .info-grid{grid-template-columns:1fr;}
+    .info-grid .item.full{grid-column:1;}
+    .foto-item{flex-wrap:wrap;gap:6px;}
+    .foto-item input{min-width:100px;}
+    .status-header{flex-direction:column;align-items:flex-start;}
+  }
+
+  .login-card{max-width:450px;margin:40px auto;}
+  .login-card .logo{margin-bottom:20px;}
+</style>
+</head>
+<body>
+
+<div class="container" id="app">
+
+  <div class="card login-card" id="loginCard">
+    <div class="logo">
+      <h1>Studio Lavelle</h1>
+      <p>Cek Status Booking</p>
+    </div>
+
+    <div class="field">
+      <label>📧 Email</label>
+      <input type="email" id="inputEmail" placeholder="Email kamu">
+    </div>
+    <div class="field">
+      <label>🆔 Booking ID</label>
+      <input type="text" id="inputBookingId" placeholder="Contoh: SBY20260825-01-D">
+    </div>
+
+    <button class="btn-primary" id="btnCek" onclick="cekStatusManual()">🔍 Cek Status</button>
+    <div style="text-align:center;margin-top:12px;">
+      <span class="text-muted" style="font-size:12px;">Atau gunakan magic link dari admin</span>
+    </div>
+    <div class="error-box" id="errorBox"></div>
+  </div>
+
+  <div id="statusCard" style="display:none;">
+
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+      <div class="logo" style="padding:0;">
+        <h1 style="font-size:22px;">Studio Lavelle</h1>
+        <p style="font-size:12px;">🎓 Graduation Shot</p>
+      </div>
+      <button class="btn-secondary" onclick="kembaliKeLogin()" style="padding:6px 16px;">← Kembali</button>
+    </div>
+
+    <div class="card" id="statusContent">
+      <div class="text-center" style="padding:40px;"><span class="loading-spinner"></span> Memuat status...</div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// KONFIGURASI
+// ============================================================
+const CONFIG = {
+  API_URL: "https://script.google.com/macros/s/AKfycby39gEd8A6qPB98YmiIbvrOeR-aDmr1g-hkn78okq2nXVnDcEdwO9iT_AHHkhca0hzU/exec"
+};
+
+let statusData = null;
+let saveTimeout = null;
+
+function jsonp(url, callbackName) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    const callback = callbackName || 'jsonp_callback_' + Date.now();
+    const timer = setTimeout(() => {
+      delete window[callback];
+      document.body.removeChild(script);
+      reject(new Error('Request timeout'));
+    }, 30000);
+    window[callback] = function(data) {
+      clearTimeout(timer);
+      delete window[callback];
+      document.body.removeChild(script);
+      resolve(data);
+    };
+    script.src = url + '&callback=' + callback;
+    script.onerror = function() {
+      clearTimeout(timer);
+      delete window[callback];
+      document.body.removeChild(script);
+      reject(new Error('JSONP request failed'));
+    };
+    document.body.appendChild(script);
+  });
+}
+
+function showToast(message, duration = 3000) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerText = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), duration);
+}
+
+async function cekStatusToken(token) {
+  const container = document.getElementById('statusContent');
+  container.innerHTML = '<div class="text-center" style="padding:40px;"><span class="loading-spinner"></span> Memuat status...</div>';
+  document.getElementById('loginCard').style.display = 'none';
+  document.getElementById('statusCard').style.display = 'block';
+  
+  try {
+    const url = `${CONFIG.API_URL}?action=clientStatus&token=${encodeURIComponent(token)}`;
+    const data = await jsonp(url);
+    
+    if (data.error) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div style="font-size:48px;margin-bottom:12px;">❌</div>
+          <p>${data.error}</p>
+          <button class="btn-secondary" onclick="kembaliKeLogin()" style="margin-top:12px;">← Kembali</button>
+        </div>
+      `;
+      return;
+    }
+    
+    statusData = data;
+    renderStatus(data);
+    
+  } catch(err) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div style="font-size:48px;margin-bottom:12px;">❌</div>
+        <p>Gagal memuat data: ${err.message}</p>
+        <button class="btn-secondary" onclick="kembaliKeLogin()" style="margin-top:12px;">← Kembali</button>
+      </div>
+    `;
+  }
+}
+
+async function cekStatusManual() {
+  const email = document.getElementById('inputEmail').value.trim();
+  const bookingId = document.getElementById('inputBookingId').value.trim();
+  const errorBox = document.getElementById('errorBox');
+  
+  errorBox.style.display = 'none';
+  
+  if (!email || !bookingId) {
+    errorBox.innerText = '⚠️ Email dan Booking ID wajib diisi.';
+    errorBox.style.display = 'block';
+    return;
+  }
+  
+  const btn = document.getElementById('btnCek');
+  btn.disabled = true;
+  btn.classList.add('btn-loading');
+  
+  try {
+    const url = `${CONFIG.API_URL}?action=clientStatus&email=${encodeURIComponent(email)}&booking_id=${encodeURIComponent(bookingId)}`;
+    const data = await jsonp(url);
+    
+    btn.disabled = false;
+    btn.classList.remove('btn-loading');
+    
+    if (data.error) {
+      errorBox.innerText = '❌ ' + data.error;
+      errorBox.style.display = 'block';
+      return;
+    }
+    
+    statusData = data;
+    document.getElementById('loginCard').style.display = 'none';
+    document.getElementById('statusCard').style.display = 'block';
+    renderStatus(data);
+    
+  } catch(err) {
+    btn.disabled = false;
+    btn.classList.remove('btn-loading');
+    errorBox.innerText = '❌ ' + err.message;
+    errorBox.style.display = 'block';
+  }
+}
+
+function handleFotoEnter(event, bookingId) {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    
+    const input = event.target;
+    const inputs = document.querySelectorAll('#fotoListContainer .foto-item input:not([disabled])');
+    const currentIndex = Array.from(inputs).indexOf(input);
+    
+    const originalBorder = input.style.border;
+    input.style.border = '2px solid var(--sage)';
+    setTimeout(() => {
+      input.style.border = originalBorder || '';
+    }, 500);
+    
+    if (saveTimeout) clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => {
+      saveFotoList(bookingId);
+    }, 200);
+    
+    let nextIndex;
+    if (event.shiftKey) {
+      nextIndex = currentIndex - 1;
+    } else {
+      nextIndex = currentIndex + 1;
+    }
+    
+    if (nextIndex >= 0 && nextIndex < inputs.length) {
+      setTimeout(() => {
+        inputs[nextIndex].focus();
+        inputs[nextIndex].select();
+      }, 100);
+    } else {
+      if (nextIndex >= inputs.length) {
+        setTimeout(() => {
+          inputs[inputs.length - 1].focus();
+          inputs[inputs.length - 1].select();
+        }, 100);
+      }
+    }
+  }
+}
+
+function renderStatus(data) {
+  const container = document.getElementById('statusContent');
+  
+  const status = data.status || { key: 'booking', label: '📋 Booking Diterima', icon: '📋', desc: '' };
+  const statusList = ['booking', 'dp', 'lunas', 'upload_gdrive', 'edit_foto', 'done_edit'];
+  const currentIndex = statusList.indexOf(status.key);
+  const progressPct = ((currentIndex + 1) / statusList.length) * 100;
+  
+  const fotoCount = extractFotoCount(data.paket, data.deskripsi_paket);
+  
+  let html = `
+    <div class="status-header">
+      <span class="booking-id">🆔 ${data.booking_id}</span>
+      <span style="font-size:12px;color:var(--mute);">${data.nama_client}</span>
+    </div>
+    
+    <div class="status-icon">${status.icon}</div>
+    <div class="status-label">${status.label}</div>
+    <div class="status-desc">${status.desc}</div>
+    
+    <div class="progress-bar">
+      <div class="fill" style="width:${progressPct}%;"></div>
+    </div>
+    <div class="progress-steps">
+      <span>📋 Booking</span>
+      <span>💰 DP</span>
+      <span>✅ Lunas</span>
+      <span>📁 Gdrive</span>
+      <span>🎨 Edit</span>
+      <span>🎉 Selesai</span>
+    </div>
+    
+    ${data.countdown_text ? `<div class="countdown">${data.countdown_text}</div>` : ''}
+    ${data.sisa_hari_edit_text ? `<div class="countdown" style="border-color:var(--rose);">${data.sisa_hari_edit_text}</div>` : ''}
+  `;
+  
+  // INFO GRID
+  html += `
+    <div class="info-grid">
+      <div class="item"><div class="label">📅 Tanggal</div><div class="value">${data.tanggal || '-'}</div></div>
+      <div class="item"><div class="label">⏰ Jam</div><div class="value">${data.jam_mulai || ''} - ${data.jam_selesai || ''}</div></div>
+      <div class="item"><div class="label">📍 Lokasi</div><div class="value">${data.lokasi || '-'}</div></div>
+      <div class="item"><div class="label">📦 Paket</div><div class="value">${data.paket || '-'}</div></div>
+      <div class="item"><div class="label">🏛️ Kampus</div><div class="value">${data.kampus || '-'}</div></div>
+      <div class="item"><div class="label">💰 Total</div><div class="value">Rp${(data.total_harga || 0).toLocaleString('id-ID')}</div></div>
+    </div>
+  `;
+  
+  // 🔥 GDRIVE LINK - DENGAN PESAN KHUSUS UNTUK done_edit
+  if (data.status && data.status.key === 'done_edit') {
+    html += `
+      <div class="gdrive-box" style="border-color:var(--gold);">
+        <div class="icon">✅</div>
+        <div class="link">
+          <strong>🎉 Foto Selesai Diedit!</strong><br>
+          <span style="font-size:13px; color:var(--mute);">
+            ${data.gdrive_message || 'Foto tersedia di folder yang sama. Harap segera backup. Foto akan dihapus otomatis H+7 hari.'}
+          </span>
+          ${data.gdrive_link ? `<br><a href="${data.gdrive_link}" target="_blank" style="font-size:13px;">📁 Buka Folder</a>` : ''}
+        </div>
+      </div>
+    `;
+  } else if (data.gdrive_link) {
+    html += `
+      <div class="gdrive-box">
+        <div class="icon">📁</div>
+        <div class="link">
+          <strong>Link Google Drive:</strong><br>
+          <a href="${data.gdrive_link}" target="_blank">${data.gdrive_link}</a>
+        </div>
+      </div>
+    `;
+  }
+  
+  // 🔥 LIST FOTO - CEK APAKAH SUDAH DISIMPAN
+  const savedList = data.foto_list || [];
+  const hasSavedData = savedList.some(f => f && f.trim() !== '');
+  
+  // 🔥 TAMPILKAN LIST FOTO (jika belum disimpan) ATAU STATUS SUDAH DISIMPAN
+  html += `<div class="foto-list">`;
+  html += `
+    <div class="header">
+      <h3>📸 List Foto yang Akan Diedit</h3>
+      <span class="counter">${fotoCount} foto</span>
+    </div>
+  `;
+  
+  if (fotoCount > 0) {
+    const canEdit = ['upload_gdrive', 'edit_foto', 'done_edit'].includes(status.key);
+    
+    // 🔥 JIKA SUDAH DISIMPAN (ada data), TAMPILKAN NOTIFIKASI
+    if (hasSavedData) {
+      html += `
+        <div style="text-align:center;padding:20px;background:var(--paper);border-radius:8px;border:1px solid var(--sage);">
+          <div style="font-size:32px;margin-bottom:8px;">✅</div>
+          <div style="font-size:15px;font-weight:600;color:var(--sage);">Daftar foto sudah disimpan!</div>
+          <div style="font-size:12px;color:var(--mute);margin-top:4px;">
+            ${savedList.length} dari ${fotoCount} foto
+          </div>
+        </div>
+      `;
+      
+    } else {
+      // 🔥 TAMPILKAN LIST FOTO (jika belum disimpan)
+      html += `<div id="fotoListContainer">`;
+      for (let i = 1; i <= fotoCount; i++) {
+        const saved = savedList[i-1] || '';
+        const isDone = saved ? 'done' : 'pending';
+        const doneText = saved ? '✅' : '⏳';
+        const disabledAttr = canEdit ? '' : 'disabled style="color:#C9BFC3;"';
+        html += `
+          <div class="foto-item ${saved ? 'saved' : ''}">
+            <span class="number">#${i}</span>
+            <input type="text" id="foto_${i}" value="${saved}" 
+                   placeholder="Nama foto ${i}..." data-index="${i}"
+                   onkeydown="handleFotoEnter(event, '${data.booking_id}')" ${disabledAttr}>
+            <span class="status-badge ${isDone}">${doneText}</span>
+            <span class="save-indicator">💾</span>
+          </div>
+        `;
+      }
+      html += `</div>`;
+      
+      // Keyboard hint
+      html += `
+        <div class="keyboard-hint">
+          <kbd>Enter</kbd> Simpan &amp; ke bawah &nbsp;·&nbsp;
+          <kbd>Shift</kbd> + <kbd>Enter</kbd> Simpan &amp; ke atas
+        </div>
+      `;
+      
+      if (canEdit) {
+        html += `
+          <button class="btn-save-foto" onclick="saveFotoList('${data.booking_id}')">💾 Simpan List Foto</button>
+          <div class="success-box" id="fotoSuccess"></div>
+          <div class="error-box" id="fotoError"></div>
+        `;
+      } else {
+        html += `<p style="font-size:12px;color:var(--mute);margin-top:8px;">⏳ List foto akan aktif setelah admin upload link Gdrive.</p>`;
+      }
+    }
+  } else {
+    html += `<div class="empty-state">📭 Belum ada data jumlah foto dari paket yang dipilih.</div>`;
+  }
+  
+  html += `</div>`;
+  
+  container.innerHTML = html;
+}
+
+// ============================================================
+// 🔥 SHOW FOTO LIST EDITOR (EDIT ULANG)
+// ============================================================
+function showFotoListEditor(bookingId, savedList, fotoCount) {
+  const container = document.querySelector('.foto-list');
+  if (!container) return;
+  
+  let html = `
+    <div class="header">
+      <h3>📸 List Foto yang Akan Diedit</h3>
+      <span class="counter">${fotoCount} foto</span>
+    </div>
+    <div id="fotoListContainer">
+  `;
+  
+  for (let i = 1; i <= fotoCount; i++) {
+    const saved = savedList[i-1] || '';
+    const isDone = saved ? 'done' : 'pending';
+    const doneText = saved ? '✅' : '⏳';
+    html += `
+      <div class="foto-item ${saved ? 'saved' : ''}">
+        <span class="number">#${i}</span>
+        <input type="text" id="foto_${i}" value="${saved}" 
+               placeholder="Nama foto ${i}..." data-index="${i}"
+               onkeydown="handleFotoEnter(event, '${bookingId}')">
+        <span class="status-badge ${isDone}">${doneText}</span>
+        <span class="save-indicator">💾</span>
+      </div>
+    `;
+  }
+  html += `</div>`;
+  
+  html += `
+    <div class="keyboard-hint">
+      <kbd>Enter</kbd> Simpan &amp; ke bawah &nbsp;·&nbsp;
+      <kbd>Shift</kbd> + <kbd>Enter</kbd> Simpan &amp; ke atas
+    </div>
+    <button class="btn-save-foto" onclick="saveFotoList('${bookingId}')">💾 Simpan List Foto</button>
+    <div class="success-box" id="fotoSuccess"></div>
+    <div class="error-box" id="fotoError"></div>
+  `;
+  
+  container.innerHTML = html;
+}
+
+function extractFotoCount(paket, deskripsi) {
+  if (deskripsi) {
+    const match = deskripsi.match(/(\d+)\s*foto/i);
+    if (match) return parseInt(match[1]);
+  }
+  if (paket) {
+    const match = paket.match(/(\d+)\s*foto/i);
+    if (match) return parseInt(match[1]);
+  }
+  const map = {
+    'Personal Package #1': 20,
+    'Personal Package #2': 25,
+    'Graduation Group': 30,
+    'Graduation Couple': 25
+  };
+  return map[paket] || 0;
+}
+
+async function saveFotoList(bookingId) {
+  const fotoItems = document.querySelectorAll('#fotoListContainer .foto-item input:not([disabled])');
+  const list = [];
+  fotoItems.forEach(input => {
+    list.push(input.value.trim());
+  });
+  
+  const btn = document.querySelector('.btn-save-foto');
+  const successBox = document.getElementById('fotoSuccess');
+  const errorBox = document.getElementById('fotoError');
+  
+  successBox.style.display = 'none';
+  errorBox.style.display = 'none';
+  
+  if (btn) { 
+    btn.disabled = true; 
+    btn.classList.add('btn-loading');
+    btn.innerText = '⏳ Menyimpan...';
+  }
+  
+  try {
+    const params = new URLSearchParams({
+      action: 'saveFotoList',
+      booking_id: bookingId,
+      foto_list: JSON.stringify(list)
+    });
+    
+    const url = `${CONFIG.API_URL}?${params.toString()}`;
+    
+    // 🔥 PAKAI TIMEOUT 60 DETIK
+    const result = await jsonp(url, null, 60000);
+    
+    if (btn) { 
+      btn.disabled = false; 
+      btn.classList.remove('btn-loading');
+      btn.innerText = '💾 Simpan List Foto';
+    }
+    
+    if (result.error) {
+      errorBox.innerText = '❌ ' + result.error;
+      errorBox.style.display = 'block';
+      return;
+    }
+    
+    successBox.innerText = '✅ Daftar foto berhasil disimpan!';
+    successBox.style.display = 'block';
+    
+    // 🔥 UPDATE STATUS BADGE
+    fotoItems.forEach((input) => {
+      const item = input.closest('.foto-item');
+      const badge = item.querySelector('.status-badge');
+      if (input.value.trim()) {
+        badge.className = 'status-badge done';
+        badge.innerText = '✅';
+        item.classList.add('saved');
+      } else {
+        badge.className = 'status-badge pending';
+        badge.innerText = '⏳';
+        item.classList.remove('saved');
+      }
+    });
+    
+    // 🔥 RELOAD STATUS SETELAH 2 DETIK (untuk refresh tampilan)
+    setTimeout(() => {
+      const token = new URLSearchParams(window.location.search).get('token');
+      if (token) {
+        cekStatusToken(token);
+      } else {
+        location.reload();
+      }
+    }, 1500);
+    
+    showToast('✅ Daftar foto berhasil disimpan!', 2000);
+    
+  } catch(err) {
+    if (btn) { 
+      btn.disabled = false; 
+      btn.classList.remove('btn-loading');
+      btn.innerText = '💾 Simpan List Foto';
+    }
+    errorBox.innerText = '❌ Gagal menyimpan: ' + err.message;
+    errorBox.style.display = 'block';
+    console.error(err);
+  }
+}
+
+function kembaliKeLogin() {
+  document.getElementById('statusCard').style.display = 'none';
+  document.getElementById('loginCard').style.display = 'block';
+  document.getElementById('inputEmail').value = '';
+  document.getElementById('inputBookingId').value = '';
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  if (token) {
+    document.getElementById('loginCard').style.display = 'none';
+    document.getElementById('statusCard').style.display = 'block';
+    cekStatusToken(token);
+  }
+});
+</script>
+</body>
+</html>
