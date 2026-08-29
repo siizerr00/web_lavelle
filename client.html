@@ -428,7 +428,7 @@ function renderStatus(data) {
     </div>
   `;
   
-  // 🔥 GDRIVE LINK - DENGAN PESAN KHUSUS UNTUK done_edit
+  // GDRIVE LINK
   if (data.status && data.status.key === 'done_edit') {
     html += `
       <div class="gdrive-box" style="border-color:var(--gold);">
@@ -454,11 +454,10 @@ function renderStatus(data) {
     `;
   }
   
-  // 🔥 LIST FOTO - CEK APAKAH SUDAH DISIMPAN
+  // 🔥 LIST FOTO
   const savedList = data.foto_list || [];
   const hasSavedData = savedList.some(f => f && f.trim() !== '');
   
-  // 🔥 TAMPILKAN LIST FOTO (jika belum disimpan) ATAU STATUS SUDAH DISIMPAN
   html += `<div class="foto-list">`;
   html += `
     <div class="header">
@@ -470,7 +469,22 @@ function renderStatus(data) {
   if (fotoCount > 0) {
     const canEdit = ['upload_gdrive', 'edit_foto', 'done_edit'].includes(status.key);
     
-    // 🔥 JIKA SUDAH DISIMPAN (ada data), TAMPILKAN NOTIFIKASI
+    // 🔥 ALERT FORMAT NAMA FOTO
+    if (canEdit) {
+      html += `
+        <div style="background:#FEF3C7;border-radius:8px;padding:12px 16px;margin-bottom:12px;border:1px solid #FCD34D;">
+          <div style="font-size:13px;font-weight:600;color:#92400E;">⚠️ Perhatikan Format Nama Foto</div>
+          <div style="font-size:12px;color:#78350F;margin-top:4px;">
+            Nama foto harus <strong>sama persis</strong> dengan nama file di Google Drive.
+            <br>Contoh: <code style="background:#fff;padding:2px 6px;border-radius:4px;">DSC00728</code>, 
+            <code style="background:#fff;padding:2px 6px;border-radius:4px;">REFD7701</code>, 
+            <code style="background:#fff;padding:2px 6px;border-radius:4px;">_DSC0822</code>
+            <br><span style="color:#92400E;">❌ Tanpa ekstensi (.jpg, .png, dll)</span>
+          </div>
+        </div>
+      `;
+    }
+    
     if (hasSavedData) {
       html += `
         <div style="text-align:center;padding:20px;background:var(--paper);border-radius:8px;border:1px solid var(--sage);">
@@ -482,8 +496,14 @@ function renderStatus(data) {
         </div>
       `;
       
+      if (canEdit) {
+        html += `
+          <button class="btn-save-foto" onclick="showFotoListEditor('${data.booking_id}', ${JSON.stringify(savedList)}, ${fotoCount})" style="background:var(--gold);color:var(--ink);">
+            ✏️ Ubah List Foto
+          </button>
+        `;
+      }
     } else {
-      // 🔥 TAMPILKAN LIST FOTO (jika belum disimpan)
       html += `<div id="fotoListContainer">`;
       for (let i = 1; i <= fotoCount; i++) {
         const saved = savedList[i-1] || '';
@@ -494,7 +514,7 @@ function renderStatus(data) {
           <div class="foto-item ${saved ? 'saved' : ''}">
             <span class="number">#${i}</span>
             <input type="text" id="foto_${i}" value="${saved}" 
-                   placeholder="Nama foto ${i}..." data-index="${i}"
+                   placeholder="contoh: DSC00728" data-index="${i}"
                    onkeydown="handleFotoEnter(event, '${data.booking_id}')" ${disabledAttr}>
             <span class="status-badge ${isDone}">${doneText}</span>
             <span class="save-indicator">💾</span>
@@ -503,7 +523,6 @@ function renderStatus(data) {
       }
       html += `</div>`;
       
-      // Keyboard hint
       html += `
         <div class="keyboard-hint">
           <kbd>Enter</kbd> Simpan &amp; ke bawah &nbsp;·&nbsp;
@@ -542,6 +561,16 @@ function showFotoListEditor(bookingId, savedList, fotoCount) {
       <h3>📸 List Foto yang Akan Diedit</h3>
       <span class="counter">${fotoCount} foto</span>
     </div>
+    <div style="background:#FEF3C7;border-radius:8px;padding:12px 16px;margin-bottom:12px;border:1px solid #FCD34D;">
+      <div style="font-size:13px;font-weight:600;color:#92400E;">⚠️ Perhatikan Format Nama Foto</div>
+      <div style="font-size:12px;color:#78350F;margin-top:4px;">
+        Nama foto harus <strong>sama persis</strong> dengan nama file di Google Drive.
+        <br>Contoh: <code style="background:#fff;padding:2px 6px;border-radius:4px;">DSC00728</code>, 
+        <code style="background:#fff;padding:2px 6px;border-radius:4px;">REFD7701</code>, 
+        <code style="background:#fff;padding:2px 6px;border-radius:4px;">_DSC0822</code>
+        <br><span style="color:#92400E;">❌ Tanpa ekstensi (.jpg, .png, dll)</span>
+      </div>
+    </div>
     <div id="fotoListContainer">
   `;
   
@@ -553,7 +582,7 @@ function showFotoListEditor(bookingId, savedList, fotoCount) {
       <div class="foto-item ${saved ? 'saved' : ''}">
         <span class="number">#${i}</span>
         <input type="text" id="foto_${i}" value="${saved}" 
-               placeholder="Nama foto ${i}..." data-index="${i}"
+               placeholder="Nama foto ${i} (contoh: DSC00728)" data-index="${i}"
                onkeydown="handleFotoEnter(event, '${bookingId}')">
         <span class="status-badge ${isDone}">${doneText}</span>
         <span class="save-indicator">💾</span>
