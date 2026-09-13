@@ -567,26 +567,6 @@
 
       <div class="faq-item">
         <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-          <span>Apa maksud 2 placed nearby</span>
-          <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">
-          <p>Dua spot yang berdekatan. Misalnya Balairung dan Fakultas yang jaraknya tidak terlalu jauh. Jika berpindah tempat waktu foto akan tetap berjalan (Bisa terpotong karena perjalanan).</p>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-          <span>Bisa untuk prewed/lamaran/birthday/acara lain?</span>
-          <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">
-          <p>TIDAK. Untuk saat ini hanya tersedia Graduation/Wisuda saja.</p>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
           <span>Apakah fotografernya cewek?</span>
           <span class="faq-icon">+</span>
         </div>
@@ -681,6 +661,10 @@
       <label>Lokasi Foto *</label>
       <input type="text" id="fLokasi" placeholder="Titik lokasi pemotretan">
     </div>
+    <div class="field">
+      <label>📞 No. WhatsApp *</label>
+      <input type="tel" id="fWa" placeholder="08xxxxxxxxxx">
+    </div>
     <div class="field-group">
       <div class="field">
         <label>📱 Instagram</label>
@@ -723,6 +707,7 @@
         <div class="item" style="grid-column:1/3;"><div class="label">📝 Nama</div><div class="value" id="invNama"></div></div>
         <div class="item" style="grid-column:1/3;"><div class="label">🏛️ Kampus</div><div class="value" id="invKampus"></div></div>
         <div class="item" style="grid-column:1/3;"><div class="label">📍 Lokasi</div><div class="value" id="invLokasi"></div></div>
+        <div class="item" style="grid-column:1/3;"><div class="label">📞 No. WA</div><div class="value" id="invWa"></div></div>
         <div class="item"><div class="label">📱 IG</div><div class="value" id="invIg"></div></div>
         <div class="item"><div class="label">📧 Email</div><div class="value" id="invEmail"></div></div>
         <div class="item" style="grid-column:1/3; border-top:1px solid var(--line); padding-top:10px; margin-top:4px;">
@@ -1228,6 +1213,7 @@ async function submitBooking(){
   const nama = document.getElementById('fNama').value.trim();
   const kampus = document.getElementById('fKampus').value.trim();
   const lokasi = document.getElementById('fLokasi').value.trim();
+  const wa = document.getElementById('fWa').value.trim();
   const ig = document.getElementById('fIg').value.trim();
   const email = document.getElementById('fEmail').value.trim();
   const selectEl = document.getElementById('fPaket');
@@ -1235,8 +1221,8 @@ async function submitBooking(){
   const harga = selectEl.selectedOptions[0]?.dataset.harga || 0;
   const errorBox = document.getElementById('errorBox');
 
-  if(!nama || !kampus || !lokasi || !paket){
-    errorBox.innerText = '⚠️ Semua data wajib diisi (Nama, Kampus, Lokasi, Paket).';
+  if(!nama || !kampus || !lokasi || !wa || !paket){
+    errorBox.innerText = '⚠️ Semua data wajib diisi (Nama, Kampus, Lokasi, No. WA, Paket).';
     errorBox.style.display = 'block';
     return;
   }
@@ -1258,6 +1244,7 @@ async function submitBooking(){
       lokasi: lokasi,
       paket: paket,
       total_harga: harga,
+      wa: wa,
       ig: ig,
       email: email
     });
@@ -1278,6 +1265,7 @@ async function submitBooking(){
     data.nama_client = nama;
     data.kampus = kampus;
     data.lokasi = lokasi;
+    data.wa = wa;
     data.ig = ig;
     data.email = email;
 
@@ -1321,6 +1309,7 @@ function tampilkanInvoice(data){
   document.getElementById('invNama').innerText = data.nama_client || '-';
   document.getElementById('invKampus').innerText = data.kampus || '-';
   document.getElementById('invLokasi').innerText = data.lokasi || '-';
+  document.getElementById('invWa').innerText = data.wa || '-';
   document.getElementById('invIg').innerText = data.ig || '-';
   document.getElementById('invEmail').innerText = data.email || '-';
   document.getElementById('invTotal').innerText = 'Rp' + Number(data.total_harga || 0).toLocaleString('id-ID');
@@ -1335,6 +1324,7 @@ Kode Booking : ${data.booking_id || 'Pending'}
 Nama         : ${data.nama_client || '-'}
 Kampus       : ${data.kampus || '-'}
 Lokasi       : ${data.lokasi || '-'}
+No. WA       : ${data.wa || '-'}
 Instagram    : ${data.ig || '-'}
 Email        : ${data.email || '-'}
 📅 Tanggal    : ${data.tanggal || '-'}
