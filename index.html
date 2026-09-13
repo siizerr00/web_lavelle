@@ -1281,6 +1281,13 @@ async function submitBooking(){
       return;
     }
 
+    trackEvent('booking_berhasil', {
+      kota: state.kotaAktif,
+      paket: paket,
+      booking_id: data.booking_id || '',
+      total_harga: Number(harga) || 0
+    });
+
     data.nama_client = nama;
     data.kampus = kampus;
     data.lokasi = lokasi;
