@@ -431,7 +431,7 @@ let fotografer = null; // { fotografer_id, nama, kota }
 function jsonp(url, callbackName) {
   return new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    const callback = callbackName || 'jsonp_callback_' + Date.now();
+    const callback = callbackName || 'jsonp_callback_' + Date.now() + '_' + Math.floor(Math.random()*100000);
     
     window[callback] = function(data) {
       delete window[callback];
