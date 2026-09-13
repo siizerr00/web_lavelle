@@ -612,9 +612,16 @@
 // KONFIGURASI
 // ============================================================
 const CONFIG = {
-  API_URL: "https://script.google.com/macros/s/AKfycbzl80RHhERFFo12ziWTaCeTI8LE5UqzRJ6gvEiJVf6SYRbWFtE2p0AIIVMa3CQbnJTS/exec",
-  ADMIN_WA: "6283112053117"
+  API_URL: "https://script.google.com/macros/s/AKfycbzl80RHhERFFo12ziWTaCeTI8LE5UqzRJ6gvEiJVf6SYRbWFtE2p0AIIVMa3CQbnJTS/exec"
 };
+
+// Nomor WA admin berbeda per wilayah.
+const ADMIN_WA_PER_KOTA = {
+  "Jogja": "6282132439700",
+  "Solo": "6282132439700",
+  "Surabaya": "6283112053117"
+};
+const ADMIN_WA_DEFAULT = "6283112053117"; // fallback kalau kota tidak terdaftar
 
 const REGIONS = [
   { kota: "Jogja",    kode: "JGY" },
@@ -1208,7 +1215,8 @@ Email        : ${data.email || '-'}
 
 Saya mau konfirmasi booking. Terima kasih! 🙏`;
 
-  const waUrl = `https://api.whatsapp.com/send/?phone=${CONFIG.ADMIN_WA}&text=${encodeURIComponent(pesan)}&type=phone_number&app_absent=0`;
+  const adminWa = ADMIN_WA_PER_KOTA[data.kota] || ADMIN_WA_DEFAULT;
+  const waUrl = `https://api.whatsapp.com/send/?phone=${adminWa}&text=${encodeURIComponent(pesan)}&type=phone_number&app_absent=0`;
   const btnWa = document.getElementById('btnWa');
 
   btnWa.href = waUrl;
