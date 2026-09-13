@@ -735,7 +735,7 @@
 // KONFIGURASI
 // ============================================================
 const CONFIG = {
-  API_URL: "https://script.google.com/macros/s/AKfycby39gEd8A6qPB98YmiIbvrOeR-aDmr1g-hkn78okq2nXVnDcEdwO9iT_AHHkhca0hzU/exec"
+  API_URL: "https://script.google.com/macros/s/AKfycbzl80RHhERFFo12ziWTaCeTI8LE5UqzRJ6gvEiJVf6SYRbWFtE2p0AIIVMa3CQbnJTS/exec"
 };
 
 // Nomor WA admin berbeda per wilayah.
@@ -850,9 +850,18 @@ renderRegions();
 // ============================================================
 // NAVIGASI
 // ============================================================
+// ============================================================
+// GOOGLE ANALYTICS - TRACK EVENT (aman walau GA gagal load)
+// ============================================================
+function trackEvent(name, params) {
+  if (typeof gtag === 'function') gtag('event', name, params || {});
+}
+
 async function pilihKota(kota){
   if (state.isLoading) return;
   state.isLoading = true;
+
+  trackEvent('pilih_wilayah', { kota: kota });
 
   console.log('📍 Pilih kota:', kota);
 
@@ -1217,6 +1226,8 @@ function tutupForm(){
 // SUBMIT BOOKING
 // ============================================================
 async function submitBooking(){
+  trackEvent('klik_booking_sekarang', { kota: state.kotaAktif });
+
   const btn = document.getElementById('btnBooking');
   const nama = document.getElementById('fNama').value.trim();
   const kampus = document.getElementById('fKampus').value.trim();
@@ -1361,6 +1372,11 @@ document.addEventListener('click', function(e) {
   const btnWa = document.getElementById('btnWa');
   if (e.target === btnWa || btnWa.contains(e.target)) {
     e.preventDefault();
+
+    trackEvent('klik_wa_booking', {
+      kota: btnWa.dataset.kota || '',
+      booking_id: btnWa.dataset.bookingId || ''
+    });
 
     btnWa.disabled = true;
     showLoading('Mengarahkan ke WhatsApp...');
