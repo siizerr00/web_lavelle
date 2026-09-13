@@ -655,7 +655,7 @@ async function loadJadwalLavelle() {
     const data = await jsonp(url);
 
     if (data.error || !Array.isArray(data)) {
-      container.innerHTML = '<div class="no-data">❌ Gagal memuat jadwal</div>';
+      container.innerHTML = `<div class="no-data">❌ Gagal memuat jadwal: ${data.error || 'format data tidak dikenal'}</div>`;
       return;
     }
     if (data.length === 0) {
@@ -720,7 +720,7 @@ async function loadJadwal() {
     const data = await jsonp(url);
     
     if (data.error) {
-      container.innerHTML = '<div class="no-data">❌ Gagal memuat jadwal</div>';
+      container.innerHTML = `<div class="no-data">❌ Gagal memuat jadwal: ${data.error}</div>`;
       return;
     }
 
