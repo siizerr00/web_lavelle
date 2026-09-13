@@ -73,6 +73,29 @@
   }
   @media (max-width:640px){ .region-grid{grid-template-columns:repeat(2,1fr); max-width:420px; margin:0 auto;} }
 
+  .faq-wrap{ margin-top:40px; }
+  .faq-list{ max-width:720px; margin:0 auto; }
+  .faq-item{ border-bottom:1px solid var(--line); }
+  .faq-item:first-child{ border-top:1px solid var(--line); }
+  .faq-question{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding:16px 4px; cursor:pointer; font-size:14px; font-weight:600;
+    color:var(--ink); font-family:'Inter',sans-serif; user-select:none;
+  }
+  .faq-question:hover{ color:var(--rose); }
+  .faq-question .faq-icon{
+    font-size:18px; color:var(--rose); flex-shrink:0; line-height:1;
+    transition:transform .2s ease;
+  }
+  .faq-item.open .faq-question .faq-icon{ transform:rotate(45deg); }
+  .faq-answer{
+    max-height:0; overflow:hidden;
+    transition:max-height .25s ease, padding .25s ease;
+    font-size:13.5px; color:var(--mute); line-height:1.65; padding:0 4px;
+  }
+  .faq-answer p{ margin:0 0 18px; }
+  .faq-item.open .faq-answer{ max-height:400px; }
+
   .region-card{
     position:relative;
     background:var(--card);
@@ -497,6 +520,103 @@
 <div class="region-wrap" id="regionPage">
   <div class="region-label">Booking untuk wilayah</div>
   <div class="region-grid" id="regionGrid"></div>
+
+  <div class="faq-wrap">
+    <div class="region-label">Pertanyaan yang Sering Ditanyakan</div>
+    <div class="faq-list">
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          <span>Apakah tersedia studio?</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>Tidak. Kami hanya menyediakan outdoor photoshoot.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          <span>Apakah bisa booking jika tanggal belum pasti?</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>Bisa di-reschedule, maksimal 2 minggu sebelum sesi. Namun tetap diperlukan tanggal awal untuk melakukan booking.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          <span>Apakah ada biaya transport?</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>Ada. Biaya transport sebesar Rp30.000, dihitung dari pusat kota (detail lengkap cek pricelist).</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          <span>Apakah tidak buka di wilayah lain?</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>Saat ini kami hanya tersedia untuk 3 wilayah di atas.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          <span>Apa maksud 2 placed nearby</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>Dua spot yang berdekatan. Misalnya Balairung dan Fakultas yang jaraknya tidak terlalu dekat. Jika berpindah tempat waktu foto akan tetap berjalan (Bisa terpotong karena perjalanan).</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          <span>Apakah fotografernya cewek?</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>Ya. Fotografer kami semua cewek yaaa.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          <span>Apakah sudah termasuk foto dengan keluarga?</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>Paket Personal dan Couple sudah termasuk foto dengan keluarga.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          <span>Berapa lama hasil foto didapatkan?</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>Foto RAW maksimal H+1 setelah photoshoot. Foto editan maksimal H+10 setelah pemilihan foto.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          <span>Bagaimana jika mau foto couple? Atau 2 wisudawan?</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>Pricelist Personal hanya untuk SATU wisudawan. Paket Couple untuk DUA wisudawan. Paket Group untuk foto lebih dari 5 orang.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <div id="kotaPage">
