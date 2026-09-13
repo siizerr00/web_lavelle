@@ -277,6 +277,40 @@
     background:#D1FAE5;
     color:#065F46;
   }
+  .tab-group{
+    display:flex;
+    gap:6px;
+    margin-bottom:10px;
+  }
+  .tab-btn{
+    flex:1;
+    padding:8px 10px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    color:var(--mute);
+    font-family:'Inter',sans-serif;
+    font-size:12px;
+    font-weight:600;
+    border-radius:6px;
+    cursor:pointer;
+  }
+  .tab-btn.active{
+    background:var(--rose);
+    color:#fff;
+    border-color:var(--rose);
+  }
+  .wa-link{
+    display:inline-block;
+    padding:3px 10px;
+    border-radius:6px;
+    background:#D1FAE5;
+    color:#065F46;
+    font-size:11px;
+    font-weight:600;
+    text-decoration:none;
+    white-space:nowrap;
+  }
+  .wa-link:hover{ background:#065F46; color:#fff; }
 
   .no-data{
     text-align:center;
@@ -359,7 +393,14 @@
         <span style="font-size:13px; font-weight:600;">📋 Jadwalku</span>
         <button class="btn-secondary" style="width:auto; padding:4px 12px; margin:0;" onclick="loadJadwal()">🔄 Refresh</button>
       </div>
-      <div class="table-wrap" id="tableJadwal">
+      <div class="tab-group">
+        <button class="tab-btn active" id="tabLavelleBtn" onclick="gantiTabJadwal('lavelle')">Jadwal Lavelle</button>
+        <button class="tab-btn" id="tabVendorBtn" onclick="gantiTabJadwal('vendor')">Jadwal Vendor Lain</button>
+      </div>
+      <div class="table-wrap" id="tableJadwalLavelle">
+        <div class="no-data">Memuat jadwal...</div>
+      </div>
+      <div class="table-wrap" id="tableJadwal" style="display:none;">
         <div class="no-data">Memuat jadwal...</div>
       </div>
     </div>
@@ -376,7 +417,7 @@
 // KONFIGURASI
 // ============================================================
 const CONFIG = {
-  API_URL: "https://script.google.com/macros/s/AKfycby39gEd8A6qPB98YmiIbvrOeR-aDmr1g-hkn78okq2nXVnDcEdwO9iT_AHHkhca0hzU/exec"
+  API_URL: "https://script.google.com/macros/s/AKfycbzl80RHhERFFo12ziWTaCeTI8LE5UqzRJ6gvEiJVf6SYRbWFtE2p0AIIVMa3CQbnJTS/exec"
 };
 
 // ============================================================
@@ -573,7 +614,102 @@ async function simpanJadwal() {
 // ============================================================
 // LOAD JADWAL FOTOGRAFER
 // ============================================================
+// ============================================================
+// TAB SWITCH
+// ============================================================
+function gantiTabJadwal(tab) {
+  document.getElementById('tabLavelleBtn').classList.toggle('active', tab === 'lavelle');
+  document.getElementById('tabVendorBtn').classList.toggle('active', tab === 'vendor');
+  document.getElementById('tableJadwalLavelle').style.display = tab === 'lavelle' ? 'block' : 'none';
+  document.getElementById('tableJadwal').style.display = tab === 'vendor' ? 'block' : 'none';
+}
+
+// ============================================================
+// FORMAT NOMOR WA -> 62xxxx & LINK CHAT
+// ============================================================
+function formatWaNumber(nomor) {
+  let n = String(nomor || '').replace(/[^0-9]/g, '');
+  if (n.startsWith('0')) n = '62' + n.slice(1);
+  else if (n && !n.startsWith('62')) n = '62' + n;
+  return n;
+}
+
+function buatLinkWaClient(row) {
+  const nomor = formatWaNumber(row.wa);
+  if (!nomor) return '';
+  const jam = `${(row.jam_mulai || '').replace(':', '.')} - ${(row.jam_selesai || '').replace(':', '.')}`;
+  const pesan = `Halo saya fotografer Lavelle, ingin konfirmasi untuk jadwal foto berikut:\nNama: ${row.nama_client || '-'}\nTanggal: ${row.tanggal || '-'}\nJam: ${jam}\nLokasi: ${row.lokasi || '-'}`;
+  return `https://api.whatsapp.com/send/?phone=${nomor}&text=${encodeURIComponent(pesan)}&type=phone_number&app_absent=0`;
+}
+
+// ============================================================
+// LOAD JADWAL LAVELLE (dari sheet Booking)
+// ============================================================
+async function loadJadwalLavelle() {
+  const container = document.getElementById('tableJadwalLavelle');
+  container.innerHTML = '<div class="no-data">⏳ Memuat...</div>';
+  if (!fotografer) return;
+
+  try {
+    const url = `${CONFIG.API_URL}?action=jadwalLavelle&fotografer_id=${encodeURIComponent(fotografer.fotografer_id)}`;
+    const data = await jsonp(url);
+
+    if (data.error || !Array.isArray(data)) {
+      container.innerHTML = '<div class="no-data">❌ Gagal memuat jadwal</div>';
+      return;
+    }
+    if (data.length === 0) {
+      container.innerHTML = '<div class="no-data">📭 Belum ada jadwal Lavelle</div>';
+      return;
+    }
+
+    data.sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+
+    let html = `
+      <table>
+        <thead>
+          <tr>
+            <th>Tanggal</th>
+            <th>Jam</th>
+            <th>Nama Client</th>
+            <th>Lokasi</th>
+            <th>No. WA</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    data.forEach(row => {
+      const jam = `${(row.jam_mulai || '').replace(':', '.')} - ${(row.jam_selesai || '').replace(':', '.')}`;
+      const linkWa = buatLinkWaClient(row);
+      const waCell = linkWa ? `<a class="wa-link" href="${linkWa}" target="_blank">💬 Chat</a>` : '-';
+
+      html += `
+        <tr>
+          <td>${row.tanggal}</td>
+          <td>${jam}</td>
+          <td>${row.nama_client || '-'}</td>
+          <td>${row.lokasi || '-'}</td>
+          <td>${waCell}</td>
+        </tr>
+      `;
+    });
+
+    html += '</tbody></table>';
+    container.innerHTML = html;
+
+  } catch (err) {
+    container.innerHTML = '<div class="no-data">❌ Gagal memuat jadwal</div>';
+    console.error(err);
+  }
+}
+
+// ============================================================
+// LOAD JADWAL VENDOR LAIN (dari sheet Jadwal_Fotografer)
+// ============================================================
 async function loadJadwal() {
+  loadJadwalLavelle();
+
   const container = document.getElementById('tableJadwal');
   container.innerHTML = '<div class="no-data">⏳ Memuat...</div>';
   
@@ -587,14 +723,16 @@ async function loadJadwal() {
       container.innerHTML = '<div class="no-data">❌ Gagal memuat jadwal</div>';
       return;
     }
-    
-    if (!data || data.length === 0) {
-      container.innerHTML = '<div class="no-data">📭 Belum ada jadwal</div>';
+
+    // Tab ini khusus vendor lain; jadwal Lavelle sudah tampil di tab sebelah.
+    const vendorData = (data || []).filter(row => (row.sumber || 'vendor_lain') !== 'studio_lavelle');
+
+    if (vendorData.length === 0) {
+      container.innerHTML = '<div class="no-data">📭 Belum ada jadwal vendor lain</div>';
       return;
     }
     
-    // Sort by tanggal
-    data.sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+    vendorData.sort((a, b) => a.tanggal.localeCompare(b.tanggal));
     
     let html = `
       <table>
@@ -608,16 +746,12 @@ async function loadJadwal() {
         <tbody>
     `;
     
-    data.forEach(row => {
-      const sumber = row.sumber || 'vendor_lain';
-      const badgeClass = sumber === 'studio_lavelle' ? 'badge-studio' : 'badge-vendor';
-      const badgeText = sumber === 'studio_lavelle' ? 'Studio' : 'Vendor Lain';
-      
+    vendorData.forEach(row => {
       html += `
         <tr>
           <td>${row.tanggal}</td>
           <td>${row.jam_mulai} - ${row.jam_selesai}</td>
-          <td><span class="${badgeClass}">${badgeText}</span></td>
+          <td><span class="badge-vendor">Vendor Lain</span></td>
         </tr>
       `;
     });
