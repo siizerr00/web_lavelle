@@ -67,10 +67,11 @@
   }
   .region-grid{
     display:grid;
-    grid-template-columns:repeat(4,1fr);
+    grid-template-columns:repeat(auto-fit, minmax(180px, 200px));
+    justify-content:center;
     gap:16px;
   }
-  @media (max-width:640px){ .region-grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:640px){ .region-grid{grid-template-columns:repeat(2,1fr); max-width:420px; margin:0 auto;} }
 
   .region-card{
     position:relative;
@@ -588,23 +589,19 @@
 // KONFIGURASI
 // ============================================================
 const CONFIG = {
-  API_URL: "https://script.google.com/macros/s/AKfycbzl80RHhERFFo12ziWTaCeTI8LE5UqzRJ6gvEiJVf6SYRbWFtE2p0AIIVMa3CQbnJTS/exec"
-};
-
-// Nomor WA admin berbeda per kota
-const WA_PER_KOTA = {
-  "Jogja":    "6282132439700",
-  "Solo":     "6282132439700",
-  "Surabaya": "6283112053117",
-  "Jakarta":  "6283112053117"
+  API_URL: "https://script.google.com/macros/s/AKfycbzl80RHhERFFo12ziWTaCeTI8LE5UqzRJ6gvEiJVf6SYRbWFtE2p0AIIVMa3CQbnJTS/exec",
+  ADMIN_WA: "6283112053117"
 };
 
 const REGIONS = [
   { kota: "Jogja",    kode: "JGY" },
   { kota: "Solo",     kode: "SLO" },
-  { kota: "Surabaya", kode: "SBY" },
-  { kota: "Jakarta",  kode: "JKT" }
+  { kota: "Surabaya", kode: "SBY" }
 ];
+
+// Bulan yang ditutup untuk booking (format "YYYY-MM"). Tanggal di bulan ini
+// akan otomatis tampil sebagai "full" / tidak bisa diklik di kalender.
+const BLOCKED_MONTHS = ["2026-09", "2026-10"];
 
 // Batas berapa bulan ke depan yang boleh dibuka (biar tidak spam fetch ke masa depan jauh)
 const MAKS_BULAN_KE_DEPAN = 6;
@@ -757,6 +754,10 @@ async function fetchKalenderBulanKota(kota, y, m) {
   const bulanStr = `${y}-${String(m+1).padStart(2,'0')}`;
   const totalHari = new Date(y, m+1, 0).getDate();
   const cacheKey = `${kota}|${bulanStr}`;
+
+  if (BLOCKED_MONTHS.includes(bulanStr)) {
+    return {}; // bulan ditutup, tidak perlu fetch ke API
+  }
 
   const cached = CACHE.kalenderBulan[cacheKey];
   if (cached && isCacheValid(cached.timestamp)) {
@@ -935,6 +936,9 @@ function renderKalender(y, m) {
 
   const kalenderData = state.allData?.kalender || {};
 
+  const yyyymm = `${y}-${String(m+1).padStart(2,'0')}`;
+  const bulanDitutup = BLOCKED_MONTHS.includes(yyyymm);
+
   for(let d=1; d<=totalHari; d++){
     const tanggalObj = new Date(y, m, d);
     tanggalObj.setHours(0,0,0,0);
@@ -947,7 +951,9 @@ function renderKalender(y, m) {
     const tersedia = kalenderInfo ? kalenderInfo.tersedia : false;
 
     let kelas = 'cal-tanggal';
-    if (sudahLewat) {
+    if (bulanDitutup) {
+      kelas += ' full';
+    } else if (sudahLewat) {
       kelas += ' full';
     } else if (kalenderInfo === undefined) {
       kelas += ' skeleton';
@@ -958,9 +964,10 @@ function renderKalender(y, m) {
       kelas += ' full';
     }
 
-    const klik = !sudahLewat && tersedia ? `onclick="pilihTanggal('${tanggalStr}')"` : '';
+    const klik = !bulanDitutup && !sudahLewat && tersedia ? `onclick="pilihTanggal('${tanggalStr}')"` : '';
+    const titleAttr = bulanDitutup ? `title="Booking ditutup untuk bulan ini"` : '';
 
-    html += `<div class="${kelas}" ${klik} data-tanggal="${tanggalStr}">${d}</div>`;
+    html += `<div class="${kelas}" ${klik} ${titleAttr} data-tanggal="${tanggalStr}">${d}</div>`;
   }
   grid.innerHTML = html;
   updateTombolNavigasiBulan();
@@ -1174,8 +1181,7 @@ Email        : ${data.email || '-'}
 
 Saya mau konfirmasi booking. Terima kasih! 🙏`;
 
-  const nomorWa = WA_PER_KOTA[data.kota] || WA_PER_KOTA["Surabaya"];
-  const waUrl = `https://api.whatsapp.com/send/?phone=${nomorWa}&text=${encodeURIComponent(pesan)}&type=phone_number&app_absent=0`;
+  const waUrl = `https://api.whatsapp.com/send/?phone=${CONFIG.ADMIN_WA}&text=${encodeURIComponent(pesan)}&type=phone_number&app_absent=0`;
   const btnWa = document.getElementById('btnWa');
 
   btnWa.href = waUrl;
