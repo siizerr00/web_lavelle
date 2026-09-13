@@ -216,6 +216,26 @@
   .cal-nav .bulan-label{ font-family:'Fraunces',serif; font-style:italic; font-size:18px; }
 
   .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+  .cal-wrap{ position:relative; }
+  .cal-fully-booked{
+    position:absolute;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    background:rgba(46,37,50,.72);
+    color:#F1E6CE;
+    font-family:'Fraunces',serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:clamp(22px,4.5vw,32px);
+    letter-spacing:.03em;
+    border-radius:6px;
+    z-index:5;
+    pointer-events:none;
+  }
+  .cal-fully-booked.show{ display:flex; }
   .cal-hari{ text-align:center; font-size:11px; color:var(--mute); padding-bottom:4px; font-weight:600; }
   .cal-tanggal{
     aspect-ratio:1/1; display:flex; align-items:center; justify-content:center;
@@ -498,7 +518,10 @@
       <div class="bulan-label" id="bulanLabel"></div>
       <button id="btnBulanNext" onclick="ubahBulan(1)">&rarr;</button>
     </div>
-    <div class="cal-grid" id="calGrid"></div>
+    <div class="cal-wrap">
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="cal-fully-booked" id="calFullyBooked">Fully Booked</div>
+    </div>
     <div id="slotArea"></div>
   </section>
 </div>
@@ -797,6 +820,9 @@ function tampilkanSkeleton() {
   }
   grid.innerHTML = html;
   document.getElementById('slotArea').innerHTML = '';
+
+  const yyyymm = `${y}-${String(m+1).padStart(2,'0')}`;
+  document.getElementById('calFullyBooked').classList.toggle('show', BLOCKED_MONTHS.includes(yyyymm));
 }
 
 function kembaliKeHome(){
@@ -970,6 +996,7 @@ function renderKalender(y, m) {
     html += `<div class="${kelas}" ${klik} ${titleAttr} data-tanggal="${tanggalStr}">${d}</div>`;
   }
   grid.innerHTML = html;
+  document.getElementById('calFullyBooked').classList.toggle('show', bulanDitutup);
   updateTombolNavigasiBulan();
 }
 
