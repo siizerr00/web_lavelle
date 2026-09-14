@@ -692,128 +692,118 @@ function copySemuaJadwalLavelle() {
 // ============================================================
 let lastJadwalLavelle = [];
 
-async function loadJadwalLavelle() {
+function renderTabelLavelle(data) {
   const container = document.getElementById('tableJadwalLavelle');
-  container.innerHTML = '<div class="no-data">⏳ Memuat...</div>';
-  if (!fotografer) return;
 
-  try {
-    const url = `${CONFIG.API_URL}?action=jadwalLavelle&fotografer_id=${encodeURIComponent(fotografer.fotografer_id)}`;
-    const data = await jsonp(url);
-
-    if (data.error || !Array.isArray(data)) {
-      container.innerHTML = `<div class="no-data">❌ Gagal memuat jadwal: ${data.error || 'format data tidak dikenal'}</div>`;
-      return;
-    }
-    if (data.length === 0) {
-      container.innerHTML = '<div class="no-data">📭 Belum ada jadwal Lavelle</div>';
-      return;
-    }
-
-    data.sort((a, b) => a.tanggal.localeCompare(b.tanggal));
-    lastJadwalLavelle = data;
-
-    let html = `
-      <table>
-        <thead>
-          <tr>
-            <th>Tanggal</th>
-            <th>Jam</th>
-            <th>Nama Client</th>
-            <th>Lokasi</th>
-            <th>Gdrive</th>
-            <th>No. WA</th>
-            <th>Copy</th>
-          </tr>
-        </thead>
-        <tbody>
-    `;
-
-    data.forEach((row, i) => {
-      const jam = `${(row.jam_mulai || '').replace(':', '.')} - ${(row.jam_selesai || '').replace(':', '.')}`;
-      const linkWa = buatLinkWaClient(row);
-      const waCell = linkWa ? `<a class="wa-link" href="${linkWa}" target="_blank">💬 Chat</a>` : '-';
-      const gdriveCell = row.link_gdrive ? `<a href="${row.link_gdrive}" target="_blank">📁 Buka</a>` : '-';
-
-      html += `
-        <tr>
-          <td>${row.tanggal}</td>
-          <td>${jam}</td>
-          <td>${row.nama_client || '-'}</td>
-          <td>${row.lokasi || '-'}</td>
-          <td>${gdriveCell}</td>
-          <td>${waCell}</td>
-          <td><button class="copy-btn" onclick="copyJadwalLavelle(${i})">📋 Copy</button></td>
-        </tr>
-      `;
-    });
-
-    html += '</tbody></table>';
-    container.innerHTML = html;
-
-  } catch (err) {
-    container.innerHTML = '<div class="no-data">❌ Gagal memuat jadwal</div>';
-    console.error(err);
+  if (!data || data.length === 0) {
+    container.innerHTML = '<div class="no-data">📭 Belum ada jadwal Lavelle</div>';
+    return;
   }
+
+  lastJadwalLavelle = data;
+
+  let html = `
+    <table>
+      <thead>
+        <tr>
+          <th>Tanggal</th>
+          <th>Jam</th>
+          <th>Nama Client</th>
+          <th>Lokasi</th>
+          <th>Gdrive</th>
+          <th>No. WA</th>
+          <th>Copy</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  data.forEach((row, i) => {
+    const jam = `${(row.jam_mulai || '').replace(':', '.')} - ${(row.jam_selesai || '').replace(':', '.')}`;
+    const linkWa = buatLinkWaClient(row);
+    const waCell = linkWa ? `<a class="wa-link" href="${linkWa}" target="_blank">💬 Chat</a>` : '-';
+    const gdriveCell = row.link_gdrive ? `<a href="${row.link_gdrive}" target="_blank">📁 Buka</a>` : '-';
+
+    html += `
+      <tr>
+        <td>${row.tanggal}</td>
+        <td>${jam}</td>
+        <td>${row.nama_client || '-'}</td>
+        <td>${row.lokasi || '-'}</td>
+        <td>${gdriveCell}</td>
+        <td>${waCell}</td>
+        <td><button class="copy-btn" onclick="copyJadwalLavelle(${i})">📋 Copy</button></td>
+      </tr>
+    `;
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function renderTabelVendor(data) {
+  const container = document.getElementById('tableJadwal');
+
+  if (!data || data.length === 0) {
+    container.innerHTML = '<div class="no-data">📭 Belum ada jadwal vendor lain</div>';
+    return;
+  }
+
+  let html = `
+    <table>
+      <thead>
+        <tr>
+          <th>Tanggal</th>
+          <th>Jam</th>
+          <th>Sumber</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  data.forEach(row => {
+    html += `
+      <tr>
+        <td>${row.tanggal}</td>
+        <td>${row.jam_mulai} - ${row.jam_selesai}</td>
+        <td><span class="badge-vendor">Vendor Lain</span></td>
+      </tr>
+    `;
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
 }
 
 // ============================================================
-// LOAD JADWAL VENDOR LAIN (dari sheet Jadwal_Fotografer)
+// LOAD JADWAL (1x request untuk kedua tab, lebih cepat)
 // ============================================================
 async function loadJadwal() {
-  loadJadwalLavelle();
+  const containerLavelle = document.getElementById('tableJadwalLavelle');
+  const containerVendor = document.getElementById('tableJadwal');
+  containerLavelle.innerHTML = '<div class="no-data">⏳ Memuat...</div>';
+  containerVendor.innerHTML = '<div class="no-data">⏳ Memuat...</div>';
 
-  const container = document.getElementById('tableJadwal');
-  container.innerHTML = '<div class="no-data">⏳ Memuat...</div>';
-  
   if (!fotografer) return;
-  
+
   try {
-    const url = `${CONFIG.API_URL}?action=jadwalFotografer&fotografer_id=${encodeURIComponent(fotografer.fotografer_id)}`;
+    const url = `${CONFIG.API_URL}?action=jadwalGabungan&fotografer_id=${encodeURIComponent(fotografer.fotografer_id)}`;
     const data = await jsonp(url);
-    
+
     if (data.error) {
-      container.innerHTML = `<div class="no-data">❌ Gagal memuat jadwal: ${data.error}</div>`;
+      const pesan = `<div class="no-data">❌ Gagal memuat jadwal: ${data.error}</div>`;
+      containerLavelle.innerHTML = pesan;
+      containerVendor.innerHTML = pesan;
       return;
     }
 
-    // Tab ini khusus vendor lain; jadwal Lavelle sudah tampil di tab sebelah.
-    const vendorData = (data || []).filter(row => (row.sumber || 'vendor_lain') !== 'studio_lavelle');
+    renderTabelLavelle(data.lavelle || []);
+    renderTabelVendor(data.vendor || []);
 
-    if (vendorData.length === 0) {
-      container.innerHTML = '<div class="no-data">📭 Belum ada jadwal vendor lain</div>';
-      return;
-    }
-    
-    vendorData.sort((a, b) => a.tanggal.localeCompare(b.tanggal));
-    
-    let html = `
-      <table>
-        <thead>
-          <tr>
-            <th>Tanggal</th>
-            <th>Jam</th>
-            <th>Sumber</th>
-          </tr>
-        </thead>
-        <tbody>
-    `;
-    
-    vendorData.forEach(row => {
-      html += `
-        <tr>
-          <td>${row.tanggal}</td>
-          <td>${row.jam_mulai} - ${row.jam_selesai}</td>
-          <td><span class="badge-vendor">Vendor Lain</span></td>
-        </tr>
-      `;
-    });
-    
-    html += '</tbody></table>';
-    container.innerHTML = html;
-    
-  } catch(err) {
-    container.innerHTML = '<div class="no-data">❌ Gagal memuat jadwal</div>';
+  } catch (err) {
+    const pesan = '<div class="no-data">❌ Gagal memuat jadwal</div>';
+    containerLavelle.innerHTML = pesan;
+    containerVendor.innerHTML = pesan;
     console.error(err);
   }
 }
