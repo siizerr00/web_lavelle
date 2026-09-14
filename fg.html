@@ -311,6 +311,18 @@
     white-space:nowrap;
   }
   .wa-link:hover{ background:#065F46; color:#fff; }
+  .copy-btn{
+    padding:3px 10px;
+    border-radius:6px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    color:var(--ink);
+    font-size:11px;
+    font-weight:600;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .copy-btn:hover{ background:var(--rose); color:#fff; border-color:var(--rose); }
 
   .no-data{
     text-align:center;
@@ -417,7 +429,7 @@
 // KONFIGURASI
 // ============================================================
 const CONFIG = {
-  API_URL: "https://script.google.com/macros/s/AKfycby39gEd8A6qPB98YmiIbvrOeR-aDmr1g-hkn78okq2nXVnDcEdwO9iT_AHHkhca0hzU/exec"
+  API_URL: "https://script.google.com/macros/s/AKfycbzl80RHhERFFo12ziWTaCeTI8LE5UqzRJ6gvEiJVf6SYRbWFtE2p0AIIVMa3CQbnJTS/exec"
 };
 
 // ============================================================
@@ -643,8 +655,24 @@ function buatLinkWaClient(row) {
 }
 
 // ============================================================
+// COPY JADWAL LAVELLE KE CLIPBOARD (termasuk No. WA)
+// ============================================================
+function copyJadwalLavelle(i) {
+  const row = lastJadwalLavelle[i];
+  if (!row) return;
+  const jam = `${(row.jam_mulai || '').replace(':', '.')} - ${(row.jam_selesai || '').replace(':', '.')}`;
+  const teks = `Tanggal: ${row.tanggal || '-'}\nJam: ${jam}\nNama Client: ${row.nama_client || '-'}\nLokasi: ${row.lokasi || '-'}\nNo. WA: ${row.wa || '-'}`;
+
+  navigator.clipboard.writeText(teks)
+    .then(() => showToast('✅ Jadwal disalin ke clipboard'))
+    .catch(() => showToast('❌ Gagal menyalin jadwal'));
+}
+
+// ============================================================
 // LOAD JADWAL LAVELLE (dari sheet Booking)
 // ============================================================
+let lastJadwalLavelle = [];
+
 async function loadJadwalLavelle() {
   const container = document.getElementById('tableJadwalLavelle');
   container.innerHTML = '<div class="no-data">⏳ Memuat...</div>';
@@ -664,6 +692,7 @@ async function loadJadwalLavelle() {
     }
 
     data.sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+    lastJadwalLavelle = data;
 
     let html = `
       <table>
@@ -675,12 +704,13 @@ async function loadJadwalLavelle() {
             <th>Lokasi</th>
             <th>Gdrive</th>
             <th>No. WA</th>
+            <th>Copy</th>
           </tr>
         </thead>
         <tbody>
     `;
 
-    data.forEach(row => {
+    data.forEach((row, i) => {
       const jam = `${(row.jam_mulai || '').replace(':', '.')} - ${(row.jam_selesai || '').replace(':', '.')}`;
       const linkWa = buatLinkWaClient(row);
       const waCell = linkWa ? `<a class="wa-link" href="${linkWa}" target="_blank">💬 Chat</a>` : '-';
@@ -694,6 +724,7 @@ async function loadJadwalLavelle() {
           <td>${row.lokasi || '-'}</td>
           <td>${gdriveCell}</td>
           <td>${waCell}</td>
+          <td><button class="copy-btn" onclick="copyJadwalLavelle(${i})">📋 Copy</button></td>
         </tr>
       `;
     });
