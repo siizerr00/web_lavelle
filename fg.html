@@ -409,6 +409,9 @@
         <button class="tab-btn active" id="tabLavelleBtn" onclick="gantiTabJadwal('lavelle')">Jadwal Lavelle</button>
         <button class="tab-btn" id="tabVendorBtn" onclick="gantiTabJadwal('vendor')">Jadwal Vendor Lain</button>
       </div>
+      <div style="display:flex; justify-content:flex-end; margin-bottom:6px;">
+        <button class="copy-btn" onclick="copySemuaJadwalLavelle()">📋 Copy Semua Jadwal</button>
+      </div>
       <div class="table-wrap" id="tableJadwalLavelle">
         <div class="no-data">Memuat jadwal...</div>
       </div>
@@ -665,6 +668,22 @@ function copyJadwalLavelle(i) {
 
   navigator.clipboard.writeText(teks)
     .then(() => showToast('✅ Jadwal disalin ke clipboard'))
+    .catch(() => showToast('❌ Gagal menyalin jadwal'));
+}
+
+function copySemuaJadwalLavelle() {
+  if (!lastJadwalLavelle || lastJadwalLavelle.length === 0) {
+    showToast('📭 Belum ada jadwal untuk disalin');
+    return;
+  }
+
+  const teks = lastJadwalLavelle.map((row, i) => {
+    const jam = `${(row.jam_mulai || '').replace(':', '.')} - ${(row.jam_selesai || '').replace(':', '.')}`;
+    return `${i + 1}. Tanggal: ${row.tanggal || '-'}\nJam: ${jam}\nNama Client: ${row.nama_client || '-'}\nLokasi: ${row.lokasi || '-'}\nNo. WA: ${row.wa || '-'}`;
+  }).join('\n\n');
+
+  navigator.clipboard.writeText(teks)
+    .then(() => showToast(`✅ ${lastJadwalLavelle.length} jadwal disalin ke clipboard`))
     .catch(() => showToast('❌ Gagal menyalin jadwal'));
 }
 
