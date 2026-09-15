@@ -1,1 +1,577 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jadwal Fotografer | Admin Lavelle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400..600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2E2532; --paper:#FBF6F2; --rose:#B76E79; --gold:#C9A66B;
+    --sage:#6B8F71; --mute:#8C8389; --line:#E4D9D3; --card:#ffffff;
+    --danger:#B3413E; --danger-bg:#FDE8E8;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
 
+  .container{max-width:1200px;margin:0 auto;padding:24px;}
+
+  .card{
+    background:var(--card); border:1px solid var(--line);
+    border-radius:12px; padding:24px;
+    box-shadow:0 4px 24px rgba(46,37,50,.06);
+    margin-bottom:20px;
+  }
+
+  .topbar{
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:12px;
+  }
+  .topbar h1{font-size:24px;font-style:italic;font-weight:500;}
+  .topbar .sub{color:var(--mute);font-size:13px;margin-top:2px;}
+  .topbar .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+
+  .btn{
+    padding:8px 16px; border:none; border-radius:8px;
+    font-size:13px; cursor:pointer; font-family:inherit; font-weight:500;
+    transition:all .2s;
+  }
+  .btn-primary{background:var(--ink);color:#fff;}
+  .btn-primary:hover{background:var(--rose);}
+  .btn-secondary{background:none;color:var(--mute);border:1px solid var(--line);}
+  .btn-secondary:hover{color:var(--ink);border-color:var(--ink);}
+  .btn-sm{padding:6px 12px;font-size:12px;}
+  .btn-save{background:var(--sage);color:#fff;}
+  .btn-save:hover{background:#597A5F;}
+  .btn-save:disabled{background:#C9BFC3;cursor:not-allowed;}
+
+  .login-box{max-width:400px;margin:60px auto;}
+
+  .field{margin-bottom:16px;}
+  .field label{
+    display:block; font-size:12px; color:var(--mute); margin-bottom:6px;
+    text-transform:uppercase; letter-spacing:.04em; font-weight:600;
+  }
+  .field input, .field select{
+    width:100%; padding:10px 14px; border:1px solid var(--line);
+    border-radius:8px; font-family:inherit; font-size:14px;
+    background:#fff; color:var(--ink);
+  }
+  .field input:focus, .field select:focus{
+    outline:none; border-color:var(--rose);
+    box-shadow:0 0 0 3px rgba(183,110,121,.15);
+  }
+
+  .error-box{
+    display:none; color:var(--danger); font-size:13px;
+    padding:10px 14px; background:var(--danger-bg);
+    border-radius:8px; margin-top:8px;
+  }
+
+  .filter-bar{
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+    margin-bottom:16px;
+  }
+  .filter-bar select, .filter-bar input{
+    padding:8px 12px; border:1px solid var(--line); border-radius:8px;
+    font-family:inherit; font-size:13px; background:#fff; min-width:150px;
+  }
+  .filter-bar input{flex:1;}
+
+  .table-wrap{
+    overflow-x:auto; border:1px solid var(--line); border-radius:8px;
+  }
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th{
+    background:var(--paper); padding:10px 12px; text-align:left;
+    font-weight:600; color:var(--mute); font-size:11px;
+    text-transform:uppercase; letter-spacing:.04em;
+    border-bottom:2px solid var(--line);
+    position:sticky; top:0; z-index:2;
+  }
+  td{padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:middle;}
+
+  tr.row-ok:hover td{background:#FAF8F6;}
+  tr.row-bentrok td{
+    background:#FDE8E8 !important;
+  }
+  tr.row-bentrok:hover td{
+    background:#FCDADA !important;
+  }
+  tr.row-dirty td:first-child{
+    border-left:3px solid var(--gold);
+  }
+
+  .badge{
+    display:inline-block; padding:3px 10px; border-radius:20px;
+    font-size:11px; font-weight:600;
+  }
+  .badge-booking{background:#FEF3C7;color:#92400E;}
+  .badge-dp{background:#DBEAFE;color:#1E40AF;}
+  .badge-lunas{background:#D1FAE5;color:#065F46;}
+  .badge-upload{background:#FEF3C7;color:#92400E;}
+  .badge-edit{background:#FCE7F3;color:#9D174D;}
+
+  .select-fotografer{
+    padding:6px 10px; border:1px solid var(--line); border-radius:6px;
+    font-size:12px; font-family:inherit; background:#fff; min-width:150px;
+  }
+  .select-fotografer.dirty{
+    border-color:var(--gold); background:#FFFBF0;
+  }
+  .select-fotografer.bentrok{
+    border-color:var(--danger); background:#FFF1F1;
+  }
+
+  .pesan-bentrok{
+    display:none; font-size:11px; color:var(--danger);
+    margin-top:4px; line-height:1.4;
+  }
+  .pesan-bentrok.show{display:block;}
+
+  .cell-nama{font-weight:500;}
+  .cell-sub{font-size:11px; color:var(--mute); margin-top:2px;}
+
+  .empty-state{text-align:center; padding:40px; color:var(--mute);}
+
+  .loading-spinner{
+    display:inline-block; width:16px; height:16px;
+    border:2px solid var(--line); border-top:2px solid var(--rose);
+    border-radius:50%; animation:spin .8s linear infinite;
+    vertical-align:middle; margin-right:8px;
+  }
+  @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+
+  .toast{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:#fff; padding:12px 24px;
+    border-radius:8px; font-size:14px; z-index:100;
+    animation:slideUp .3s;
+  }
+  @keyframes slideUp{
+    from{transform:translate(-50%,20px);opacity:0;}
+    to{transform:translate(-50%,0);opacity:1;}
+  }
+
+  .stats{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:12px; margin-bottom:20px;
+  }
+  .stat{
+    background:var(--card); border:1px solid var(--line);
+    border-radius:8px; padding:14px; text-align:center;
+  }
+  .stat .num{font-size:22px;font-weight:700;font-family:'Fraunces',serif;}
+  .stat .lbl{font-size:11px;color:var(--mute);margin-top:2px;}
+
+  @media (max-width:640px){
+    .container{padding:12px;}
+    .card{padding:16px;}
+    td,th{padding:8px 6px; font-size:12px;}
+    .filter-bar{flex-direction:column; align-items:stretch;}
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- LOGIN -->
+  <div id="loginSection">
+    <div class="card login-box" style="text-align:center;">
+      <h1 style="font-size:28px;font-style:italic;font-weight:500;">Studio Lavelle</h1>
+      <p style="color:var(--mute);font-size:14px;margin:4px 0 24px;">Jadwal Fotografer</p>
+
+      <div class="field" style="text-align:left;">
+        <label>🔑 Password Admin</label>
+        <input type="password" id="adminPassword" placeholder="Masukkan password admin">
+      </div>
+
+      <button class="btn btn-primary" style="width:100%;padding:12px;" id="btnLogin" onclick="loginAdmin()">Login</button>
+      <div class="error-box" id="loginError"></div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboardSection" style="display:none;">
+
+    <div class="card topbar">
+      <div>
+        <h1>📅 Atur Jadwal Fotografer</h1>
+        <div class="sub">Ganti fotografer tiap booking. Sistem cek bentrok otomatis.</div>
+      </div>
+      <div class="actions">
+        <span style="font-size:12px;color:var(--mute);" id="adminInfo">👤 Admin</span>
+        <a href="index.html" class="btn btn-secondary btn-sm">← Admin Panel</a>
+        <button class="btn btn-secondary btn-sm" onclick="logoutAdmin()">🚪 Logout</button>
+      </div>
+    </div>
+
+    <div class="stats" id="statsContainer">
+      <div class="stat"><div class="num" id="statTotal">0</div><div class="lbl">Total Booking</div></div>
+      <div class="stat"><div class="num" id="statDirty" style="color:var(--gold);">0</div><div class="lbl">Belum Disimpan</div></div>
+      <div class="stat"><div class="num" id="statBentrok" style="color:var(--danger);">0</div><div class="lbl">Bentrok</div></div>
+    </div>
+
+    <div class="card">
+      <div class="filter-bar">
+        <select id="filterKota" onchange="applyFilter()">
+          <option value="all">📍 Semua Kota</option>
+        </select>
+        <select id="filterFotografer" onchange="applyFilter()">
+          <option value="all">👤 Semua Fotografer</option>
+        </select>
+        <input type="text" id="searchKlien" placeholder="🔍 Cari nama klien / booking ID" oninput="applyFilter()">
+        <button class="btn btn-secondary btn-sm" onclick="loadData()">🔄 Refresh</button>
+        <button class="btn btn-save btn-sm" id="btnSimpanSemua" onclick="simpanSemuaPerubahan()" disabled>
+          💾 Simpan Semua (<span id="countDirty">0</span>)
+        </button>
+      </div>
+
+      <div class="table-wrap" id="tableContainer">
+        <div class="empty-state"><span class="loading-spinner"></span> Memuat data...</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="../config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function () {
+  'use strict';
+
+  var supabase = window.supabase.createClient(
+    window.LAVELLE_CONFIG.SUPABASE_URL,
+    window.LAVELLE_CONFIG.SUPABASE_KEY
+  );
+
+  var state = {
+    isLoggedIn: false,
+    adminToken: null,
+    adminNama: '',
+    bookings: [],           // data dari server
+    fotograferList: [],     // list fotografer untuk dropdown
+    changes: {},            // { booking_id: fotografer_id_baru }
+    conflicts: {},          // { booking_id: [array bentrok] }
+    dirty: {}               // { booking_id: true }
+  };
+
+  // ---------- TOAST ----------
+  function showToast(msg, dur) {
+    dur = dur || 3000;
+    var e = document.querySelector('.toast'); if (e) e.remove();
+    var t = document.createElement('div');
+    t.className = 'toast'; t.innerText = msg;
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, dur);
+  }
+
+  // ---------- LOGIN ----------
+  function loginAdmin() {
+    var pwd = document.getElementById('adminPassword').value.trim();
+    var err = document.getElementById('loginError');
+    err.style.display = 'none';
+
+    if (!pwd) {
+      err.innerText = '⚠️ Password wajib diisi.';
+      err.style.display = 'block';
+      return;
+    }
+
+    var btn = document.getElementById('btnLogin');
+    btn.disabled = true;
+
+    supabase.rpc('admin_login', { p_nama: 'admin', p_password: pwd })
+      .then(function (res) {
+        btn.disabled = false;
+        if (res.error) { err.innerText = '❌ ' + res.error.message; err.style.display = 'block'; return; }
+        var d = res.data;
+        if (d.error) { err.innerText = '❌ ' + d.error; err.style.display = 'block'; return; }
+
+        state.isLoggedIn = true;
+        state.adminToken = d.token;
+        state.adminNama = d.nama;
+
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('dashboardSection').style.display = 'block';
+        document.getElementById('adminInfo').innerText = '👤 ' + d.nama;
+
+        loadData();
+        showToast('✅ Login berhasil');
+      })
+      .catch(function (e) {
+        btn.disabled = false;
+        err.innerText = '❌ Gagal koneksi.';
+        err.style.display = 'block';
+        console.error(e);
+      });
+  }
+
+  function logoutAdmin() {
+    if (state.adminToken) {
+      supabase.rpc('admin_logout', { p_token: state.adminToken }).then(function () {});
+    }
+    state.isLoggedIn = false;
+    state.adminToken = null;
+    state.bookings = [];
+    state.fotograferList = [];
+    state.changes = {};
+    state.conflicts = {};
+    state.dirty = {};
+    document.getElementById('loginSection').style.display = 'block';
+    document.getElementById('dashboardSection').style.display = 'none';
+    document.getElementById('adminPassword').value = '';
+    showToast('👋 Logout');
+  }
+
+  // ---------- LOAD DATA ----------
+  function loadData() {
+    var c = document.getElementById('tableContainer');
+    c.innerHTML = '<div class="empty-state"><span class="loading-spinner"></span> Memuat data...</div>';
+
+    supabase.rpc('admin_get_jadwal_list', { p_token: state.adminToken })
+      .then(function (res) {
+        if (res.error) { c.innerHTML = '<div class="empty-state">❌ ' + res.error.message + '</div>'; return; }
+        var d = res.data;
+        if (d.error) { c.innerHTML = '<div class="empty-state">❌ ' + d.error + '</div>'; return; }
+
+        state.bookings = d.bookings || [];
+        state.fotograferList = d.fotografer || [];
+        state.changes = {};
+        state.conflicts = {};
+        state.dirty = {};
+
+        buildFilterOptions();
+        renderTable();
+      })
+      .catch(function (e) {
+        c.innerHTML = '<div class="empty-state">❌ Gagal memuat: ' + e.message + '</div>';
+        console.error(e);
+      });
+  }
+
+  function buildFilterOptions() {
+    var kotaSet = {};
+    state.bookings.forEach(function (b) { if (b.kota) kotaSet[b.kota] = true; });
+    var fk = document.getElementById('filterKota');
+    fk.innerHTML = '<option value="all">📍 Semua Kota</option>' +
+      Object.keys(kotaSet).sort().map(function (k) {
+        return '<option value="' + k + '">' + k + '</option>';
+      }).join('');
+
+    var ff = document.getElementById('filterFotografer');
+    ff.innerHTML = '<option value="all">👤 Semua Fotografer</option>' +
+      state.fotograferList.map(function (f) {
+        return '<option value="' + f.fotografer_id + '">' + f.nama + ' (' + f.kota + ')</option>';
+      }).join('');
+  }
+
+  // ---------- FILTER ----------
+  function applyFilter() {
+    renderTable();
+  }
+
+  function getFilteredBookings() {
+    var fk = document.getElementById('filterKota').value;
+    var ff = document.getElementById('filterFotografer').value;
+    var q = (document.getElementById('searchKlien').value || '').toLowerCase().trim();
+
+    return state.bookings.filter(function (b) {
+      if (fk !== 'all' && b.kota !== fk) return false;
+
+      // Cek fotografer aktif (yang di dropdown / yang berubah)
+      var fidNow = state.changes[b.booking_id] || b.fotografer_id;
+      if (ff !== 'all' && fidNow !== ff) return false;
+
+      if (q) {
+        var hay = ((b.nama_client || '') + ' ' + (b.booking_id || '') + ' ' + (b.kampus || '')).toLowerCase();
+        if (hay.indexOf(q) === -1) return false;
+      }
+      return true;
+    });
+  }
+
+  // ---------- RENDER ----------
+  function renderTable() {
+    var c = document.getElementById('tableContainer');
+    var list = getFilteredBookings();
+
+    if (list.length === 0) {
+      c.innerHTML = '<div class="empty-state">📭 Tidak ada booking</div>';
+      updateStats();
+      return;
+    }
+
+    var html = '<table><thead><tr>' +
+      '<th>Tanggal & Jam</th>' +
+      '<th>Booking ID</th>' +
+      '<th>Klien</th>' +
+      '<th>Kota</th>' +
+      '<th>Status</th>' +
+      '<th style="min-width:200px;">Fotografer</th>' +
+      '</tr></thead><tbody>';
+
+    list.forEach(function (b) {
+      var fidNow = state.changes[b.booking_id] || b.fotografer_id;
+      var isDirty = state.dirty[b.booking_id];
+      var konflik = state.conflicts[b.booking_id] || [];
+
+      var rowClass = 'row-ok';
+      if (konflik.length > 0) rowClass = 'row-bentrok';
+      else if (isDirty) rowClass = 'row-dirty';
+
+      // Dropdown
+      var selectClass = 'select-fotografer';
+      if (konflik.length > 0) selectClass += ' bentrok';
+      else if (isDirty) selectClass += ' dirty';
+
+      var selectHtml = '<select class="' + selectClass + '" data-booking-id="' + b.booking_id +
+        '" onchange="onChangeFotografer(\'' + b.booking_id + '\', this.value)">';
+
+      // Opsi kosong kalau belum ada fotografer
+      if (!fidNow) selectHtml += '<option value="">-- Pilih Fotografer --</option>';
+
+      // Group per kota
+      var perKota = {};
+      state.fotograferList.forEach(function (f) {
+        if (!perKota[f.kota]) perKota[f.kota] = [];
+        perKota[f.kota].push(f);
+      });
+
+      Object.keys(perKota).sort().forEach(function (kota) {
+        selectHtml += '<optgroup label="📍 ' + kota + '">';
+        perKota[kota].forEach(function (f) {
+          var sel = (f.fotografer_id === fidNow) ? ' selected' : '';
+          var warn = '';
+          // Kalau dia fotografer asli dan sedang dipilih, kasih tanda
+          if (f.fotografer_id === b.fotografer_id && !isDirty) warn = ' (saat ini)';
+          selectHtml += '<option value="' + f.fotografer_id + '"' + sel + '>' +
+            f.nama + warn + '</option>';
+        });
+        selectHtml += '</optgroup>';
+      });
+
+      selectHtml += '</select>';
+
+      // Pesan bentrok
+      var pesanHtml = '';
+      if (konflik.length > 0) {
+        var teksKonflik = konflik.map(function (k) {
+          return (k.nama_client || '-') + ' (' + k.jam_mulai + '-' + k.jam_selesai + ')';
+        }).join(', ');
+        pesanHtml = '<div class="pesan-bentrok show">⚠️ Bentrok dengan: ' + teksKonflik + '</div>';
+      }
+
+      // Tombol Simpan per baris
+      var tombolSimpan = '';
+      if (isDirty || konflik.length > 0) {
+        var disabled = konflik.length > 0 ? ' disabled' : '';
+        tombolSimpan = '<button class="btn btn-save btn-sm" style="margin-top:6px;"' + disabled +
+          ' onclick="simpanSatu(\'' + b.booking_id + '\')">💾 Simpan</button>';
+      }
+
+      html += '<tr class="' + rowClass + '">' +
+        '<td><strong>' + (b.tanggal || '-') + '</strong><div class="cell-sub">' +
+          (b.jam_mulai || '') + ' - ' + (b.jam_selesai || '') + '</div></td>' +
+        '<td><span class="mono" style="font-size:11px;">' + (b.booking_id || '-') + '</span></td>' +
+        '<td><div class="cell-nama">' + (b.nama_client || '-') + '</div>' +
+          '<div class="cell-sub">' + (b.kampus || '-') + '</div></td>' +
+        '<td>' + (b.kota || '-') + '</td>' +
+        '<td>' + getStatusBadge(b.status) + '</td>' +
+        '<td>' + selectHtml + pesanHtml + tombolSimpan + '</td>' +
+        '</tr>';
+    });
+
+    html += '</tbody></table>';
+    c.innerHTML = html;
+    updateStats();
+  }
+
+  function getStatusBadge(status) {
+    var m = {
+      'booking': ['badge-booking', '📋 Booking'],
+      'dp': ['badge-dp', '💰 DP'],
+      'lunas': ['badge-lunas', '✅ Lunas'],
+      'upload_gdrive': ['badge-upload', '📁 Upload Gdrive'],
+      'edit_foto': ['badge-edit', '🎨 Edit Foto']
+    };
+    var s = m[status] || ['badge-booking', status || '-'];
+    return '<span class="badge ' + s[0] + '">' + s[1] + '</span>';
+  }
+
+  // ---------- UBAH FOTOGRAFER ----------
+  function onChangeFotografer(bookingId, fotograferIdBaru) {
+    var b = state.bookings.find(function (x) { return x.booking_id === bookingId; });
+    if (!b) return;
+
+    // Kalau balik ke aslinya → hapus dari changes
+    if (fotograferIdBaru === b.fotografer_id) {
+      delete state.changes[bookingId];
+      delete state.dirty[bookingId];
+      delete state.conflicts[bookingId];
+    } else {
+      state.changes[bookingId] = fotograferIdBaru;
+      state.dirty[bookingId] = true;
+    }
+
+    // Cek bentrok ke server
+    if (fotograferIdBaru) {
+      supabase.rpc('admin_cek_bentrok_jadwal', {
+        p_token: state.adminToken,
+        p_booking_id: bookingId,
+        p_fotografer_id: fotograferIdBaru
+      }).then(function (res) {
+        if (res.error) { console.error(res.error); return; }
+        var d = res.data;
+        if (d.error) { console.error(d.error); return; }
+
+        if (d.jumlah > 0) {
+          state.conflicts[bookingId] = d.bentrok || [];
+        } else {
+          delete state.conflicts[bookingId];
+        }
+        renderTable();
+      });
+    } else {
+      delete state.conflicts[bookingId];
+    }
+
+    renderTable();
+  }
+
+  // ---------- SIMPAN SATU ----------
+  function simpanSatu(bookingId) {
+    var fidBaru = state.changes[bookingId];
+    if (!fidBaru) { showToast('⚠️ Tidak ada perubahan.'); return; }
+    if (state.conflicts[bookingId] && state.conflicts[bookingId].length > 0) {
+      showToast('❌ Selesaikan bentrok dulu.'); return;
+    }
+
+    supabase.rpc('admin_ganti_fotografer', {
+      p_token: state.adminToken,
+      p_booking_id: bookingId,
+      p_fotografer_id_baru: fidBaru
+    }).then(function (res) {
+      if (res.error) { showToast('❌ ' + res.error.message); return; }
+      var d = res.data;
+      if (d.error) { showToast('❌ ' + d.error); return; }
+
+      // Update data lokal
+      var b = state.bookings.find(function (x) { return x.booking_id === bookingId; });
+      if (b) b.fotografer_id = fidBaru;
+
+      delete state.changes[bookingId];
+      delete state.dirty[bookingId];
+      delete state.conflicts[bookingId];
+
+      showToast('✅
