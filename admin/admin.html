@@ -57,7 +57,7 @@
     font-family:'Inter',sans-serif;font-size:14px;background:#fff;color:var(--ink);
   }
   .field input:focus{outline:none;border-color:var(--rose);box-shadow:0 0 0 3px rgba(183,110,121,.15);}
-  
+
   .btn-primary{
     padding:12px 24px;background:var(--ink);color:#fff;border:none;border-radius:8px;
     font-size:14px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;
@@ -66,20 +66,20 @@
   .btn-primary:hover{background:var(--rose);}
   .btn-primary:disabled{opacity:0.6;cursor:not-allowed;}
   .btn-primary.btn-sm{padding:6px 14px;font-size:12px;}
-  
+
   .btn-secondary{
     padding:10px 20px;background:none;color:var(--mute);border:1px solid var(--line);border-radius:8px;
     font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;
   }
   .btn-secondary:hover{color:var(--ink);border-color:var(--ink);}
-  
+
   .btn-success{
     padding:6px 14px;background:var(--sage);color:#fff;border:none;border-radius:6px;
     font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;
     transition:background .2s;
   }
   .btn-success:hover{background:#597A5F;}
-  
+
   .btn-danger{
     padding:6px 14px;background:#B3413E;color:#fff;border:none;border-radius:6px;
     font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;
@@ -121,7 +121,7 @@
   }
   td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle;}
   tr:hover td{background:#FAF8F6;}
-  
+
   .badge{
     display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;
   }
@@ -187,59 +187,35 @@
   .modal-actions .btn-primary{flex:1;}
   .modal-actions .btn-secondary{flex:1;text-align:center;}
 
-  /* 🔥 PROGRESS BAR COPY */
   .copy-progress-container {
-    margin-top:8px;
-    padding:8px 12px;
-    background:var(--paper);
-    border-radius:6px;
-    border:1px solid var(--line);
+    margin-top:8px; padding:8px 12px;
+    background:var(--paper); border-radius:6px; border:1px solid var(--line);
   }
-  .copy-progress-container .progress-text {
-    font-size:12px;
-    font-weight:500;
-  }
+  .copy-progress-container .progress-text { font-size:12px; font-weight:500; }
   .copy-progress-container .progress-bar {
-    height:4px;
-    background:var(--line);
-    border-radius:4px;
-    margin-top:4px;
-    overflow:hidden;
+    height:4px; background:var(--line); border-radius:4px;
+    margin-top:4px; overflow:hidden;
   }
   .copy-progress-container .progress-bar .fill {
-    height:100%;
-    background:var(--rose);
-    border-radius:4px;
+    height:100%; background:var(--rose); border-radius:4px;
     transition:width .3s;
   }
   .copy-progress-container .progress-detail {
-    font-size:11px;
-    color:var(--mute);
-    margin-top:4px;
+    font-size:11px; color:var(--mute); margin-top:4px;
   }
   .copy-result {
-    font-size:11px;
-    margin-top:4px;
-    padding:4px 8px;
-    border-radius:4px;
+    font-size:11px; margin-top:4px; padding:4px 8px; border-radius:4px;
   }
   .copy-result.success { background:#D1FAE5; color:#065F46; }
   .copy-result.failed { background:#FDE8E8; color:#B3413E; }
   .copy-result.partial { background:#FEF3C7; color:#92400E; }
 
-  /* 🔥 DAFTAR DETAIL FOTO */
   .detail-photo-list {
-    margin-top:6px;
-    max-height:100px;
-    overflow-y:auto;
-    font-size:11px;
+    margin-top:6px; max-height:100px; overflow-y:auto; font-size:11px;
   }
   .detail-photo-list .item {
-    display:flex;
-    align-items:center;
-    gap:6px;
-    padding:2px 4px;
-    border-bottom:1px solid var(--line);
+    display:flex; align-items:center; gap:6px;
+    padding:2px 4px; border-bottom:1px solid var(--line);
   }
   .detail-photo-list .item.success { color:#065F46; }
   .detail-photo-list .item.failed { color:#B3413E; }
@@ -252,34 +228,21 @@
     .status-actions .btn-sm{font-size:9px;padding:3px 8px;}
     .modal-box{padding:20px;}
   }
-  /* 🔥 TOMBOL EDIT */
+
   .btn-edit{
     padding:6px 14px;
-    background:#8B5CF6;
-    color:#fff;
-    border:none;
-    border-radius:6px;
-    font-size:12px;
-    cursor:pointer;
-    font-family:'Inter',sans-serif;
-    font-weight:500;
-    transition:background .2s;
+    background:#8B5CF6; color:#fff; border:none; border-radius:6px;
+    font-size:12px; cursor:pointer; font-family:'Inter',sans-serif;
+    font-weight:500; transition:background .2s;
   }
   .btn-edit:hover{background:#7C3AED;}
   .btn-edit:disabled{opacity:0.6;cursor:not-allowed;}
 
-  /* 🔥 TOMBOL MAGIC LINK */
   .btn-link{
     padding:4px 10px;
-    background:#4285F4;
-    color:#fff;
-    border:none;
-    border-radius:6px;
-    font-size:10px;
-    cursor:pointer;
-    font-family:'Inter',sans-serif;
-    font-weight:500;
-    transition:background .2s;
+    background:#4285F4; color:#fff; border:none; border-radius:6px;
+    font-size:10px; cursor:pointer; font-family:'Inter',sans-serif;
+    font-weight:500; transition:background .2s;
   }
   .btn-link:hover{background:#3367D6;}
 </style>
@@ -379,12 +342,12 @@
   <div class="modal-box">
     <h3>📁 Upload Link Gdrive</h3>
     <div class="sub">Masukkan link Google Drive untuk booking <strong id="modalBookingId">-</strong></div>
-    
+
     <div class="field">
       <label>🔗 Link Google Drive</label>
       <input type="url" id="inputGdriveLink" placeholder="https://drive.google.com/drive/folders/...">
     </div>
-    
+
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeGdriveModal()">Batal</button>
       <button class="btn-primary" id="btnGdriveSubmit" onclick="submitGdrive()">📤 Upload Link</button>
@@ -398,10 +361,16 @@
 <script>
 (function () {
   'use strict';
-  var supabase = window.supabase.createClient(
-    window.LAVELLE_CONFIG.SUPABASE_URL,
-    window.LAVELLE_CONFIG.SUPABASE_KEY
-  );
+
+  var supabase = null;
+  try {
+    supabase = window.supabase.createClient(
+      window.LAVELLE_CONFIG.SUPABASE_URL,
+      window.LAVELLE_CONFIG.SUPABASE_KEY
+    );
+  } catch (e) {
+    console.error('❌ Supabase gagal init:', e);
+  }
 
   var state = {
     bookings: [],
@@ -420,63 +389,68 @@
   }
 
   // ---------- LOGIN ----------
-  // ---------- LOGIN ----------
-function loginAdmin(){
-  var passEl = document.getElementById('adminPassword');
-  var err = document.getElementById('loginError');
-  err.style.display = 'none';
+  function loginAdmin(){
+    var passEl = document.getElementById('adminPassword');
+    var err = document.getElementById('loginError');
+    err.style.display = 'none';
 
-  var password = passEl ? passEl.value.trim() : '';
+    var password = passEl ? passEl.value.trim() : '';
 
-  if(!password){
-    err.innerText = '⚠️ Password wajib diisi.';
-    err.style.display='block';
-    return;
+    if(!password){
+      err.innerText = '⚠️ Password wajib diisi.';
+      err.style.display = 'block';
+      return;
+    }
+
+    if(!supabase){
+      err.innerText = '❌ Sistem belum siap. Refresh halaman.';
+      err.style.display = 'block';
+      return;
+    }
+
+    var btn = document.getElementById('btnLogin');
+    if(btn){ btn.disabled = true; btn.classList.add('btn-loading'); }
+
+    // Login selalu pakai user 'admin', password dari input
+    supabase.rpc('admin_login',{ p_nama: 'admin', p_password: password })
+      .then(function(res){
+        if(btn){ btn.disabled=false; btn.classList.remove('btn-loading'); }
+        if(res.error){ err.innerText='❌ '+res.error.message; err.style.display='block'; return; }
+        var d = res.data;
+        if(d.error){ err.innerText='❌ '+d.error; err.style.display='block'; return; }
+
+        state.isLoggedIn = true;
+        state.adminToken = d.token;
+        state.adminNama = d.nama;
+
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('dashboardSection').style.display = 'block';
+        var info = document.getElementById('adminInfo');
+        if(info) info.innerText = '👤 ' + d.nama;
+
+        loadBookings();
+        showToast('✅ Selamat datang, '+d.nama+'!');
+      }).catch(function(e){
+        if(btn){ btn.disabled=false; btn.classList.remove('btn-loading'); }
+        err.innerText='❌ Gagal koneksi.'; err.style.display='block'; console.error(e);
+      });
   }
 
-  var btn = document.getElementById('btnLogin');
-  if(btn){ btn.disabled = true; btn.classList.add('btn-loading'); }
-
-  // Login selalu pakai user 'admin', password dari input
-  supabase.rpc('admin_login',{ p_nama: 'admin', p_password: password })
-    .then(function(res){
-      if(btn){ btn.disabled=false; btn.classList.remove('btn-loading'); }
-      if(res.error){ err.innerText='❌ '+res.error.message; err.style.display='block'; return; }
-      var d = res.data;
-      if(d.error){ err.innerText='❌ '+d.error; err.style.display='block'; return; }
-
-      state.isLoggedIn = true;
-      state.adminToken = d.token;
-      state.adminNama = d.nama;
-
-      document.getElementById('loginSection').style.display = 'none';
-      document.getElementById('dashboardSection').style.display = 'block';
-      var info = document.getElementById('adminInfo');
-      if(info) info.innerText = '👤 ' + d.nama;
-
-      loadBookings();
-      showToast('✅ Selamat datang, '+d.nama+'!');
-    }).catch(function(e){
-      if(btn){ btn.disabled=false; btn.classList.remove('btn-loading'); }
-      err.innerText='❌ Gagal koneksi.'; err.style.display='block'; console.error(e);
-    });
-}
-
-function logoutAdmin(){
-  if(state.adminToken){
-    supabase.rpc('admin_logout',{ p_token: state.adminToken }).then(function(){});
+  function logoutAdmin(){
+    if(state.adminToken && supabase){
+      supabase.rpc('admin_logout',{ p_token: state.adminToken }).then(function(){});
+    }
+    state.isLoggedIn=false; state.adminToken=null; state.adminNama='';
+    document.getElementById('loginSection').style.display='block';
+    document.getElementById('dashboardSection').style.display='none';
+    var passEl = document.getElementById('adminPassword');
+    if(passEl) passEl.value='';
+    showToast('👋 Logout');
   }
-  state.isLoggedIn=false; state.adminToken=null; state.adminNama='';
-  document.getElementById('loginSection').style.display='block';
-  document.getElementById('dashboardSection').style.display='none';
-  var passEl = document.getElementById('adminPassword');
-  if(passEl) passEl.value='';
-  showToast('👋 Logout');
-}
 
   // ---------- LOAD BOOKINGS ----------
   function loadBookings(){
-    if(!state.isLoggedIn) return;
+    if(!state.isLoggedIn || !supabase) return;
     var c = document.getElementById('tableContainer');
     c.innerHTML = '<div class="text-center" style="padding:40px;"><span class="loading-spinner"></span> Memuat...</div>';
 
@@ -578,11 +552,11 @@ function logoutAdmin(){
           a.push('<span class="text-muted" style="font-size:10px;">📭 Client belum isi list</span>');
         }
       }
-      a.push('<button class="btn-sm" onclick="copyMagicLink(\''+b.booking_id+'\')" style="background:#4285F4;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:10px;cursor:pointer;">🔗 Link</button>');
+      a.push('<button class="btn-link btn-sm" onclick="copyMagicLink(\''+b.booking_id+'\')">🔗 Link</button>');
       a.push('<button class="btn-warning btn-sm" onclick="updateStatus(\''+b.booking_id+'\',\'booking\')">↺ Reset</button>');
     } else if(s==='edit_foto'){
       a.push('<button class="btn-success btn-sm" onclick="updateStatus(\''+b.booking_id+'\',\'done_edit\')">🎉 Done Edit</button>');
-      a.push('<button class="btn-sm" onclick="copyMagicLink(\''+b.booking_id+'\')" style="background:#4285F4;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:10px;cursor:pointer;">🔗 Link</button>');
+      a.push('<button class="btn-link btn-sm" onclick="copyMagicLink(\''+b.booking_id+'\')">🔗 Link</button>');
       a.push('<button class="btn-warning btn-sm" onclick="updateStatus(\''+b.booking_id+'\',\'booking\')">↺ Reset</button>');
     } else if(s==='expired'){
       a.push('<button class="btn-danger btn-sm" onclick="deleteBooking(\''+b.booking_id+'\')">🗑️</button>');
@@ -731,9 +705,13 @@ function logoutAdmin(){
   window.startCopyProcess = startCopyProcess;
   window.copyMagicLink = copyMagicLink;
 
-  document.getElementById('modalGdrive').addEventListener('click', function(e){
-    if(e.target === this) closeGdriveModal();
-  });
+  var modalG = document.getElementById('modalGdrive');
+  if(modalG){
+    modalG.addEventListener('click', function(e){
+      if(e.target === this) closeGdriveModal();
+    });
+  }
+
   document.addEventListener('keydown', function(e){
     if(e.key === 'Enter' && !state.isLoggedIn) loginAdmin();
   });
