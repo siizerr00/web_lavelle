@@ -746,7 +746,7 @@ window.renderLavelleRegions = function () {
   if (!grid) return;
   const regions = window.LAVELLE_REGIONS;
   grid.innerHTML = regions.map(r => `
-    <div class="region-card" data-kota="${r.kota}" onclick="pilihKota('${r.kota}')">
+    <div class="region-card" data-kota="${r.kota}" data-action="pilih-kota">
       <div class="kode mono">${r.kode}</div>
       <h3>${r.kota}</h3>
       <div class="tarik">📅 Lihat jadwal</div>
@@ -754,6 +754,29 @@ window.renderLavelleRegions = function () {
     </div>
   `).join('');
 };
+
+// Bridge global: inline/DOM click tidak pernah bergantung pada lexical scope.
+// Jika script utama belum siap, tampilkan pesan yang jelas alih-alih ReferenceError.
+if (typeof window.pilihKota !== 'function') {
+  window.pilihKota = function(kota) {
+    console.warn('pilihKota belum siap:', kota);
+    if (typeof window.showToast === 'function') {
+      window.showToast('Sistem booking belum siap. Silakan refresh halaman.', 3500);
+    } else {
+      alert('Sistem booking belum siap. Silakan refresh halaman.');
+    }
+  };
+}
+
+// Delegated click: bekerja meski kartu dirender ulang.
+document.addEventListener('click', function(e) {
+  const card = e.target.closest('.region-card[data-action="pilih-kota"]');
+  if (!card) return;
+  const kota = card.dataset.kota;
+  if (typeof window.pilihKota === 'function') {
+    window.pilihKota(kota);
+  }
+});
 
 // Jalankan segera; tidak menunggu Supabase.
 if (document.readyState === 'loading') {
@@ -871,7 +894,7 @@ function renderRegions(){
     const grid = document.getElementById('regionGrid');
     if (!grid) return;
     grid.innerHTML = REGIONS.map(r => `
-      <div class="region-card" data-kota="${r.kota}" onclick="pilihKota('${r.kota}')">
+      <div class="region-card" data-kota="${r.kota}" data-action="pilih-kota">
         <div class="kode mono">${r.kode}</div>
         <h3>${r.kota}</h3>
         <div class="tarik">📅 Lihat jadwal</div>
@@ -894,7 +917,7 @@ function trackEvent(name, params) {
   if (typeof gtag === 'function') gtag('event', name, params || {});
 }
 
-async function pilihKota(kota){
+window.pilihKota = async function(kota){
   if (state.isLoading) return;
 
   // Klik kota tetap aman walaupun Supabase gagal. Jangan pindahkan user ke
