@@ -70,6 +70,7 @@
   .btn-secondary{
     padding:10px 20px;background:none;color:var(--mute);border:1px solid var(--line);border-radius:8px;
     font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;
+    text-decoration:none;display:inline-block;
   }
   .btn-secondary:hover{color:var(--ink);border-color:var(--ink);}
 
@@ -182,52 +183,9 @@
     font-family:'Inter',sans-serif;font-size:14px;background:#fff;color:var(--ink);
   }
   .modal-box .field input:focus,.modal-box .field textarea:focus{outline:none;border-color:var(--rose);box-shadow:0 0 0 3px rgba(183,110,121,.15);}
-  .modal-box .field textarea{resize:vertical;min-height:80px;}
   .modal-actions{display:flex;gap:12px;margin-top:20px;}
   .modal-actions .btn-primary{flex:1;}
   .modal-actions .btn-secondary{flex:1;text-align:center;}
-
-  .copy-progress-container {
-    margin-top:8px; padding:8px 12px;
-    background:var(--paper); border-radius:6px; border:1px solid var(--line);
-  }
-  .copy-progress-container .progress-text { font-size:12px; font-weight:500; }
-  .copy-progress-container .progress-bar {
-    height:4px; background:var(--line); border-radius:4px;
-    margin-top:4px; overflow:hidden;
-  }
-  .copy-progress-container .progress-bar .fill {
-    height:100%; background:var(--rose); border-radius:4px;
-    transition:width .3s;
-  }
-  .copy-progress-container .progress-detail {
-    font-size:11px; color:var(--mute); margin-top:4px;
-  }
-  .copy-result {
-    font-size:11px; margin-top:4px; padding:4px 8px; border-radius:4px;
-  }
-  .copy-result.success { background:#D1FAE5; color:#065F46; }
-  .copy-result.failed { background:#FDE8E8; color:#B3413E; }
-  .copy-result.partial { background:#FEF3C7; color:#92400E; }
-
-  .detail-photo-list {
-    margin-top:6px; max-height:100px; overflow-y:auto; font-size:11px;
-  }
-  .detail-photo-list .item {
-    display:flex; align-items:center; gap:6px;
-    padding:2px 4px; border-bottom:1px solid var(--line);
-  }
-  .detail-photo-list .item.success { color:#065F46; }
-  .detail-photo-list .item.failed { color:#B3413E; }
-
-  @media (max-width:640px){
-    .card{padding:16px;}
-    .card-header{flex-direction:column;align-items:flex-start;}
-    td,th{padding:6px 8px;font-size:12px;}
-    .filter-bar{flex-direction:column;align-items:stretch;}
-    .status-actions .btn-sm{font-size:9px;padding:3px 8px;}
-    .modal-box{padding:20px;}
-  }
 
   .btn-edit{
     padding:6px 14px;
@@ -245,6 +203,15 @@
     font-weight:500; transition:background .2s;
   }
   .btn-link:hover{background:#3367D6;}
+
+  @media (max-width:640px){
+    .card{padding:16px;}
+    .card-header{flex-direction:column;align-items:flex-start;}
+    td,th{padding:6px 8px;font-size:12px;}
+    .filter-bar{flex-direction:column;align-items:stretch;}
+    .status-actions .btn-sm{font-size:9px;padding:3px 8px;}
+    .modal-box{padding:20px;}
+  }
 </style>
 </head>
 <body>
@@ -260,7 +227,7 @@
     <div class="card login-box">
       <div class="field">
         <label>🔑 Password</label>
-        <input type="password" id="adminPassword" placeholder="Masukkan password admin">
+        <input type="password" id="adminPassword" placeholder="Masukkan password admin" autocomplete="off">
       </div>
       <button class="btn-primary" id="btnLogin" onclick="loginAdmin()" style="width:100%;">Login</button>
       <div class="error-box" id="loginError"></div>
@@ -277,7 +244,7 @@
       </div>
       <div class="flex">
         <span class="text-muted" id="adminInfo">👤 Admin</span>
-        <a href="admin/jadwal-fg.html" class="btn-secondary" style="padding:6px 16px; text-decoration:none; display:inline-block;">📅 Jadwal Fotografer</a>
+        <a href="./jadwal-fg.html" class="btn-secondary" style="padding:6px 16px;">📅 Jadwal Fotografer</a>
         <button class="btn-secondary" onclick="logoutAdmin()" style="padding:6px 16px;">🚪 Logout</button>
       </div>
     </div>
@@ -320,7 +287,19 @@
           <option value="Surabaya">Surabaya</option>
           <option value="Jakarta">Jakarta</option>
         </select>
-        <input type="search" id="searchInput" name="lavelle_admin_search" placeholder="🔍 Cari nama / booking ID" oninput="loadBookings()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="flex:1;min-width:150px;">
+        <input
+          type="search"
+          id="searchInput"
+          name="lavelle_admin_search_xyz"
+          placeholder="🔍 Cari nama / booking ID"
+          oninput="loadBookings()"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          value=""
+          style="flex:1;min-width:150px;"
+        >
         <button class="btn-primary btn-sm" onclick="loadBookings()" style="white-space:nowrap;">🔄 Refresh</button>
       </div>
     </div>
@@ -346,7 +325,7 @@
 
     <div class="field">
       <label>🔗 Link Google Drive</label>
-      <input type="url" id="inputGdriveLink" placeholder="https://drive.google.com/drive/folders/...">
+      <input type="url" id="inputGdriveLink" placeholder="https://drive.google.com/drive/folders/..." autocomplete="off">
     </div>
 
     <div class="modal-actions">
@@ -364,11 +343,14 @@
   'use strict';
 
   var supabase = null;
+  var supabaseReady = false;
   try {
     supabase = window.supabase.createClient(
       window.LAVELLE_CONFIG.SUPABASE_URL,
       window.LAVELLE_CONFIG.SUPABASE_KEY
     );
+    supabaseReady = true;
+    console.log('✅ Supabase siap.');
   } catch (e) {
     console.error('❌ Supabase gagal init:', e);
   }
@@ -382,11 +364,29 @@
     copyInterval: null
   };
 
+  // ---------- TOAST ----------
   function showToast(msg, dur){
     dur = dur || 3000;
     var e = document.querySelector('.toast'); if(e) e.remove();
     var t = document.createElement('div'); t.className='toast'; t.innerText=msg;
     document.body.appendChild(t); setTimeout(function(){ t.remove(); }, dur);
+  }
+
+  // ---------- PAKSA KOSONGKAN SEARCH INPUT ----------
+  function bersihkanSearchInput(){
+    var inp = document.getElementById('searchInput');
+    if (!inp) return;
+    inp.value = '';
+    setTimeout(function(){ inp.value = ''; }, 50);
+    setTimeout(function(){ inp.value = ''; }, 200);
+    setTimeout(function(){ inp.value = ''; }, 500);
+
+    var paksaKosong = setInterval(function(){
+      if (inp.value !== '' && document.activeElement !== inp) {
+        inp.value = '';
+      }
+    }, 300);
+    setTimeout(function(){ clearInterval(paksaKosong); }, 3000);
   }
 
   // ---------- LOGIN ----------
@@ -403,7 +403,7 @@
       return;
     }
 
-    if(!supabase){
+    if(!supabaseReady || !supabase){
       err.innerText = '❌ Sistem belum siap. Refresh halaman.';
       err.style.display = 'block';
       return;
@@ -412,7 +412,6 @@
     var btn = document.getElementById('btnLogin');
     if(btn){ btn.disabled = true; btn.classList.add('btn-loading'); }
 
-    // Login selalu pakai user 'admin', password dari input
     supabase.rpc('admin_login',{ p_nama: 'admin', p_password: password })
       .then(function(res){
         if(btn){ btn.disabled=false; btn.classList.remove('btn-loading'); }
@@ -423,10 +422,12 @@
         state.isLoggedIn = true;
         state.adminToken = d.token;
         state.adminNama = d.nama;
-        
-        // ⬇️ TAMBAHKAN 2 BARIS INI
-        sessionStorage.setItem('lavelle_admin_token', d.token);
-        sessionStorage.setItem('lavelle_admin_nama', d.nama);
+
+        // Simpan token untuk dipakai di jadwal-fg.html
+        try {
+          sessionStorage.setItem('lavelle_admin_token', d.token);
+          sessionStorage.setItem('lavelle_admin_nama', d.nama);
+        } catch(e){ console.error('sessionStorage error:', e); }
 
         document.getElementById('loginSection').style.display = 'none';
         document.getElementById('dashboardSection').style.display = 'block';
@@ -441,22 +442,23 @@
       });
   }
 
-function logoutAdmin(){
-  if(state.adminToken && supabase){
-    supabase.rpc('admin_logout',{ p_token: state.adminToken }).then(function(){});
+  function logoutAdmin(){
+    if(state.adminToken && supabase){
+      supabase.rpc('admin_logout',{ p_token: state.adminToken }).then(function(){});
+    }
+    state.isLoggedIn=false; state.adminToken=null; state.adminNama='';
+
+    try {
+      sessionStorage.removeItem('lavelle_admin_token');
+      sessionStorage.removeItem('lavelle_admin_nama');
+    } catch(e){}
+
+    document.getElementById('loginSection').style.display='block';
+    document.getElementById('dashboardSection').style.display='none';
+    var passEl = document.getElementById('adminPassword');
+    if(passEl) passEl.value='';
+    showToast('👋 Logout');
   }
-  state.isLoggedIn=false; state.adminToken=null; state.adminNama='';
-
-  // ⬇️ TAMBAHKAN 2 BARIS INI
-  sessionStorage.removeItem('lavelle_admin_token');
-  sessionStorage.removeItem('lavelle_admin_nama');
-
-  document.getElementById('loginSection').style.display='block';
-  document.getElementById('dashboardSection').style.display='none';
-  var passEl = document.getElementById('adminPassword');
-  if(passEl) passEl.value='';
-  showToast('👋 Logout');
-}
 
   // ---------- LOAD BOOKINGS ----------
   function loadBookings(){
@@ -703,7 +705,7 @@ function logoutAdmin(){
     document.getElementById('statSelesai').innerText = state.bookings.filter(function(b){ return b.status==='done_edit'; }).length;
   }
 
-  // ---------- EXPOSE ----------
+  // ---------- EXPOSE KE WINDOW ----------
   window.loginAdmin = loginAdmin;
   window.logoutAdmin = logoutAdmin;
   window.loadBookings = loadBookings;
@@ -715,16 +717,29 @@ function logoutAdmin(){
   window.startCopyProcess = startCopyProcess;
   window.copyMagicLink = copyMagicLink;
 
-  var modalG = document.getElementById('modalGdrive');
-  if(modalG){
-    modalG.addEventListener('click', function(e){
-      if(e.target === this) closeGdriveModal();
+  // ---------- INIT ----------
+  function init(){
+    bersihkanSearchInput();
+
+    var modalG = document.getElementById('modalGdrive');
+    if(modalG){
+      modalG.addEventListener('click', function(e){
+        if(e.target === this) closeGdriveModal();
+      });
+    }
+
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' && !state.isLoggedIn) loginAdmin();
     });
+
+    console.log('✅ Admin panel siap.');
   }
 
-  document.addEventListener('keydown', function(e){
-    if(e.key === 'Enter' && !state.isLoggedIn) loginAdmin();
-  });
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
 })();
 </script>
 </body>
