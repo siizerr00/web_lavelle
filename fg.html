@@ -8,335 +8,160 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400..600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#2E2532;
-    --paper:#FBF6F2;
-    --rose:#B76E79;
-    --gold:#C9A66B;
-    --sage:#6B8F71;
-    --mute:#8C8389;
-    --line:#E4D9D3;
-    --card:#ffffff;
+    --ink:#2E2532; --paper:#FBF6F2; --rose:#B76E79; --gold:#C9A66B;
+    --sage:#6B8F71; --mute:#8C8389; --line:#E4D9D3; --card:#ffffff;
   }
   *{box-sizing:border-box;}
   body{
-    margin:0;
-    background:var(--paper);
-    color:var(--ink);
-    font-family:'Inter',sans-serif;
-    -webkit-font-smoothing:antialiased;
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased;
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
   }
   h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
   .mono{font-family:'IBM Plex Mono',monospace;}
 
-  .container{
-    max-width:480px;
-    width:100%;
-    padding:24px;
-  }
+  .container{max-width:480px; width:100%; padding:24px;}
 
   .card{
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:12px;
-    padding:32px;
+    background:var(--card); border:1px solid var(--line);
+    border-radius:12px; padding:32px;
     box-shadow:0 4px 24px rgba(46,37,50,.08);
   }
-  .card .logo{
-    text-align:center;
-    margin-bottom:24px;
-  }
-  .card .logo h1{
-    font-size:28px;
-    font-style:italic;
-    font-weight:500;
-  }
-  .card .logo p{
-    color:var(--mute);
-    font-size:14px;
-    margin-top:4px;
-  }
+  .card .logo{ text-align:center; margin-bottom:24px; }
+  .card .logo h1{ font-size:28px; font-style:italic; font-weight:500; }
+  .card .logo p{ color:var(--mute); font-size:14px; margin-top:4px; }
 
-  .field{
-    margin-bottom:16px;
-  }
+  .field{ margin-bottom:16px; }
   .field label{
-    display:block;
-    font-size:12px;
-    color:var(--mute);
-    margin-bottom:6px;
-    text-transform:uppercase;
-    letter-spacing:.04em;
-    font-weight:600;
+    display:block; font-size:12px; color:var(--mute);
+    margin-bottom:6px; text-transform:uppercase;
+    letter-spacing:.04em; font-weight:600;
   }
   .field input{
-    width:100%;
-    padding:10px 14px;
-    border:1px solid var(--line);
-    border-radius:6px;
-    font-family:'Inter',sans-serif;
-    font-size:14px;
-    background:#fff;
-    color:var(--ink);
-    transition:border .2s;
+    width:100%; padding:10px 14px;
+    border:1px solid var(--line); border-radius:6px;
+    font-family:'Inter',sans-serif; font-size:14px;
+    background:#fff; color:var(--ink); transition:border .2s;
   }
   .field input:focus{
-    outline:none;
-    border-color:var(--rose);
+    outline:none; border-color:var(--rose);
     box-shadow:0 0 0 3px rgba(183,110,121,.15);
-  }
-  .field input:disabled{
-    background:var(--paper);
-    color:var(--mute);
   }
 
   .btn-primary{
-    width:100%;
-    padding:14px;
-    background:var(--ink);
-    color:#fff;
-    border:none;
-    border-radius:6px;
-    font-size:14px;
-    cursor:pointer;
-    font-family:'Inter',sans-serif;
-    font-weight:500;
-    transition:background .2s;
-    margin-top:8px;
-    position:relative;
+    width:100%; padding:14px; background:var(--ink); color:#fff;
+    border:none; border-radius:6px; font-size:14px; cursor:pointer;
+    font-family:'Inter',sans-serif; font-weight:500;
+    transition:background .2s; margin-top:8px; position:relative;
   }
   .btn-primary:hover{ background:var(--rose); }
-  .btn-primary:disabled{
-    opacity:0.6;
-    cursor:not-allowed;
-  }
+  .btn-primary:disabled{ opacity:0.6; cursor:not-allowed; }
 
-  .btn-loading{
-    position:relative;
-    pointer-events:none;
-    opacity:0.7;
-  }
+  .btn-loading{ position:relative; pointer-events:none; opacity:0.7; }
   .btn-loading::after{
-    content:"";
-    position:absolute;
-    right:16px;
-    top:50%;
-    transform:translateY(-50%);
-    width:18px;
-    height:18px;
-    border:2px solid #fff;
-    border-top:2px solid transparent;
-    border-radius:50%;
-    animation:spin 0.8s linear infinite;
+    content:""; position:absolute; right:16px; top:50%;
+    transform:translateY(-50%); width:18px; height:18px;
+    border:2px solid #fff; border-top:2px solid transparent;
+    border-radius:50%; animation:spin 0.8s linear infinite;
   }
+  @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
 
   .btn-secondary{
-    width:100%;
-    padding:10px;
-    background:none;
-    color:var(--mute);
-    border:none;
-    font-size:13px;
-    cursor:pointer;
-    margin-top:8px;
+    width:100%; padding:10px; background:none; color:var(--mute);
+    border:none; font-size:13px; cursor:pointer; margin-top:8px;
     font-family:'Inter',sans-serif;
   }
   .btn-secondary:hover{ color:var(--ink); }
 
   .error-box{
-    display:none;
-    color:#B3413E;
-    font-size:13px;
-    margin-top:8px;
-    background:#FDE8E8;
-    padding:10px 14px;
-    border-radius:6px;
+    display:none; color:#B3413E; font-size:13px; margin-top:8px;
+    background:#FDE8E8; padding:10px 14px; border-radius:6px;
   }
   .success-box{
-    display:none;
-    color:#065F46;
-    font-size:13px;
-    margin-top:8px;
-    background:#D1FAE5;
-    padding:10px 14px;
-    border-radius:6px;
+    display:none; color:#065F46; font-size:13px; margin-top:8px;
+    background:#D1FAE5; padding:10px 14px; border-radius:6px;
   }
 
-  .divider{
-    border:none;
-    border-top:1px solid var(--line);
-    margin:20px 0;
-  }
+  .divider{ border:none; border-top:1px solid var(--line); margin:20px 0; }
 
-  .form-jadwal{
-    display:none;
-  }
-  .form-jadwal.active{
-    display:block;
-  }
+  .form-jadwal{ display:none; }
+  .form-jadwal.active{ display:block; }
 
-  .row-2{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:12px;
-  }
+  .row-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 
   .info-fotografer{
-    background:var(--paper);
-    border-radius:8px;
-    padding:12px 16px;
-    margin-bottom:20px;
-    border:1px solid var(--line);
+    background:var(--paper); border-radius:8px;
+    padding:12px 16px; margin-bottom:20px; border:1px solid var(--line);
   }
   .info-fotografer .label{
-    font-size:11px;
-    color:var(--mute);
-    text-transform:uppercase;
-    letter-spacing:.04em;
+    font-size:11px; color:var(--mute);
+    text-transform:uppercase; letter-spacing:.04em;
   }
-  .info-fotografer .value{
-    font-size:15px;
-    font-weight:500;
-    margin-top:2px;
-  }
+  .info-fotografer .value{ font-size:15px; font-weight:500; margin-top:2px; }
 
   .toast{
-    position:fixed;
-    bottom:20px;
-    left:50%;
-    transform:translateX(-50%);
-    background:var(--ink);
-    color:#fff;
-    padding:12px 24px;
-    border-radius:8px;
-    font-size:14px;
-    z-index:100;
-    animation:slideUp .3s;
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:#fff; padding:12px 24px;
+    border-radius:8px; font-size:14px; z-index:100; animation:slideUp .3s;
   }
   @keyframes slideUp{
     from{transform:translate(-50%,20px);opacity:0;}
     to{transform:translate(-50%,0);opacity:1;}
   }
 
-  @keyframes spin{
-    0%{transform:rotate(0deg);}
-    100%{transform:rotate(360deg);}
-  }
-
   .table-wrap{
-    max-height:250px;
-    overflow-y:auto;
-    margin-top:12px;
-    border:1px solid var(--line);
-    border-radius:6px;
+    max-height:250px; overflow-y:auto; margin-top:12px;
+    border:1px solid var(--line); border-radius:6px;
   }
-  .table-wrap table{
-    width:100%;
-    border-collapse:collapse;
-    font-size:13px;
-  }
+  .table-wrap table{ width:100%; border-collapse:collapse; font-size:13px; }
   .table-wrap th{
-    background:var(--paper);
-    padding:8px 10px;
-    text-align:left;
-    font-weight:600;
-    color:var(--mute);
-    font-size:11px;
-    text-transform:uppercase;
-    letter-spacing:.04em;
-    position:sticky;
-    top:0;
-    z-index:2;
-    border-bottom:1px solid var(--line);
+    background:var(--paper); padding:8px 10px; text-align:left;
+    font-weight:600; color:var(--mute); font-size:11px;
+    text-transform:uppercase; letter-spacing:.04em;
+    position:sticky; top:0; z-index:2; border-bottom:1px solid var(--line);
   }
-  .table-wrap td{
-    padding:8px 10px;
-    border-bottom:1px solid var(--line);
-  }
-  .table-wrap tr:last-child td{
-    border-bottom:none;
-  }
+  .table-wrap td{ padding:8px 10px; border-bottom:1px solid var(--line); }
+  .table-wrap tr:last-child td{ border-bottom:none; }
+
   .badge-vendor{
-    display:inline-block;
-    padding:2px 8px;
-    border-radius:12px;
-    font-size:10px;
-    font-weight:600;
-    background:#FEF3C7;
-    color:#92400E;
+    display:inline-block; padding:2px 8px; border-radius:12px;
+    font-size:10px; font-weight:600; background:#FEF3C7; color:#92400E;
   }
   .badge-studio{
-    display:inline-block;
-    padding:2px 8px;
-    border-radius:12px;
-    font-size:10px;
-    font-weight:600;
-    background:#D1FAE5;
-    color:#065F46;
+    display:inline-block; padding:2px 8px; border-radius:12px;
+    font-size:10px; font-weight:600; background:#D1FAE5; color:#065F46;
   }
-  .tab-group{
-    display:flex;
-    gap:6px;
-    margin-bottom:10px;
-  }
+
+  .tab-group{ display:flex; gap:6px; margin-bottom:10px; }
   .tab-btn{
-    flex:1;
-    padding:8px 10px;
-    border:1px solid var(--line);
-    background:var(--paper);
-    color:var(--mute);
-    font-family:'Inter',sans-serif;
-    font-size:12px;
-    font-weight:600;
-    border-radius:6px;
-    cursor:pointer;
+    flex:1; padding:8px 10px; border:1px solid var(--line);
+    background:var(--paper); color:var(--mute); font-family:'Inter',sans-serif;
+    font-size:12px; font-weight:600; border-radius:6px; cursor:pointer;
   }
-  .tab-btn.active{
-    background:var(--rose);
-    color:#fff;
-    border-color:var(--rose);
-  }
+  .tab-btn.active{ background:var(--rose); color:#fff; border-color:var(--rose); }
+
   .wa-link{
-    display:inline-block;
-    padding:3px 10px;
-    border-radius:6px;
-    background:#D1FAE5;
-    color:#065F46;
-    font-size:11px;
-    font-weight:600;
-    text-decoration:none;
-    white-space:nowrap;
+    display:inline-block; padding:3px 10px; border-radius:6px;
+    background:#D1FAE5; color:#065F46; font-size:11px;
+    font-weight:600; text-decoration:none; white-space:nowrap;
   }
   .wa-link:hover{ background:#065F46; color:#fff; }
+
   .copy-btn{
-    padding:3px 10px;
-    border-radius:6px;
-    background:var(--paper);
-    border:1px solid var(--line);
-    color:var(--ink);
-    font-size:11px;
-    font-weight:600;
-    cursor:pointer;
-    white-space:nowrap;
+    padding:3px 10px; border-radius:6px; background:var(--paper);
+    border:1px solid var(--line); color:var(--ink); font-size:11px;
+    font-weight:600; cursor:pointer; white-space:nowrap;
   }
   .copy-btn:hover{ background:var(--rose); color:#fff; border-color:var(--rose); }
 
-  .no-data{
-    text-align:center;
-    color:var(--mute);
-    padding:16px;
-    font-size:13px;
-  }
+  .no-data{ text-align:center; color:var(--mute); padding:16px; font-size:13px; }
 </style>
 </head>
 <body>
 
 <div class="container">
 
-  <!-- 🔥 CARD LOGIN -->
+  <!-- LOGIN CARD -->
   <div class="card" id="loginCard">
     <div class="logo">
       <h1>Studio Lavelle</h1>
@@ -345,19 +170,19 @@
 
     <div class="field">
       <label>👤 Nama</label>
-      <input type="text" id="loginNama" placeholder="Masukkan nama kamu">
+      <input type="text" id="loginNama" placeholder="Masukkan nama kamu" autocomplete="off">
     </div>
     <div class="field">
       <label>🔑 PIN</label>
-      <input type="password" id="loginPin" placeholder="Masukkan PIN" maxlength="4" inputmode="numeric">
+      <input type="password" id="loginPin" placeholder="Masukkan PIN" maxlength="4" inputmode="numeric" autocomplete="off">
     </div>
 
     <button class="btn-primary" id="btnLogin" onclick="handleLogin()">Login</button>
     <div class="error-box" id="loginError"></div>
   </div>
 
-  <!-- 🔥 CARD JADWAL (Setelah Login) -->
-  <div class="card" id="jadwalCard" style="display:none;">
+  <!-- JADWAL CARD -->
+  <div class="card" id="jadwalCard" style="display:none; max-width:700px;">
     <div class="logo">
       <h1>Fotografer Panel</h1>
       <p id="fotograferInfo">👋 Halo, <strong id="namaFotografer">-</strong></p>
@@ -370,7 +195,7 @@
 
     <hr class="divider">
 
-    <!-- FORM INPUT JADWAL -->
+    <!-- FORM JADWAL VENDOR LAIN -->
     <div class="form-jadwal active">
       <p style="font-size:13px; color:var(--mute); margin-bottom:16px;">
         📅 Input jadwal untuk <strong>job dari vendor lain</strong>
@@ -399,7 +224,6 @@
 
     <hr class="divider">
 
-    <!-- DAFTAR JADWAL -->
     <div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
         <span style="font-size:13px; font-weight:600;">📋 Jadwalku</span>
@@ -441,6 +265,7 @@
       window.LAVELLE_CONFIG.SUPABASE_KEY
     );
     supabaseReady = true;
+    console.log('✅ Supabase siap.');
   } catch (err) {
     console.error('❌ Supabase gagal:', err);
   }
@@ -514,7 +339,6 @@
       });
   }
 
-  // ---------- SHOW CARD ----------
   function showJadwalCard() {
     document.getElementById('loginCard').style.display = 'none';
     document.getElementById('jadwalCard').style.display = 'block';
@@ -527,7 +351,6 @@
     loadJadwal();
   }
 
-  // ---------- LOGOUT ----------
   function handleLogout() {
     fotografer = null;
     lastJadwalLavelle = [];
@@ -538,7 +361,7 @@
     showToast('👋 Logout berhasil');
   }
 
-  // ---------- SIMPAN JADWAL ----------
+  // ---------- SIMPAN JADWAL VENDOR LAIN ----------
   function simpanJadwal() {
     var tanggal = document.getElementById('inputTanggal').value;
     var jamMulai = document.getElementById('inputJamMulai').value;
@@ -577,40 +400,40 @@
       p_jam_selesai: jamSelesai,
       p_sumber: 'vendor_lain'
     })
-    .then(function (res) {
-      btn.disabled = false;
-      btn.classList.remove('btn-loading');
+      .then(function (res) {
+        btn.disabled = false;
+        btn.classList.remove('btn-loading');
 
-      if (res.error) {
-        errorBox.innerText = '❌ ' + res.error.message;
+        if (res.error) {
+          errorBox.innerText = '❌ ' + res.error.message;
+          errorBox.style.display = 'block';
+          return;
+        }
+
+        var d = res.data;
+        if (d.error) {
+          errorBox.innerText = '❌ ' + d.error;
+          errorBox.style.display = 'block';
+          return;
+        }
+
+        successBox.innerText = '✅ Jadwal berhasil disimpan!';
+        successBox.style.display = 'block';
+
+        document.getElementById('inputTanggal').value = new Date().toISOString().split('T')[0];
+        document.getElementById('inputJamMulai').value = '';
+        document.getElementById('inputJamSelesai').value = '';
+
+        loadJadwal();
+        showToast('✅ Jadwal vendor lain berhasil disimpan!');
+      })
+      .catch(function (err) {
+        btn.disabled = false;
+        btn.classList.remove('btn-loading');
+        errorBox.innerText = '❌ Gagal menyimpan. Cek koneksi.';
         errorBox.style.display = 'block';
-        return;
-      }
-
-      var d = res.data;
-      if (d.error) {
-        errorBox.innerText = '❌ ' + d.error;
-        errorBox.style.display = 'block';
-        return;
-      }
-
-      successBox.innerText = '✅ Jadwal berhasil disimpan!';
-      successBox.style.display = 'block';
-
-      document.getElementById('inputTanggal').value = new Date().toISOString().split('T')[0];
-      document.getElementById('inputJamMulai').value = '';
-      document.getElementById('inputJamSelesai').value = '';
-
-      loadJadwal();
-      showToast('✅ Jadwal vendor lain berhasil disimpan!');
-    })
-    .catch(function (err) {
-      btn.disabled = false;
-      btn.classList.remove('btn-loading');
-      errorBox.innerText = '❌ Gagal menyimpan. Cek koneksi.';
-      errorBox.style.display = 'block';
-      console.error(err);
-    });
+        console.error(err);
+      });
   }
 
   // ---------- TAB SWITCH ----------
@@ -653,9 +476,13 @@
       'Nama Client: ' + (row.nama_client || '-') + '\n' +
       'Lokasi: ' + (row.lokasi || '-') + '\n' +
       'No. WA: ' + (row.wa || '-');
-    navigator.clipboard.writeText(teks)
-      .then(function () { showToast('✅ Jadwal disalin ke clipboard'); })
-      .catch(function () { showToast('❌ Gagal menyalin jadwal'); });
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(teks)
+        .then(function () { showToast('✅ Jadwal disalin ke clipboard'); })
+        .catch(function () { showToast('❌ Gagal menyalin jadwal'); });
+    } else {
+      showToast('⚠️ Browser tidak mendukung clipboard');
+    }
   }
 
   function copySemuaJadwalLavelle() {
@@ -671,9 +498,13 @@
         'Lokasi: ' + (row.lokasi || '-') + '\n' +
         'No. WA: ' + (row.wa || '-');
     }).join('\n\n');
-    navigator.clipboard.writeText(teks)
-      .then(function () { showToast('✅ ' + lastJadwalLavelle.length + ' jadwal disalin ke clipboard'); })
-      .catch(function () { showToast('❌ Gagal menyalin jadwal'); });
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(teks)
+        .then(function () { showToast('✅ ' + lastJadwalLavelle.length + ' jadwal disalin'); })
+        .catch(function () { showToast('❌ Gagal menyalin jadwal'); });
+    } else {
+      showToast('⚠️ Browser tidak mendukung clipboard');
+    }
   }
 
   // ---------- RENDER TABEL ----------
@@ -757,13 +588,20 @@
     supabase.rpc('fotografer_get_jadwal', { p_fotografer_id: fotografer.fotografer_id })
       .then(function (res) {
         if (res.error) {
-          var p = '<div class="no-data">❌ Gagal memuat jadwal: ' + res.error.message + '</div>';
+          var p = '<div class="no-data">❌ ' + res.error.message + '</div>';
           containerLavelle.innerHTML = p;
           containerVendor.innerHTML = p;
           return;
         }
 
         var d = res.data || {};
+        if (d.error) {
+          var p2 = '<div class="no-data">❌ ' + d.error + '</div>';
+          containerLavelle.innerHTML = p2;
+          containerVendor.innerHTML = p2;
+          return;
+        }
+
         renderTabelLavelle(d.lavelle || []);
         renderTabelVendor(d.vendor || []);
       })
@@ -799,6 +637,8 @@
       this.value = this.value.replace(/\D/g, '');
     });
   }
+
+  console.log('✅ Fotografer panel siap.');
 })();
 </script>
 </body>
