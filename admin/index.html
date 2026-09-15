@@ -576,15 +576,15 @@
     var b = state.bookings.find(function(x){ return x.booking_id === bookingId; });
     if(!b || !b.token){ showToast('❌ Token tidak ditemukan'); return; }
   
-    var teks =
-      'Berikut kami sampaikan link untuk proses photoshoot\n\n' +
-      'Email: ' + (b.email || '-') + '\n' +
-      'Booking ID: ' + (b.booking_id || '-') + '\n' +
-      'Token: ' + (b.token || '-');
+    // Ambil APP_URL dari config (tanpa trailing slash)
+    var base = (window.LAVELLE_CONFIG.APP_URL || '').replace(/\/+$/, '');
+    var link = base + '/client?token=' + b.token;
+  
+    var teks = 'Klik link berikut untuk akses proses photoshoot:\n' + link;
   
     if(navigator.clipboard && navigator.clipboard.writeText){
       navigator.clipboard.writeText(teks).then(function(){
-        showToast('✅ Token disalin!');
+        showToast('✅ Link token disalin!');
       }).catch(function(){ fallbackCopy(teks); });
     } else {
       fallbackCopy(teks);
