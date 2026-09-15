@@ -16,505 +16,148 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400..600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#2E2532;
-    --paper:#FBF6F2;
-    --rose:#B76E79;
-    --gold:#C9A66B;
-    --sage:#6B8F71;
-    --mute:#8C8389;
-    --line:#E4D9D3;
-    --card:#ffffff;
+    --ink:#2E2532; --paper:#FBF6F2; --rose:#B76E79; --gold:#C9A66B;
+    --sage:#6B8F71; --mute:#8C8389; --line:#E4D9D3; --card:#ffffff;
   }
   *{box-sizing:border-box;}
-  body{
-    margin:0;
-    background:var(--paper);
-    color:var(--ink);
-    font-family:'Inter',sans-serif;
-    -webkit-font-smoothing:antialiased;
-  }
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
   h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
   .mono{font-family:'IBM Plex Mono',monospace;}
 
-  header{
-    padding:64px 24px 40px;
-    text-align:center;
-    border-bottom:1px dashed var(--line);
-  }
-  header .eyebrow{
-    font-family:'IBM Plex Mono',monospace;
-    letter-spacing:.14em;
-    text-transform:uppercase;
-    font-size:12px;
-    color:var(--rose);
-    margin-bottom:14px;
-  }
-  header h1{
-    font-size:clamp(32px,5vw,52px);
-    font-weight:500;
-    font-style:italic;
-    line-height:1.1;
-  }
-  header p{
-    margin-top:12px;
-    color:var(--mute);
-    font-size:15px;
-  }
+  header{padding:64px 24px 40px;text-align:center;border-bottom:1px dashed var(--line);}
+  header .eyebrow{font-family:'IBM Plex Mono',monospace;letter-spacing:.14em;text-transform:uppercase;font-size:12px;color:var(--rose);margin-bottom:14px;}
+  header h1{font-size:clamp(32px,5vw,52px);font-weight:500;font-style:italic;line-height:1.1;}
+  header p{margin-top:12px;color:var(--mute);font-size:15px;}
 
-  .region-wrap{
-    max-width:920px;
-    margin:0 auto;
-    padding:40px 24px 60px;
-  }
-  .region-label{
-    font-size:13px;
-    letter-spacing:.08em;
-    text-transform:uppercase;
-    color:var(--mute);
-    margin-bottom:16px;
-  }
-  .region-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(180px, 200px));
-    justify-content:center;
-    gap:16px;
-  }
+  .region-wrap{max-width:920px;margin:0 auto;padding:40px 24px 60px;}
+  .region-label{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin-bottom:16px;}
+  .region-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 200px));justify-content:center;gap:16px;}
   @media (max-width:640px){ .region-grid{grid-template-columns:repeat(2,1fr); max-width:420px; margin:0 auto;} }
 
   .faq-wrap{ margin-top:40px; }
   .faq-list{ max-width:720px; margin:0 auto; }
   .faq-item{ border-bottom:1px solid var(--line); }
   .faq-item:first-child{ border-top:1px solid var(--line); }
-  .faq-question{
-    display:flex; align-items:center; justify-content:space-between; gap:16px;
-    padding:16px 4px; cursor:pointer; font-size:14px; font-weight:600;
-    color:var(--ink); font-family:'Inter',sans-serif; user-select:none;
-  }
+  .faq-question{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 4px;cursor:pointer;font-size:14px;font-weight:600;color:var(--ink);font-family:'Inter',sans-serif;user-select:none;}
   .faq-question:hover{ color:var(--rose); }
-  .faq-question .faq-icon{
-    font-size:18px; color:var(--rose); flex-shrink:0; line-height:1;
-    transition:transform .2s ease;
-  }
+  .faq-question .faq-icon{font-size:18px;color:var(--rose);flex-shrink:0;line-height:1;transition:transform .2s ease;}
   .faq-item.open .faq-question .faq-icon{ transform:rotate(45deg); }
-  .faq-answer{
-    max-height:0; overflow:hidden;
-    transition:max-height .25s ease, padding .25s ease;
-    font-size:13.5px; color:var(--mute); line-height:1.65; padding:0 4px;
-  }
+  .faq-answer{max-height:0;overflow:hidden;transition:max-height .25s ease, padding .25s ease;font-size:13.5px;color:var(--mute);line-height:1.65;padding:0 4px;}
   .faq-answer p{ margin:0 0 18px; }
   .faq-item.open .faq-answer{ max-height:400px; }
 
-  .region-card{
-    position:relative;
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:4px;
-    padding:22px 16px 18px;
-    cursor:pointer;
-    text-align:left;
-    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-  }
-  .region-card:hover{
-    transform:translateY(-3px);
-    border-color:var(--rose);
-    box-shadow:0 10px 24px -12px rgba(46,37,50,.25);
-  }
-  .region-card .kode{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:11px;
-    color:var(--gold);
-    letter-spacing:.06em;
-  }
-  .region-card h3{
-    font-size:22px;
-    margin-top:6px;
-    font-weight:500;
-  }
-  .region-card .tarik{
-    margin-top:10px;
-    font-size:12px;
-    color:var(--mute);
-  }
-  .region-card .badge-loading{
-    display:none;
-    font-size:10px;
-    color:var(--rose);
-    margin-top:4px;
-    animation:pulse 1s ease-in-out infinite;
-  }
-  .region-card.loading .badge-loading{
-    display:block;
-  }
-  .region-card.loading .tarik{
-    display:none;
-  }
+  .region-card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:4px;padding:22px 16px 18px;cursor:pointer;text-align:left;transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;}
+  .region-card:hover{transform:translateY(-3px);border-color:var(--rose);box-shadow:0 10px 24px -12px rgba(46,37,50,.25);}
+  .region-card .kode{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:.06em;}
+  .region-card h3{font-size:22px;margin-top:6px;font-weight:500;}
+  .region-card .tarik{margin-top:10px;font-size:12px;color:var(--mute);}
+  .region-card .badge-loading{display:none;font-size:10px;color:var(--rose);margin-top:4px;animation:pulse 1s ease-in-out infinite;}
+  .region-card.loading .badge-loading{ display:block; }
+  .region-card.loading .tarik{ display:none; }
 
   #kotaPage{ display:none; max-width:920px; margin:0 auto; padding:0 24px 100px; }
-  .back-btn{
-    background:none;border:none;color:var(--mute);cursor:pointer;
-    font-size:13px; margin:28px 0 8px; padding:0; font-family:inherit;
-  }
+  .back-btn{background:none;border:none;color:var(--mute);cursor:pointer;font-size:13px;margin:28px 0 8px;padding:0;font-family:inherit;}
   .back-btn:hover{color:var(--ink);}
   .kota-title{ font-size:34px; font-style:italic; font-weight:500; margin-bottom:4px;}
   .kota-sub{ color:var(--mute); font-size:14px; margin-bottom:32px; }
 
   section.block{ margin-bottom:48px; }
-  section.block h2{
-    font-size:14px; text-transform:uppercase; letter-spacing:.1em;
-    color:var(--rose); font-family:'Inter',sans-serif; font-weight:600;
-    margin-bottom:16px;
-  }
+  section.block h2{font-size:14px;text-transform:uppercase;letter-spacing:.1em;color:var(--rose);font-family:'Inter',sans-serif;font-weight:600;margin-bottom:16px;}
 
-  .pricelist-frame{
-    border:1px solid var(--line);
-    border-radius:6px;
-    overflow:hidden;
-    background:var(--card);
-    min-height:120px;
-  }
-  .pricelist-empty{
-    padding:24px;
-    color:var(--mute);
-    font-size:14px;
-    text-align:center;
-  }
+  .pricelist-frame{border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--card);min-height:120px;}
+  .pricelist-empty{padding:24px;color:var(--mute);font-size:14px;text-align:center;}
 
-  .pricelist-scroll {
-    display:flex;
-    flex-direction:column;
-    gap:20px;
-    padding:16px;
-    max-height:650px;
-    overflow-y:auto;
-  }
-  .pricelist-scroll::-webkit-scrollbar {
-    width:6px;
-  }
-  .pricelist-scroll::-webkit-scrollbar-track {
-    background:var(--line);
-    border-radius:4px;
-  }
-  .pricelist-scroll::-webkit-scrollbar-thumb {
-    background:var(--rose);
-    border-radius:4px;
-  }
-  .pricelist-scroll .item {
-    border:1px solid var(--line);
-    border-radius:8px;
-    overflow:hidden;
-    background:var(--card);
-    transition:transform .2s;
-  }
-  .pricelist-scroll .item:hover {
-    transform:scale(1.01);
-  }
-  .pricelist-scroll .item img {
-    width:100%;
-    display:block;
-  }
-  .pricelist-scroll .item .label {
-    padding:10px 16px;
-    font-size:12px;
-    color:var(--mute);
-    text-align:center;
-    border-top:1px solid var(--line);
-    background:var(--paper);
-    font-weight:500;
-  }
-  .pricelist-scroll .item .pdf-container {
-    position:relative;
-    padding-bottom:141.4%;
-    height:0;
-    overflow:hidden;
-  }
-  .pricelist-scroll .item .pdf-container iframe {
-    position:absolute;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    border:none;
-  }
+  .pricelist-scroll {display:flex;flex-direction:column;gap:20px;padding:16px;max-height:650px;overflow-y:auto;}
+  .pricelist-scroll::-webkit-scrollbar { width:6px; }
+  .pricelist-scroll::-webkit-scrollbar-track { background:var(--line); border-radius:4px; }
+  .pricelist-scroll::-webkit-scrollbar-thumb { background:var(--rose); border-radius:4px; }
+  .pricelist-scroll .item {border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--card);transition:transform .2s;}
+  .pricelist-scroll .item:hover { transform:scale(1.01); }
+  .pricelist-scroll .item img { width:100%; display:block; }
+  .pricelist-scroll .item .label {padding:10px 16px;font-size:12px;color:var(--mute);text-align:center;border-top:1px solid var(--line);background:var(--paper);font-weight:500;}
+  .pricelist-scroll .item .pdf-container {position:relative;padding-bottom:141.4%;height:0;overflow:hidden;}
+  .pricelist-scroll .item .pdf-container iframe {position:absolute;top:0;left:0;width:100%;height:100%;border:none;}
 
   .cal-nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-  .cal-nav button{
-    background:var(--card); border:1px solid var(--line); border-radius:4px;
-    width:32px; height:32px; cursor:pointer; font-size:16px; color:var(--ink);
-    transition:all .2s;
-  }
+  .cal-nav button{background:var(--card);border:1px solid var(--line);border-radius:4px;width:32px;height:32px;cursor:pointer;font-size:16px;color:var(--ink);transition:all .2s;}
   .cal-nav button:disabled{ opacity:.4; cursor:not-allowed; }
   .cal-nav button:hover:not(:disabled){ background:var(--rose); color:#fff; border-color:var(--rose); }
   .cal-nav .bulan-label{ font-family:'Fraunces',serif; font-style:italic; font-size:18px; }
 
   .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
   .cal-wrap{ position:relative; }
-  .cal-fully-booked{
-    position:absolute;
-    inset:0;
-    display:none;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    background:rgba(46,37,50,.72);
-    color:#F1E6CE;
-    font-family:'Fraunces',serif;
-    font-style:italic;
-    font-weight:600;
-    font-size:clamp(22px,4.5vw,32px);
-    letter-spacing:.03em;
-    border-radius:6px;
-    z-index:5;
-    pointer-events:none;
-  }
+  .cal-fully-booked{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;background:rgba(46,37,50,.72);color:#F1E6CE;font-family:'Fraunces',serif;font-style:italic;font-weight:600;font-size:clamp(22px,4.5vw,32px);letter-spacing:.03em;border-radius:6px;z-index:5;pointer-events:none;}
   .cal-fully-booked.show{ display:flex; }
   .cal-hari{ text-align:center; font-size:11px; color:var(--mute); padding-bottom:4px; font-weight:600; }
-  .cal-tanggal{
-    aspect-ratio:1/1; display:flex; align-items:center; justify-content:center;
-    border-radius:4px; font-size:13px; cursor:default;
-    background:transparent; color:var(--mute); border:1px solid transparent;
-    transition:all .15s;
-    position:relative;
-  }
-  .cal-tanggal.available{
-    background:#F4EDE0; color:var(--ink); cursor:pointer; border:1px solid var(--gold);
-    font-weight:600;
-  }
+  .cal-tanggal{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;border-radius:4px;font-size:13px;cursor:default;background:transparent;color:var(--mute);border:1px solid transparent;transition:all .15s;position:relative;}
+  .cal-tanggal.available{background:#F4EDE0;color:var(--ink);cursor:pointer;border:1px solid var(--gold);font-weight:600;}
   .cal-tanggal.available:hover{ background:var(--gold); color:#fff; transform:scale(1.05); }
   .cal-tanggal.selected{ background:var(--rose)!important; color:#fff!important; border-color:var(--rose); }
   .cal-tanggal.full{ background:#EFE9E6; color:#C9BFC3; text-decoration:line-through; cursor:not-allowed; }
-  .cal-tanggal.skeleton{
-    background:linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
-    background-size:200% 100%;
-    animation:shimmer 1.5s infinite;
-    border-radius:4px;
-    min-height:30px;
-    color:transparent;
-  }
-  @keyframes shimmer{
-    0%{background-position:200% 0;}
-    100%{background-position:-200% 0;}
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
+  .cal-tanggal.skeleton{background:linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:4px;min-height:30px;color:transparent;}
+  @keyframes shimmer{ 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
   .slot-list{ display:flex; flex-wrap:wrap; gap:10px; margin-top:18px; }
-  .slot-btn{
-    font-family:'IBM Plex Mono',monospace;
-    background:var(--card); border:1px solid var(--sage); color:var(--sage);
-    padding:10px 16px; border-radius:30px; cursor:pointer; font-size:13px;
-    transition:all .15s;
-  }
+  .slot-btn{font-family:'IBM Plex Mono',monospace;background:var(--card);border:1px solid var(--sage);color:var(--sage);padding:10px 16px;border-radius:30px;cursor:pointer;font-size:13px;transition:all .15s;}
   .slot-btn:hover{ background:var(--sage); color:#fff; transform:translateY(-2px); box-shadow:0 4px 12px rgba(107,143,113,.2); }
   .slot-empty{ color:var(--mute); font-size:13px; margin-top:12px; }
 
-  .overlay{
-    display:none; position:fixed; inset:0; background:rgba(46,37,50,.55);
-    align-items:center; justify-content:center; z-index:50; padding:20px;
-    animation:fadeIn .2s;
-  }
+  .overlay{display:none;position:fixed;inset:0;background:rgba(46,37,50,.55);align-items:center;justify-content:center;z-index:50;padding:20px;animation:fadeIn .2s;}
   @keyframes fadeIn{ from{opacity:0;} to{opacity:1;} }
-  .modal{
-    background:var(--paper); border-radius:8px; max-width:480px; width:100%;
-    padding:32px; max-height:90vh; overflow-y:auto;
-  }
+  .modal{background:var(--paper);border-radius:8px;max-width:480px;width:100%;padding:32px;max-height:90vh;overflow-y:auto;}
   .modal h3{ font-size:24px; font-style:italic; margin-bottom:4px; }
   .modal .info-slot{ color:var(--mute); font-size:13px; margin-bottom:20px; }
   .field{ margin-bottom:16px; }
   .field label{ display:block; font-size:12px; color:var(--mute); margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em;}
-  .field input, .field select{
-    width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:4px;
-    font-family:'Inter',sans-serif; font-size:14px; background:#fff; color:var(--ink);
-  }
+  .field input, .field select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:4px;font-family:'Inter',sans-serif;font-size:14px;background:#fff;color:var(--ink);}
   .field input:focus, .field select:focus{ outline:2px solid var(--rose); outline-offset:1px; }
-  .btn-primary{
-    width:100%; padding:14px; background:var(--ink); color:#fff; border:none;
-    border-radius:4px; font-size:14px; cursor:pointer; margin-top:8px; letter-spacing:.02em;
-    transition:background .2s;
-    position:relative;
-  }
+  .btn-primary{width:100%;padding:14px;background:var(--ink);color:#fff;border:none;border-radius:4px;font-size:14px;cursor:pointer;margin-top:8px;letter-spacing:.02em;transition:background .2s;position:relative;}
   .btn-primary:hover{ background:var(--rose); }
-  .btn-primary:disabled{
-    opacity:0.6;
-    cursor:not-allowed;
-  }
-  .btn-secondary{
-    width:100%; padding:10px; background:none; color:var(--mute); border:none;
-    font-size:13px; cursor:pointer; margin-top:10px;
-  }
+  .btn-primary:disabled{ opacity:0.6; cursor:not-allowed; }
+  .btn-secondary{width:100%;padding:10px;background:none;color:var(--mute);border:none;font-size:13px;cursor:pointer;margin-top:10px;}
   .btn-secondary:hover{ color:var(--ink); }
 
-  .btn-loading {
-    position:relative;
-    pointer-events:none;
-    opacity:0.7;
-  }
-  .btn-loading::after {
-    content:"";
-    position:absolute;
-    right:16px;
-    top:50%;
-    transform:translateY(-50%);
-    width:18px;
-    height:18px;
-    border:2px solid #fff;
-    border-top:2px solid transparent;
-    border-radius:50%;
-    animation:spin 0.8s linear infinite;
-  }
+  .btn-loading { position:relative; pointer-events:none; opacity:0.7; }
+  .btn-loading::after {content:"";position:absolute;right:16px;top:50%;transform:translateY(-50%);width:18px;height:18px;border:2px solid #fff;border-top:2px solid transparent;border-radius:50%;animation:spin 0.8s linear infinite;}
 
-  .loading-overlay {
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(46,37,50,0.7);
-    z-index:100;
-    align-items:center;
-    justify-content:center;
-  }
-  .loading-overlay.active {
-    display:flex;
-  }
-  .loading-box {
-    background:var(--paper);
-    border-radius:12px;
-    padding:32px 40px;
-    text-align:center;
-    max-width:320px;
-  }
-  .loading-box .spinner {
-    width:40px;
-    height:40px;
-    border:3px solid var(--line);
-    border-top:3px solid var(--rose);
-    border-radius:50%;
-    animation:spin 0.8s linear infinite;
-    margin:0 auto 16px;
-  }
-  .loading-box .text {
-    font-size:14px;
-    color:var(--mute);
-  }
-  .loading-box .text strong {
-    color:var(--ink);
-  }
+  .loading-overlay {display:none;position:fixed;inset:0;background:rgba(46,37,50,0.7);z-index:100;align-items:center;justify-content:center;}
+  .loading-overlay.active { display:flex; }
+  .loading-box {background:var(--paper);border-radius:12px;padding:32px 40px;text-align:center;max-width:320px;}
+  .loading-box .spinner {width:40px;height:40px;border:3px solid var(--line);border-top:3px solid var(--rose);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;}
+  .loading-box .text { font-size:14px; color:var(--mute); }
+  .loading-box .text strong { color:var(--ink); }
 
-  .ticket{
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:6px;
-    position:relative;
-    overflow:hidden;
-  }
+  .ticket{background:var(--card);border:1px solid var(--line);border-radius:6px;position:relative;overflow:hidden;}
   .ticket-top{ padding:24px 24px 18px; }
-  .ticket-top .kode-booking{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:20px;
-    letter-spacing:.03em;
-    color:var(--ink);
-    margin-bottom:2px;
-  }
+  .ticket-top .kode-booking{font-family:'IBM Plex Mono',monospace;font-size:20px;letter-spacing:.03em;color:var(--ink);margin-bottom:2px;}
   .ticket-top .label{ font-size:11px; color:var(--mute); text-transform:uppercase; letter-spacing:.08em; }
-  .perforasi{
-    border-top:1px dashed var(--line);
-    position:relative;
-    margin:0 24px;
-  }
-  .perforasi::before, .perforasi::after{
-    content:"";
-    position:absolute;
-    top:-9px;
-    width:18px;
-    height:18px;
-    background:var(--paper);
-    border-radius:50%;
-  }
+  .perforasi{ border-top:1px dashed var(--line); position:relative; margin:0 24px; }
+  .perforasi::before, .perforasi::after{content:"";position:absolute;top:-9px;width:18px;height:18px;background:var(--paper);border-radius:50%;}
   .perforasi::before{ left:-33px; }
   .perforasi::after{ right:-33px; }
   .ticket-bottom{ padding:18px 24px 24px; display:grid; grid-template-columns:1fr 1fr; gap:14px; }
   .ticket-bottom .item .label{ font-size:11px; color:var(--mute); text-transform:uppercase; letter-spacing:.06em; }
   .ticket-bottom .item .value{ font-size:14px; margin-top:2px; font-weight:500; }
-  .btn-wa{
-    display:block;
-    text-align:center;
-    text-decoration:none;
-    margin-top:20px;
-    background:var(--sage);
-    color:#fff;
-    padding:14px;
-    border-radius:4px;
-    font-size:14px;
-    transition:background .2s;
-  }
+  .btn-wa{display:block;text-align:center;text-decoration:none;margin-top:20px;background:var(--sage);color:#fff;padding:14px;border-radius:4px;font-size:14px;transition:background .2s;}
   .btn-wa:hover{ background:#597A5F; }
-  .btn-wa:disabled{
-    opacity:0.6;
-    cursor:not-allowed;
-  }
+  .btn-wa:disabled{ opacity:0.6; cursor:not-allowed; }
 
   #errorBox{ color:#B3413E; font-size:13px; margin-top:8px; display:none; background:#FDE8E8; padding:10px; border-radius:4px; }
 
-  .toast{
-    position:fixed;
-    bottom:20px;
-    left:50%;
-    transform:translateX(-50%);
-    background:var(--ink);
-    color:#fff;
-    padding:12px 24px;
-    border-radius:8px;
-    font-size:14px;
-    z-index:100;
-    animation:slideUp .3s;
-  }
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:100;animation:slideUp .3s;}
   @keyframes slideUp{ from{transform:translate(-50%,20px);opacity:0;} to{transform:translate(-50%,0);opacity:1;} }
 
-  .loading-spinner {
-    display:inline-block;
-    width:16px;
-    height:16px;
-    border:2px solid var(--line);
-    border-top:2px solid var(--rose);
-    border-radius:50%;
-    animation:spin 0.8s linear infinite;
-    margin-right:8px;
-    vertical-align:middle;
-  }
-  @keyframes spin {
-    0%{transform:rotate(0deg);}
-    100%{transform:rotate(360deg);}
-  }
+  .loading-spinner {display:inline-block;width:16px;height:16px;border:2px solid var(--line);border-top:2px solid var(--rose);border-radius:50%;animation:spin 0.8s linear infinite;margin-right:8px;vertical-align:middle;}
+  @keyframes spin { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
 
-  .field-group {
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:12px;
-  }
-  @media (max-width:480px){
-    .field-group{grid-template-columns:1fr;}
-  }
+  .field-group { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width:480px){ .field-group{grid-template-columns:1fr;} }
 
-  .status-badge {
-    display:inline-block;
-    padding:4px 12px;
-    border-radius:20px;
-    font-size:11px;
-    font-weight:600;
-  }
-  .status-badge.pending {
-    background:#FEF3C7;
-    color:#92400E;
-  }
-  .status-badge.paid {
-    background:#D1FAE5;
-    color:#065F46;
-  }
-  .status-badge.expired {
-    background:#FEE2E2;
-    color:#991B1B;
-  }
+  .status-badge { display:inline-block; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:600; }
+  .status-badge.pending { background:#FEF3C7; color:#92400E; }
+  .status-badge.paid { background:#D1FAE5; color:#065F46; }
+  .status-badge.expired { background:#FEE2E2; color:#991B1B; }
 </style>
 </head>
 <body>
@@ -535,82 +178,58 @@
 
       <div class="faq-item">
         <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-          <span>Apakah tersedia studio?</span>
-          <span class="faq-icon">+</span>
+          <span>Apakah tersedia studio?</span><span class="faq-icon">+</span>
         </div>
-        <div class="faq-answer">
-          <p>Tidak. Kami hanya menyediakan outdoor photoshoot.</p>
-        </div>
+        <div class="faq-answer"><p>Tidak. Kami hanya menyediakan outdoor photoshoot.</p></div>
       </div>
 
       <div class="faq-item">
         <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-          <span>Apakah bisa booking jika tanggal belum pasti?</span>
-          <span class="faq-icon">+</span>
+          <span>Apakah bisa booking jika tanggal belum pasti?</span><span class="faq-icon">+</span>
         </div>
-        <div class="faq-answer">
-          <p>Bisa di-reschedule, maksimal 2 minggu sebelum sesi. Namun tetap diperlukan tanggal awal untuk melakukan booking.</p>
-        </div>
+        <div class="faq-answer"><p>Bisa di-reschedule, maksimal 2 minggu sebelum sesi. Namun tetap diperlukan tanggal awal untuk melakukan booking.</p></div>
       </div>
 
       <div class="faq-item">
         <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-          <span>Apakah ada biaya transport?</span>
-          <span class="faq-icon">+</span>
+          <span>Apakah ada biaya transport?</span><span class="faq-icon">+</span>
         </div>
-        <div class="faq-answer">
-          <p>Ada. Biaya transport sebesar Rp30.000, dihitung dari pusat kota (detail lengkap cek pricelist).</p>
-        </div>
+        <div class="faq-answer"><p>Ada. Biaya transport sebesar Rp30.000, dihitung dari pusat kota (detail lengkap cek pricelist).</p></div>
       </div>
 
       <div class="faq-item">
         <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-          <span>Apakah tidak buka di wilayah lain?</span>
-          <span class="faq-icon">+</span>
+          <span>Apakah tidak buka di wilayah lain?</span><span class="faq-icon">+</span>
         </div>
-        <div class="faq-answer">
-          <p>Saat ini kami hanya tersedia untuk 3 wilayah di atas.</p>
-        </div>
+        <div class="faq-answer"><p>Saat ini kami hanya tersedia untuk 3 wilayah di atas.</p></div>
       </div>
 
       <div class="faq-item">
         <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-          <span>Apakah fotografernya cewek?</span>
-          <span class="faq-icon">+</span>
+          <span>Apakah fotografernya cewek?</span><span class="faq-icon">+</span>
         </div>
-        <div class="faq-answer">
-          <p>Ya. Fotografer kami semua cewek yaaa.</p>
-        </div>
+        <div class="faq-answer"><p>Ya. Fotografer kami semua cewek yaaa.</p></div>
       </div>
 
       <div class="faq-item">
         <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-          <span>Apakah sudah termasuk foto dengan keluarga?</span>
-          <span class="faq-icon">+</span>
+          <span>Apakah sudah termasuk foto dengan keluarga?</span><span class="faq-icon">+</span>
         </div>
-        <div class="faq-answer">
-          <p>Paket Personal dan Couple sudah termasuk foto dengan keluarga.</p>
-        </div>
+        <div class="faq-answer"><p>Paket Personal dan Couple sudah termasuk foto dengan keluarga.</p></div>
       </div>
 
       <div class="faq-item">
         <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-          <span>Berapa lama hasil foto didapatkan?</span>
-          <span class="faq-icon">+</span>
+          <span>Berapa lama hasil foto didapatkan?</span><span class="faq-icon">+</span>
         </div>
-        <div class="faq-answer">
-          <p>Foto RAW maksimal H+1 setelah photoshoot. Foto editan maksimal H+10 setelah pemilihan foto.</p>
-        </div>
+        <div class="faq-answer"><p>Foto RAW maksimal H+1 setelah photoshoot. Foto editan maksimal H+10 setelah pemilihan foto.</p></div>
       </div>
 
       <div class="faq-item">
         <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-          <span>Bagaimana jika mau foto couple? Atau 2 wisudawan?</span>
-          <span class="faq-icon">+</span>
+          <span>Bagaimana jika mau foto couple? Atau 2 wisudawan?</span><span class="faq-icon">+</span>
         </div>
-        <div class="faq-answer">
-          <p>Pricelist Personal hanya untuk SATU wisudawan. Paket Couple untuk DUA wisudawan. Paket Group untuk foto lebih dari 5 orang.</p>
-        </div>
+        <div class="faq-answer"><p>Pricelist Personal hanya untuk SATU wisudawan. Paket Couple untuk DUA wisudawan. Paket Group untuk foto lebih dari 5 orang.</p></div>
       </div>
 
     </div>
@@ -730,631 +349,517 @@
   </div>
 </div>
 
-<script>
-// ============================================================
-// LAVELLE REGION BOOTSTRAP (INDEPENDEN DARI SUPABASE)
-// Kartu wilayah harus tetap tampil walaupun Supabase/CDN gagal.
-// ============================================================
-window.LAVELLE_REGIONS = [
-  { kota: "Jogja", kode: "JGY" },
-  { kota: "Solo", kode: "SLO" },
-  { kota: "Surabaya", kode: "SBY" }
-];
-
-window.renderLavelleRegions = function () {
-  const grid = document.getElementById('regionGrid');
-  if (!grid) return;
-  const regions = window.LAVELLE_REGIONS;
-  grid.innerHTML = regions.map(r => `
-    <div class="region-card" data-kota="${r.kota}" data-action="pilih-kota">
-      <div class="kode mono">${r.kode}</div>
-      <h3>${r.kota}</h3>
-      <div class="tarik">📅 Lihat jadwal</div>
-      <div class="badge-loading"><span class="loading-spinner"></span>Memuat...</div>
-    </div>
-  `).join('');
-};
-
-// Bridge global: inline/DOM click tidak pernah bergantung pada lexical scope.
-// Jika script utama belum siap, tampilkan pesan yang jelas alih-alih ReferenceError.
-if (typeof window.pilihKota !== 'function') {
-  window.pilihKota = function(kota) {
-    console.warn('pilihKota belum siap:', kota);
-    if (typeof window.showToast === 'function') {
-      window.showToast('Sistem booking belum siap. Silakan refresh halaman.', 3500);
-    } else {
-      alert('Sistem booking belum siap. Silakan refresh halaman.');
-    }
-  };
-}
-
-// Delegated click: bekerja meski kartu dirender ulang.
-document.addEventListener('click', function(e) {
-  const card = e.target.closest('.region-card[data-action="pilih-kota"]');
-  if (!card) return;
-  const kota = card.dataset.kota;
-  if (typeof window.pilihKota === 'function') {
-    window.pilihKota(kota);
-  }
-});
-
-// Jalankan segera; tidak menunggu Supabase.
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', window.renderLavelleRegions, { once: true });
-} else {
-  window.renderLavelleRegions();
-}
-</script>
-
+<!-- ============================================================
+     SUPABASE LIBRARY
+     ============================================================ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- ============================================================
+     SATU BLOK SCRIPT UTAMA
+     Semua fungsi di-expose ke window agar onclick di HTML bisa manggil.
+     ============================================================ -->
 <script>
-// ============================================================
-// KONFIGURASI SUPABASE
-// Ambil dari: Supabase Dashboard → Settings → API Keys → tab "API Keys"
-// (BUKAN tab "Legacy" — project baru pakai sistem publishable/secret key)
-// ============================================================
-const SUPABASE_URL = "https://xgdlzlyjmnuzdytycree.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_2CSjGRSMIKSl_KTUX2hr0A_crngTzEf";
+(function () {
+  'use strict';
 
-// Jangan pernah biarkan kegagalan Supabase menghentikan script utama.
-let supabase = null;
-let supabaseReady = false;
-try {
-  if (window.supabase && typeof window.supabase.createClient === 'function') {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-    supabaseReady = true;
-  } else {
-    console.warn('⚠️ Supabase CDN belum tersedia. Wilayah tetap bisa dirender.');
-  }
-} catch (err) {
-  console.error('❌ Gagal inisialisasi Supabase:', err);
-  supabase = null;
-  supabaseReady = false;
-}
+  // ============================================================
+  // KONFIGURASI
+  // ============================================================
+  var SUPABASE_URL = "https://xgdlzlyjmnuzdytycree.supabase.co";
+  var SUPABASE_PUBLISHABLE_KEY = "sb_publishable_2CSjGRSMIKSl_KTUX2hr0A_crngTzEf";
 
-// Nomor WA admin berbeda per wilayah.
-const ADMIN_WA_PER_KOTA = {
-  "Jogja": "6282132439700",
-  "Solo": "6282132439700",
-  "Surabaya": "6283112053117"
-};
-const ADMIN_WA_DEFAULT = "6283112053117"; // fallback kalau kota tidak terdaftar
+  var ADMIN_WA_PER_KOTA = {
+    "Jogja": "6282132439700",
+    "Solo": "6282132439700",
+    "Surabaya": "6283112053117"
+  };
+  var ADMIN_WA_DEFAULT = "6283112053117";
 
-const REGIONS = window.LAVELLE_REGIONS || [
-  { kota: "Jogja", kode: "JGY" },
-  { kota: "Solo", kode: "SLO" },
-  { kota: "Surabaya", kode: "SBY" }
-];
+  var REGIONS = [
+    { kota: "Jogja",    kode: "JGY" },
+    { kota: "Solo",     kode: "SLO" },
+    { kota: "Surabaya", kode: "SBY" }
+  ];
 
-// Bulan yang ditutup untuk booking (format "YYYY-MM"). Tanggal di bulan ini
-// akan otomatis tampil sebagai "full" / tidak bisa diklik di kalender.
-const BLOCKED_MONTHS = ["2026-09", "2026-10"];
+  var BLOCKED_MONTHS = ["2026-09", "2026-10"];
+  var MAKS_BULAN_KE_DEPAN = 6;
 
-// Batas berapa bulan ke depan yang boleh dibuka (biar tidak spam fetch ke masa depan jauh)
-const MAKS_BULAN_KE_DEPAN = 6;
+  var NAMA_BULAN = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+  var NAMA_HARI = ["Min","Sen","Sel","Rab","Kam","Jum","Sab"];
 
-// ============================================================
-// CACHE
-// ============================================================
-const CACHE = {
-  allData: {},   // "kota" -> {data, timestamp}  (khusus data awal: pricelist, paket, 14 hari pertama)
-  kalenderBulan: {}, // "kota|YYYY-MM" -> {data, timestamp}
-  slot: {}       // "kota|YYYY-MM-DD" -> {data, timestamp}
-};
-
-function isCacheValid(timestamp) {
-  const today = new Date().toDateString();
-  const cacheDate = new Date(timestamp).toDateString();
-  return today === cacheDate;
-}
-
-function formatDate(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-// ============================================================
-// STATE
-// ============================================================
-let state = {
-  kotaAktif: null,
-  bulanAktif: new Date(),
-  tanggalTerpilih: null,
-  slotTerpilih: null,
-  paketList: [],
-  allData: null,          // { pricelist, pricelistMedia, kalender: {tgl:{tersedia,jumlah_slot}}, slot: {...} }
-  isLoading: false
-};
-
-// (Fungsi jsonp() dihapus — semua request sekarang lewat Supabase client)
-
-// ============================================================
-// LOADING FUNCTIONS
-// ============================================================
-function showLoading(text = 'Memproses Booking...') {
-  document.getElementById('loadingText').innerText = text;
-  document.getElementById('loadingOverlay').classList.add('active');
-}
-
-function hideLoading() {
-  document.getElementById('loadingOverlay').classList.remove('active');
-}
-
-// ============================================================
-// RENDER REGIONS
-// ============================================================
-function renderRegions(){
+  // ============================================================
+  // SUPABASE CLIENT
+  // ============================================================
+  var supabase = null;
+  var supabaseReady = false;
   try {
-    if (typeof window.renderLavelleRegions === 'function') {
-      window.renderLavelleRegions();
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+      supabaseReady = true;
+      console.log('✅ Supabase client siap.');
+    } else {
+      console.warn('⚠️ Supabase CDN belum tersedia. Wilayah tetap dirender, tapi booking tidak aktif.');
+    }
+  } catch (err) {
+    console.error('❌ Gagal inisialisasi Supabase:', err);
+    supabase = null;
+    supabaseReady = false;
+  }
+
+  // ============================================================
+  // CACHE & STATE
+  // ============================================================
+  var CACHE = {
+    allData: {},
+    kalenderBulan: {},
+    slot: {}
+  };
+
+  var state = {
+    kotaAktif: null,
+    bulanAktif: new Date(),
+    tanggalTerpilih: null,
+    slotTerpilih: null,
+    paketList: [],
+    allData: null,
+    isLoading: false
+  };
+
+  function isCacheValid(timestamp) {
+    return new Date().toDateString() === new Date(timestamp).toDateString();
+  }
+
+  function formatDate(date) {
+    var y = date.getFullYear();
+    var m = String(date.getMonth() + 1).padStart(2, '0');
+    var d = String(date.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + d;
+  }
+
+  // ============================================================
+  // UI HELPERS
+  // ============================================================
+  function showLoading(text) {
+    document.getElementById('loadingText').innerText = text || 'Memproses Booking...';
+    document.getElementById('loadingOverlay').classList.add('active');
+  }
+  function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('active');
+  }
+  function showToast(message, duration) {
+    duration = duration || 3000;
+    var existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    var toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerText = message;
+    document.body.appendChild(toast);
+    setTimeout(function () { toast.remove(); }, duration);
+  }
+  function trackEvent(name, params) {
+    if (typeof gtag === 'function') gtag('event', name, params || {});
+  }
+
+  // ============================================================
+  // RENDER REGIONS
+  // ============================================================
+  function renderRegions() {
+    var grid = document.getElementById('regionGrid');
+    if (!grid) {
+      console.error('❌ Elemen #regionGrid tidak ditemukan!');
       return;
     }
-    const grid = document.getElementById('regionGrid');
-    if (!grid) return;
-    grid.innerHTML = REGIONS.map(r => `
-      <div class="region-card" data-kota="${r.kota}" data-action="pilih-kota">
-        <div class="kode mono">${r.kode}</div>
-        <h3>${r.kota}</h3>
-        <div class="tarik">📅 Lihat jadwal</div>
-        <div class="badge-loading"><span class="loading-spinner"></span>Memuat...</div>
-      </div>
-    `).join('');
-  } catch (err) {
-    console.error('❌ Gagal render wilayah:', err);
-  }
-}
-renderRegions();
-
-// ============================================================
-// NAVIGASI
-// ============================================================
-// ============================================================
-// GOOGLE ANALYTICS - TRACK EVENT (aman walau GA gagal load)
-// ============================================================
-function trackEvent(name, params) {
-  if (typeof gtag === 'function') gtag('event', name, params || {});
-}
-
-window.pilihKota = async function(kota){
-  if (state.isLoading) return;
-
-  // Klik kota tetap aman walaupun Supabase gagal. Jangan pindahkan user ke
-  // halaman booking yang datanya tidak bisa dimuat.
-  if (!supabaseReady || !supabase) {
-    showToast('⚠️ Sistem booking sedang tidak terhubung. Coba refresh halaman.', 4000);
-    console.warn('⚠️ pilihKota dibatalkan: Supabase tidak tersedia.');
-    return;
+    grid.innerHTML = REGIONS.map(function (r) {
+      return '<div class="region-card" data-kota="' + r.kota + '" onclick="pilihKota(\'' + r.kota + '\')">' +
+        '<div class="kode mono">' + r.kode + '</div>' +
+        '<h3>' + r.kota + '</h3>' +
+        '<div class="tarik">📅 Lihat jadwal</div>' +
+        '<div class="badge-loading"><span class="loading-spinner"></span>Memuat...</div>' +
+      '</div>';
+    }).join('');
+    console.log('✅ Region cards rendered:', REGIONS.length);
   }
 
-  state.isLoading = true;
+  // ============================================================
+  // NAVIGASI: PILIH KOTA
+  // ============================================================
+  function pilihKota(kota) {
+    if (state.isLoading) return;
 
-  trackEvent('pilih_wilayah', { kota: kota });
+    if (!supabaseReady || !supabase) {
+      showToast('⚠️ Sistem booking sedang tidak terhubung. Coba refresh halaman.', 4000);
+      return;
+    }
 
-  console.log('📍 Pilih kota:', kota);
+    state.isLoading = true;
+    trackEvent('pilih_wilayah', { kota: kota });
+    console.log('📍 Pilih kota:', kota);
 
-  const card = document.querySelector(`.region-card[data-kota="${kota}"]`);
-  if (card) card.classList.add('loading');
+    var card = document.querySelector('.region-card[data-kota="' + kota + '"]');
+    if (card) card.classList.add('loading');
 
-  state.kotaAktif = kota;
-  state.tanggalTerpilih = null;
-  state.slotTerpilih = null;
-  state.bulanAktif = new Date();
-  state.allData = { pricelist: [], pricelistMedia: [], kalender: {}, slot: {} };
-  state.paketList = [];
+    state.kotaAktif = kota;
+    state.tanggalTerpilih = null;
+    state.slotTerpilih = null;
+    state.bulanAktif = new Date();
+    state.allData = { pricelist: [], pricelistMedia: [], kalender: {}, slot: {} };
+    state.paketList = [];
 
-  document.getElementById('regionPage').style.display = 'none';
-  document.getElementById('kotaPage').style.display = 'block';
-  document.getElementById('kotaTitle').innerText = kota;
+    document.getElementById('regionPage').style.display = 'none';
+    document.getElementById('kotaPage').style.display = 'block';
+    document.getElementById('kotaTitle').innerText = kota;
 
-  tampilkanSkeleton();
+    tampilkanSkeleton();
 
-  const y = state.bulanAktif.getFullYear();
-  const m = state.bulanAktif.getMonth();
-  document.getElementById('bulanLabel').innerText = `${NAMA_BULAN[m]} ${y}`;
+    var y = state.bulanAktif.getFullYear();
+    var m = state.bulanAktif.getMonth();
+    document.getElementById('bulanLabel').innerText = NAMA_BULAN[m] + ' ' + y;
 
-  // 🔥 3 request ini dijalankan BERSAMAAN (paralel), bukan berurutan.
-  const pPricelist = supabase.from('pricelist').select('*').eq('kota', kota)
-    .then(({ data, error }) => error ? [] : data)
-    .catch(() => []);
-  const pPricelistMedia = supabase.from('pricelist_media').select('*').eq('kota', kota).order('urutan')
-    .then(({ data, error }) => error ? [] : data)
-    .catch(() => []);
-  const pKalender = fetchKalenderBulanKota(kota, y, m);
+    // Paralel fetch
+    var pPricelist = supabase.from('pricelist').select('*').eq('kota', kota)
+      .then(function (res) { return res.error ? [] : res.data; })
+      .catch(function () { return []; });
+    var pPricelistMedia = supabase.from('pricelist_media').select('*').eq('kota', kota).order('urutan')
+      .then(function (res) { return res.error ? [] : res.data; })
+      .catch(function () { return []; });
+    var pKalender = fetchKalenderBulanKota(kota, y, m);
 
-  // Pricelist biasanya paling cepat selesai (nggak ada perhitungan slot) -
-  // begitu dia selesai, langsung tampilkan tanpa nunggu kalender.
-  pPricelist.then(data => { state.paketList = Array.isArray(data) ? data : []; });
-  pPricelistMedia.then(data => tampilkanPricelist(Array.isArray(data) ? data : []));
+    pPricelist.then(function (data) { state.paketList = Array.isArray(data) ? data : []; });
+    pPricelistMedia.then(function (data) { tampilkanPricelist(Array.isArray(data) ? data : []); });
 
-  try {
-    await Promise.all([pPricelist, pPricelistMedia, pKalender]);
-    renderKalender(y, m);
-    console.log('✅ Selesai load', kota);
-  } catch (err) {
-    console.error('❌ Gagal memuat data kota:', err);
-    showToast('❌ Gagal memuat data wilayah. Coba lagi.', 4000);
-  } finally {
-    if (card) card.classList.remove('loading');
-    state.isLoading = false;
-  }
-  window.scrollTo(0,0);
-}
+    Promise.all([pPricelist, pPricelistMedia, pKalender])
+      .then(function () {
+        renderKalender(y, m);
+        console.log('✅ Selesai load', kota);
+      })
+      .catch(function (err) {
+        console.error('❌ Gagal memuat data kota:', err);
+        showToast('❌ Gagal memuat data wilayah. Coba lagi.', 4000);
+      })
+      .finally(function () {
+        if (card) card.classList.remove('loading');
+        state.isLoading = false;
+      });
 
-// Fetch kalender 1 bulan penuh untuk kota tertentu, pakai cache per-bulan.
-// Dipakai baik saat pilih kota pertama kali maupun saat pindah bulan.
-async function fetchKalenderBulanKota(kota, y, m) {
-  const bulanStr = `${y}-${String(m+1).padStart(2,'0')}`;
-
-  if (!supabaseReady || !supabase) {
-    console.warn('⚠️ Kalender tidak dapat dimuat: Supabase tidak tersedia.');
-    return {};
-  }
-  const totalHari = new Date(y, m+1, 0).getDate();
-  const cacheKey = `${kota}|${bulanStr}`;
-
-  if (BLOCKED_MONTHS.includes(bulanStr)) {
-    return {}; // bulan ditutup, tidak perlu fetch ke API
+    window.scrollTo(0, 0);
   }
 
-  const cached = CACHE.kalenderBulan[cacheKey];
-  if (cached && isCacheValid(cached.timestamp)) {
-    Object.assign(state.allData.kalender, cached.data);
-    return cached.data;
-  }
+  // ============================================================
+  // FETCH KALENDER BULAN
+  // ============================================================
+  function fetchKalenderBulanKota(kota, y, m) {
+    var bulanStr = y + '-' + String(m + 1).padStart(2, '0');
 
-  const tanggalMulai = `${bulanStr}-01`;
-  try {
-    const { data, error } = await supabase.rpc('get_kalender_bulk', {
+    if (!supabaseReady || !supabase) return Promise.resolve({});
+
+    var totalHari = new Date(y, m + 1, 0).getDate();
+    var cacheKey = kota + '|' + bulanStr;
+
+    if (BLOCKED_MONTHS.indexOf(bulanStr) !== -1) return Promise.resolve({});
+
+    var cached = CACHE.kalenderBulan[cacheKey];
+    if (cached && isCacheValid(cached.timestamp)) {
+      Object.assign(state.allData.kalender, cached.data);
+      return Promise.resolve(cached.data);
+    }
+
+    var tanggalMulai = bulanStr + '-01';
+    return supabase.rpc('get_kalender_bulk', {
       p_kota: kota,
       p_tanggal_mulai: tanggalMulai,
       p_jumlah_hari: totalHari
-    });
-    if (error) {
-      showToast('❌ ' + error.message, 3000);
-      return {};
-    }
-    // RPC balikin array baris {tanggal, tersedia, jumlah_slot} -> ubah jadi object per tanggal
-    const hasil = {};
-    (data || []).forEach(row => {
-      hasil[row.tanggal] = { tersedia: row.tersedia, jumlah_slot: row.jumlah_slot };
-    });
-    CACHE.kalenderBulan[cacheKey] = { data: hasil, timestamp: Date.now() };
-    Object.assign(state.allData.kalender, hasil);
-    return hasil;
-  } catch(err) {
-    console.error('❌ Gagal fetch kalenderBulk:', err);
-    showToast('❌ Gagal memuat kalender.', 3000);
-    return {};
-  }
-}
-
-function tampilkanSkeleton() {
-  const grid = document.getElementById('calGrid');
-  const y = state.bulanAktif.getFullYear();
-  const m = state.bulanAktif.getMonth();
-  const totalHari = new Date(y, m+1, 0).getDate();
-  const hariPertama = new Date(y, m, 1).getDay();
-
-  let html = NAMA_HARI.map(h => `<div class="cal-hari">${h}</div>`).join('');
-  for(let i=0;i<hariPertama;i++){ html += `<div></div>`; }
-  for(let d=1; d<=totalHari; d++){
-    html += `<div class="cal-tanggal skeleton">${d}</div>`;
-  }
-  grid.innerHTML = html;
-  document.getElementById('slotArea').innerHTML = '';
-
-  const yyyymm = `${y}-${String(m+1).padStart(2,'0')}`;
-  document.getElementById('calFullyBooked').classList.toggle('show', BLOCKED_MONTHS.includes(yyyymm));
-}
-
-function kembaliKeHome(){
-  document.getElementById('kotaPage').style.display = 'none';
-  document.getElementById('regionPage').style.display = 'block';
-}
-
-// (fungsi loadAllData/applyAllData/pastikanKalenderBulanLengkap versi lama sudah digantikan
-//  oleh pilihKota() + fetchKalenderBulanKota() di atas yang jalan paralel — lebih cepat)
-
-// ============================================================
-// TAMPILKAN PRICELIST - SUPPORT PDF & IMAGE
-// ============================================================
-function tampilkanPricelist(data) {
-  const frame = document.getElementById('pricelistFrame');
-
-  console.log('📷 Data pricelist:', data);
-
-  if(!data || !data.length){
-    frame.innerHTML = '<div class="pricelist-empty">📄 Pricelist belum tersedia untuk wilayah ini.</div>';
-    return;
-  }
-
-  const pdfs = data.filter(item => item.tipe === 'pdf');
-  const images = data.filter(item => item.tipe === 'image' || !item.tipe);
-
-  if (pdfs.length > 0) {
-    let html = '<div class="pricelist-scroll">';
-
-    pdfs.forEach(function(item, index) {
-      const label = item.nama || `Pricelist ${index + 1}`;
-      let pdfUrl = item.url_file;
-
-      if (pdfUrl.includes('drive.google.com')) {
-        if (!pdfUrl.includes('/preview')) {
-          const match = pdfUrl.match(/\/d\/([^\/]+)/);
-          if (match) {
-            pdfUrl = `https://drive.google.com/file/d/${match[1]}/preview`;
-          }
-        }
+    }).then(function (res) {
+      if (res.error) {
+        showToast('❌ ' + res.error.message, 3000);
+        return {};
       }
-
-      html += `
-        <div class="item">
-          <div class="pdf-container">
-            <iframe src="${pdfUrl}" allowfullscreen loading="lazy"></iframe>
-          </div>
-          <div class="label">📄 ${label}</div>
-        </div>
-      `;
+      var hasil = {};
+      (res.data || []).forEach(function (row) {
+        hasil[row.tanggal] = { tersedia: row.tersedia, jumlah_slot: row.jumlah_slot };
+      });
+      CACHE.kalenderBulan[cacheKey] = { data: hasil, timestamp: Date.now() };
+      Object.assign(state.allData.kalender, hasil);
+      return hasil;
+    }).catch(function (err) {
+      console.error('❌ Gagal fetch kalenderBulk:', err);
+      showToast('❌ Gagal memuat kalender.', 3000);
+      return {};
     });
-
-    html += '</div>';
-    frame.innerHTML = html;
-    console.log('✅ PDF Pricelist rendered!');
-    return;
   }
 
-  if (images.length === 0) {
-    frame.innerHTML = '<div class="pricelist-empty">📷 Tidak ada pricelist untuk wilayah ini.</div>';
-    return;
+  function tampilkanSkeleton() {
+    var grid = document.getElementById('calGrid');
+    var y = state.bulanAktif.getFullYear();
+    var m = state.bulanAktif.getMonth();
+    var totalHari = new Date(y, m + 1, 0).getDate();
+    var hariPertama = new Date(y, m, 1).getDay();
+
+    var html = NAMA_HARI.map(function (h) { return '<div class="cal-hari">' + h + '</div>'; }).join('');
+    for (var i = 0; i < hariPertama; i++) html += '<div></div>';
+    for (var d = 1; d <= totalHari; d++) {
+      html += '<div class="cal-tanggal skeleton">' + d + '</div>';
+    }
+    grid.innerHTML = html;
+    document.getElementById('slotArea').innerHTML = '';
+
+    var yyyymm = y + '-' + String(m + 1).padStart(2, '0');
+    document.getElementById('calFullyBooked').classList.toggle('show', BLOCKED_MONTHS.indexOf(yyyymm) !== -1);
   }
 
-  let html = '<div class="pricelist-scroll">';
+  function kembaliKeHome() {
+    document.getElementById('kotaPage').style.display = 'none';
+    document.getElementById('regionPage').style.display = 'block';
+  }
 
-  images.forEach(function(item, index) {
-    const label = item.nama || `Pricelist ${index + 1}`;
-    let imageUrl = item.url_file;
-
-    html += `
-      <div class="item">
-        <img src="${imageUrl}" alt="${label}" loading="lazy"
-             onerror="this.style.display='none'; this.parentElement.querySelector('.label').innerHTML='❌ Gambar tidak bisa dimuat'">
-        <div class="label">${label}</div>
-      </div>
-    `;
-  });
-
-  html += '</div>';
-  frame.innerHTML = html;
-
-  console.log('✅ Pricelist rendered!');
-}
-
-// ============================================================
-// KALENDER
-// ============================================================
-const NAMA_BULAN = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
-const NAMA_HARI = ["Min","Sen","Sel","Rab","Kam","Jum","Sab"];
-
-function updateTombolNavigasiBulan() {
-  const today = new Date();
-  const batasMaks = new Date(today.getFullYear(), today.getMonth() + MAKS_BULAN_KE_DEPAN, 1);
-  const bulanDilihat = new Date(state.bulanAktif.getFullYear(), state.bulanAktif.getMonth(), 1);
-  const bulanIni = new Date(today.getFullYear(), today.getMonth(), 1);
-
-  document.getElementById('btnBulanPrev').disabled = bulanDilihat <= bulanIni;
-  document.getElementById('btnBulanNext').disabled = bulanDilihat >= batasMaks;
-}
-
-async function ubahBulan(delta){
-  const calonBulan = new Date(state.bulanAktif);
-  calonBulan.setMonth(calonBulan.getMonth() + delta);
-
-  const today = new Date();
-  const batasMaks = new Date(today.getFullYear(), today.getMonth() + MAKS_BULAN_KE_DEPAN, 1);
-  const bulanIni = new Date(today.getFullYear(), today.getMonth(), 1);
-  const calonBulanAwal = new Date(calonBulan.getFullYear(), calonBulan.getMonth(), 1);
-
-  if (calonBulanAwal < bulanIni || calonBulanAwal > batasMaks) return; // di luar rentang, abaikan
-
-  state.bulanAktif = calonBulan;
-  state.tanggalTerpilih = null;
-  document.getElementById('slotArea').innerHTML = '';
-
-  const y = state.bulanAktif.getFullYear();
-  const m = state.bulanAktif.getMonth();
-  document.getElementById('bulanLabel').innerText = `${NAMA_BULAN[m]} ${y}`;
-  updateTombolNavigasiBulan();
-
-  tampilkanSkeleton();
-
-  await fetchKalenderBulanKota(state.kotaAktif, y, m);
-  renderKalender(y, m);
-}
-
-function renderKalender(y, m) {
-  const grid = document.getElementById('calGrid');
-  const hariPertama = new Date(y, m, 1).getDay();
-  const totalHari = new Date(y, m+1, 0).getDate();
-
-  let html = NAMA_HARI.map(h => `<div class="cal-hari">${h}</div>`).join('');
-  for(let i=0;i<hariPertama;i++){ html += `<div></div>`; }
-
-  const today = new Date();
-  today.setHours(0,0,0,0);
-
-  const kalenderData = state.allData?.kalender || {};
-
-  const yyyymm = `${y}-${String(m+1).padStart(2,'0')}`;
-  const bulanDitutup = BLOCKED_MONTHS.includes(yyyymm);
-
-  for(let d=1; d<=totalHari; d++){
-    const tanggalObj = new Date(y, m, d);
-    tanggalObj.setHours(0,0,0,0);
-    const tanggalStr = formatDate(tanggalObj);
-
-    const sudahLewat = tanggalObj < today;
-    const isSelected = state.tanggalTerpilih === tanggalStr;
-
-    const kalenderInfo = kalenderData[tanggalStr];
-    const tersedia = kalenderInfo ? kalenderInfo.tersedia : false;
-
-    let kelas = 'cal-tanggal';
-    if (bulanDitutup) {
-      kelas += ' full';
-    } else if (sudahLewat) {
-      kelas += ' full';
-    } else if (kalenderInfo === undefined) {
-      kelas += ' skeleton';
-    } else if (tersedia) {
-      kelas += ' available';
-      if (isSelected) kelas += ' selected';
-    } else {
-      kelas += ' full';
+  // ============================================================
+  // PRICELIST
+  // ============================================================
+  function tampilkanPricelist(data) {
+    var frame = document.getElementById('pricelistFrame');
+    if (!data || !data.length) {
+      frame.innerHTML = '<div class="pricelist-empty">📄 Pricelist belum tersedia untuk wilayah ini.</div>';
+      return;
     }
 
-    const klik = !bulanDitutup && !sudahLewat && tersedia ? `onclick="pilihTanggal('${tanggalStr}')"` : '';
-    const titleAttr = bulanDitutup ? `title="Booking ditutup untuk bulan ini"` : '';
+    var pdfs = data.filter(function (item) { return item.tipe === 'pdf'; });
+    var images = data.filter(function (item) { return item.tipe === 'image' || !item.tipe; });
 
-    html += `<div class="${kelas}" ${klik} ${titleAttr} data-tanggal="${tanggalStr}">${d}</div>`;
-  }
-  grid.innerHTML = html;
-  document.getElementById('calFullyBooked').classList.toggle('show', bulanDitutup);
-  updateTombolNavigasiBulan();
-}
+    if (pdfs.length > 0) {
+      var htmlPdf = '<div class="pricelist-scroll">';
+      pdfs.forEach(function (item, index) {
+        var label = item.nama || ('Pricelist ' + (index + 1));
+        var pdfUrl = item.url_file;
+        if (pdfUrl.indexOf('drive.google.com') !== -1 && pdfUrl.indexOf('/preview') === -1) {
+          var match = pdfUrl.match(/\/d\/([^\/]+)/);
+          if (match) pdfUrl = 'https://drive.google.com/file/d/' + match[1] + '/preview';
+        }
+        htmlPdf += '<div class="item"><div class="pdf-container"><iframe src="' + pdfUrl + '" allowfullscreen loading="lazy"></iframe></div><div class="label">📄 ' + label + '</div></div>';
+      });
+      htmlPdf += '</div>';
+      frame.innerHTML = htmlPdf;
+      return;
+    }
 
-// ============================================================
-// PILIH TANGGAL
-// ============================================================
-async function pilihTanggal(tanggal){
-  console.log('📅 Pilih tanggal:', tanggal);
+    if (images.length === 0) {
+      frame.innerHTML = '<div class="pricelist-empty">📷 Tidak ada pricelist untuk wilayah ini.</div>';
+      return;
+    }
 
-  if (!supabaseReady || !supabase) {
-    showToast('⚠️ Sistem booking sedang tidak terhubung. Coba refresh halaman.', 4000);
-    return;
-  }
-  state.tanggalTerpilih = tanggal;
-
-  const y = state.bulanAktif.getFullYear();
-  const m = state.bulanAktif.getMonth();
-  renderKalender(y, m);
-
-  const area = document.getElementById('slotArea');
-
-  const cacheKey = `${state.kotaAktif}|${tanggal}`;
-  const cacheData = CACHE.slot[cacheKey];
-
-  if (cacheData && isCacheValid(cacheData.timestamp)) {
-    console.log('✅ Slot dari cache!');
-    renderSlots(cacheData.data, area);
-    return;
+    var htmlImg = '<div class="pricelist-scroll">';
+    images.forEach(function (item, index) {
+      var label = item.nama || ('Pricelist ' + (index + 1));
+      htmlImg += '<div class="item"><img src="' + item.url_file + '" alt="' + label + '" loading="lazy" onerror="this.style.display=\'none\'; this.parentElement.querySelector(\'.label\').innerHTML=\'❌ Gambar tidak bisa dimuat\'"><div class="label">' + label + '</div></div>';
+    });
+    htmlImg += '</div>';
+    frame.innerHTML = htmlImg;
   }
 
-  area.innerHTML = '<div class="slot-empty"><span class="loading-spinner"></span> Memuat jam tersedia...</div>';
+  // ============================================================
+  // KALENDER NAV
+  // ============================================================
+  function updateTombolNavigasiBulan() {
+    var today = new Date();
+    var batasMaks = new Date(today.getFullYear(), today.getMonth() + MAKS_BULAN_KE_DEPAN, 1);
+    var bulanDilihat = new Date(state.bulanAktif.getFullYear(), state.bulanAktif.getMonth(), 1);
+    var bulanIni = new Date(today.getFullYear(), today.getMonth(), 1);
 
-  try {
-    const { data: slots, error } = await supabase.rpc('get_slot_tersedia', {
+    document.getElementById('btnBulanPrev').disabled = bulanDilihat <= bulanIni;
+    document.getElementById('btnBulanNext').disabled = bulanDilihat >= batasMaks;
+  }
+
+  function ubahBulan(delta) {
+    var calonBulan = new Date(state.bulanAktif);
+    calonBulan.setMonth(calonBulan.getMonth() + delta);
+
+    var today = new Date();
+    var batasMaks = new Date(today.getFullYear(), today.getMonth() + MAKS_BULAN_KE_DEPAN, 1);
+    var bulanIni = new Date(today.getFullYear(), today.getMonth(), 1);
+    var calonBulanAwal = new Date(calonBulan.getFullYear(), calonBulan.getMonth(), 1);
+
+    if (calonBulanAwal < bulanIni || calonBulanAwal > batasMaks) return;
+
+    state.bulanAktif = calonBulan;
+    state.tanggalTerpilih = null;
+    document.getElementById('slotArea').innerHTML = '';
+
+    var y = state.bulanAktif.getFullYear();
+    var m = state.bulanAktif.getMonth();
+    document.getElementById('bulanLabel').innerText = NAMA_BULAN[m] + ' ' + y;
+    updateTombolNavigasiBulan();
+
+    tampilkanSkeleton();
+
+    fetchKalenderBulanKota(state.kotaAktif, y, m).then(function () {
+      renderKalender(y, m);
+    });
+  }
+
+  function renderKalender(y, m) {
+    var grid = document.getElementById('calGrid');
+    var hariPertama = new Date(y, m, 1).getDay();
+    var totalHari = new Date(y, m + 1, 0).getDate();
+
+    var html = NAMA_HARI.map(function (h) { return '<div class="cal-hari">' + h + '</div>'; }).join('');
+    for (var i = 0; i < hariPertama; i++) html += '<div></div>';
+
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    var kalenderData = (state.allData && state.allData.kalender) || {};
+    var yyyymm = y + '-' + String(m + 1).padStart(2, '0');
+    var bulanDitutup = BLOCKED_MONTHS.indexOf(yyyymm) !== -1;
+
+    for (var d = 1; d <= totalHari; d++) {
+      var tanggalObj = new Date(y, m, d);
+      tanggalObj.setHours(0, 0, 0, 0);
+      var tanggalStr = formatDate(tanggalObj);
+
+      var sudahLewat = tanggalObj < today;
+      var isSelected = state.tanggalTerpilih === tanggalStr;
+
+      var kalenderInfo = kalenderData[tanggalStr];
+      var tersedia = kalenderInfo ? kalenderInfo.tersedia : false;
+
+      var kelas = 'cal-tanggal';
+      if (bulanDitutup) kelas += ' full';
+      else if (sudahLewat) kelas += ' full';
+      else if (kalenderInfo === undefined) kelas += ' skeleton';
+      else if (tersedia) {
+        kelas += ' available';
+        if (isSelected) kelas += ' selected';
+      } else kelas += ' full';
+
+      var klik = (!bulanDitutup && !sudahLewat && tersedia) ? 'onclick="pilihTanggal(\'' + tanggalStr + '\')"' : '';
+      var titleAttr = bulanDitutup ? 'title="Booking ditutup untuk bulan ini"' : '';
+
+      html += '<div class="' + kelas + '" ' + klik + ' ' + titleAttr + ' data-tanggal="' + tanggalStr + '">' + d + '</div>';
+    }
+    grid.innerHTML = html;
+    document.getElementById('calFullyBooked').classList.toggle('show', bulanDitutup);
+    updateTombolNavigasiBulan();
+  }
+
+  // ============================================================
+  // PILIH TANGGAL
+  // ============================================================
+  function pilihTanggal(tanggal) {
+    console.log('📅 Pilih tanggal:', tanggal);
+
+    if (!supabaseReady || !supabase) {
+      showToast('⚠️ Sistem booking sedang tidak terhubung. Coba refresh halaman.', 4000);
+      return;
+    }
+    state.tanggalTerpilih = tanggal;
+
+    var y = state.bulanAktif.getFullYear();
+    var m = state.bulanAktif.getMonth();
+    renderKalender(y, m);
+
+    var area = document.getElementById('slotArea');
+    var cacheKey = state.kotaAktif + '|' + tanggal;
+    var cacheData = CACHE.slot[cacheKey];
+
+    if (cacheData && isCacheValid(cacheData.timestamp)) {
+      renderSlots(cacheData.data, area);
+      return;
+    }
+
+    area.innerHTML = '<div class="slot-empty"><span class="loading-spinner"></span> Memuat jam tersedia...</div>';
+
+    supabase.rpc('get_slot_tersedia', {
       p_kota: state.kotaAktif,
       p_tanggal: tanggal
+    }).then(function (res) {
+      if (res.error) throw res.error;
+      CACHE.slot[cacheKey] = { data: res.data, timestamp: Date.now() };
+      renderSlots(res.data || [], area);
+    }).catch(function (err) {
+      area.innerHTML = '<div class="slot-empty">❌ Gagal memuat jam tersedia.</div>';
+      console.error(err);
     });
-    if (error) throw error;
-
-    CACHE.slot[cacheKey] = {
-      data: slots,
-      timestamp: Date.now()
-    };
-
-    renderSlots(slots || [], area);
-  } catch(err) {
-    area.innerHTML = '<div class="slot-empty">❌ Gagal memuat jam tersedia.</div>';
-    console.error(err);
-  }
-}
-
-function renderSlots(slots, area) {
-  if(!slots || !slots.length){
-    area.innerHTML = '<div class="slot-empty">😔 Tidak ada jam tersedia di tanggal ini.</div>';
-    return;
-  }
-  area.innerHTML = '<div class="slot-list">' + slots.map(s => `
-    <button class="slot-btn" onclick='bukaForm(${JSON.stringify(s)})'>${s.jam_mulai} - ${s.jam_selesai}</button>
-  `).join('') + '</div>';
-}
-
-// ============================================================
-// FORM BOOKING
-// ============================================================
-function bukaForm(slot){
-  state.slotTerpilih = slot;
-  document.getElementById('infoSlot').innerHTML = `
-    📍 <strong>${state.kotaAktif}</strong> &middot;
-    📅 ${state.tanggalTerpilih} &middot;
-    ⏰ ${slot.jam_mulai} - ${slot.jam_selesai}
-  `;
-
-  const select = document.getElementById('fPaket');
-  if (state.paketList && state.paketList.length > 0) {
-    select.innerHTML = state.paketList.map(p =>
-      `<option value="${p.nama_paket}" data-harga="${p.harga}">${p.nama_paket} — Rp${Number(p.harga).toLocaleString('id-ID')}</option>`
-    ).join('');
-  } else {
-    select.innerHTML = '<option value="">Paket belum tersedia</option>';
   }
 
-  document.getElementById('fNama').value = '';
-  document.getElementById('fKampus').value = '';
-  document.getElementById('fLokasi').value = '';
-  document.getElementById('fIg').value = '';
-  document.getElementById('fEmail').value = '';
-  document.getElementById('errorBox').style.display = 'none';
-  document.getElementById('formOverlay').style.display = 'flex';
-}
-
-function tutupForm(){
-  document.getElementById('formOverlay').style.display = 'none';
-}
-
-// ============================================================
-// SUBMIT BOOKING
-// ============================================================
-async function submitBooking(){
-  trackEvent('klik_booking_sekarang', { kota: state.kotaAktif });
-
-  if (!supabaseReady || !supabase) {
-    const errorBox = document.getElementById('errorBox');
-    if (errorBox) {
-      errorBox.innerText = '⚠️ Sistem booking sedang tidak terhubung. Silakan refresh halaman.';
-      errorBox.style.display = 'block';
+  function renderSlots(slots, area) {
+    if (!slots || !slots.length) {
+      area.innerHTML = '<div class="slot-empty">😔 Tidak ada jam tersedia di tanggal ini.</div>';
+      return;
     }
-    return;
+    area.innerHTML = '<div class="slot-list">' + slots.map(function (s) {
+      return '<button class="slot-btn" onclick=\'bukaForm(' + JSON.stringify(s) + ')\'>' + s.jam_mulai + ' - ' + s.jam_selesai + '</button>';
+    }).join('') + '</div>';
   }
 
-  const btn = document.getElementById('btnBooking');
-  const nama = document.getElementById('fNama').value.trim();
-  const kampus = document.getElementById('fKampus').value.trim();
-  const lokasi = document.getElementById('fLokasi').value.trim();
-  const wa = document.getElementById('fWa').value.trim();
-  const ig = document.getElementById('fIg').value.trim();
-  const email = document.getElementById('fEmail').value.trim();
-  const selectEl = document.getElementById('fPaket');
-  const paket = selectEl.value;
-  const harga = selectEl.selectedOptions[0]?.dataset.harga || 0;
-  const errorBox = document.getElementById('errorBox');
+  // ============================================================
+  // FORM BOOKING
+  // ============================================================
+  function bukaForm(slot) {
+    state.slotTerpilih = slot;
+    document.getElementById('infoSlot').innerHTML =
+      '📍 <strong>' + state.kotaAktif + '</strong> &middot; ' +
+      '📅 ' + state.tanggalTerpilih + ' &middot; ' +
+      '⏰ ' + slot.jam_mulai + ' - ' + slot.jam_selesai;
 
-  if(!nama || !kampus || !lokasi || !wa || !paket){
-    errorBox.innerText = '⚠️ Semua data wajib diisi (Nama, Kampus, Lokasi, No. WA, Paket).';
-    errorBox.style.display = 'block';
-    return;
+    var select = document.getElementById('fPaket');
+    if (state.paketList && state.paketList.length > 0) {
+      select.innerHTML = state.paketList.map(function (p) {
+        return '<option value="' + p.nama_paket + '" data-harga="' + p.harga + '">' + p.nama_paket + ' — Rp' + Number(p.harga).toLocaleString('id-ID') + '</option>';
+      }).join('');
+    } else {
+      select.innerHTML = '<option value="">Paket belum tersedia</option>';
+    }
+
+    document.getElementById('fNama').value = '';
+    document.getElementById('fKampus').value = '';
+    document.getElementById('fLokasi').value = '';
+    document.getElementById('fIg').value = '';
+    document.getElementById('fEmail').value = '';
+    document.getElementById('errorBox').style.display = 'none';
+    document.getElementById('formOverlay').style.display = 'flex';
   }
 
-  btn.disabled = true;
-  btn.classList.add('btn-loading');
-  showLoading('Membuat Booking...');
-  errorBox.style.display = 'none';
+  function tutupForm() {
+    document.getElementById('formOverlay').style.display = 'none';
+  }
 
-  try {
-    const { data, error } = await supabase.rpc('buat_booking', {
+  // ============================================================
+  // SUBMIT BOOKING
+  // ============================================================
+  function submitBooking() {
+    trackEvent('klik_booking_sekarang', { kota: state.kotaAktif });
+
+    if (!supabaseReady || !supabase) {
+      var errorBox0 = document.getElementById('errorBox');
+      if (errorBox0) {
+        errorBox0.innerText = '⚠️ Sistem booking sedang tidak terhubung. Silakan refresh halaman.';
+        errorBox0.style.display = 'block';
+      }
+      return;
+    }
+
+    var btn = document.getElementById('btnBooking');
+    var nama = document.getElementById('fNama').value.trim();
+    var kampus = document.getElementById('fKampus').value.trim();
+    var lokasi = document.getElementById('fLokasi').value.trim();
+    var wa = document.getElementById('fWa').value.trim();
+    var ig = document.getElementById('fIg').value.trim();
+    var email = document.getElementById('fEmail').value.trim();
+    var selectEl = document.getElementById('fPaket');
+    var paket = selectEl.value;
+    var harga = (selectEl.selectedOptions[0] && selectEl.selectedOptions[0].dataset.harga) || 0;
+    var errorBox = document.getElementById('errorBox');
+
+    if (!nama || !kampus || !lokasi || !wa || !paket) {
+      errorBox.innerText = '⚠️ Semua data wajib diisi (Nama, Kampus, Lokasi, No. WA, Paket).';
+      errorBox.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.classList.add('btn-loading');
+    showLoading('Membuat Booking...');
+    errorBox.style.display = 'none';
+
+    supabase.rpc('buat_booking', {
       p_kota: state.kotaAktif,
       p_tanggal: state.tanggalTerpilih,
       p_jam_mulai: state.slotTerpilih.jam_mulai,
@@ -1367,161 +872,155 @@ async function submitBooking(){
       p_wa: wa,
       p_instagram: ig,
       p_email: email
-    });
-
-    hideLoading();
-    btn.disabled = false;
-    btn.classList.remove('btn-loading');
-
-    if(error){
-      errorBox.innerText = '❌ ' + error.message;
-      errorBox.style.display = 'block';
-      return;
-    }
-
-    data.nama_client = nama;
-    data.kampus = kampus;
-    data.lokasi = lokasi;
-    data.wa = wa;
-    data.ig = ig;
-    data.email = email;
-
-    tutupForm();
-    tampilkanInvoice(data);
-
-    // Hapus cache tanggal ini & data awal kota ini supaya kalender ke-refresh
-    const tanggalCacheKey = `${state.kotaAktif}|${state.tanggalTerpilih}`;
-    delete CACHE.slot[tanggalCacheKey];
-    delete CACHE.allData[state.kotaAktif];
-
-    const bulanStr = state.tanggalTerpilih.substring(0, 7);
-    delete CACHE.kalenderBulan[`${state.kotaAktif}|${bulanStr}`];
-
-    if (state.allData && state.allData.kalender && state.allData.kalender[state.tanggalTerpilih]) {
-      delete state.allData.kalender[state.tanggalTerpilih];
-    }
-
-  } catch(err) {
-    hideLoading();
-    btn.disabled = false;
-    btn.classList.remove('btn-loading');
-    errorBox.innerText = '❌ Gagal mengirim booking. Cek koneksi.';
-    errorBox.style.display = 'block';
-    console.error(err);
-  }
-}
-
-// ============================================================
-// TAMPILKAN INVOICE
-// ============================================================
-function tampilkanInvoice(data){
-  document.getElementById('invKode').innerText = data.booking_id || 'Pending';
-  document.getElementById('invStatus').innerText = '⏳ Pending';
-  document.getElementById('invStatus').className = 'status-badge pending';
-  document.getElementById('invExpiry').innerText = `⏳ Berlaku ${data.expired_in || '24 jam'}`;
-  document.getElementById('invTanggal').innerText = data.tanggal || '-';
-  document.getElementById('invJam').innerText = `${data.jam_mulai || ''} - ${data.jam_selesai || ''}`;
-  document.getElementById('invKota').innerText = data.kota || '-';
-  document.getElementById('invPaket').innerText = data.paket || '-';
-  document.getElementById('invNama').innerText = data.nama_client || '-';
-  document.getElementById('invKampus').innerText = data.kampus || '-';
-  document.getElementById('invLokasi').innerText = data.lokasi || '-';
-  document.getElementById('invWa').innerText = data.wa || '-';
-  document.getElementById('invIg').innerText = data.ig || '-';
-  document.getElementById('invEmail').innerText = data.email || '-';
-  document.getElementById('invTotal').innerText = 'Rp' + Number(data.total_harga || 0).toLocaleString('id-ID');
-
-  const totalHarga = Number(data.total_harga || 0);
-  const pesan =
-`🎓 *Lavelle Graduation Shot*
-
-📋 *Detail Booking:*
-
-Kode Booking : ${data.booking_id || 'Pending'}
-Nama         : ${data.nama_client || '-'}
-Kampus       : ${data.kampus || '-'}
-Lokasi       : ${data.lokasi || '-'}
-No. WA       : ${data.wa || '-'}
-Instagram    : ${data.ig || '-'}
-Email        : ${data.email || '-'}
-📅 Tanggal    : ${data.tanggal || '-'}
-⏰ Jam        : ${data.jam_mulai || ''} - ${data.jam_selesai || ''}
-📍 Kota       : ${data.kota || '-'}
-📦 Paket      : ${data.paket || '-'}
-💰 Total      : Rp${totalHarga.toLocaleString('id-ID')}
-
-Saya mau konfirmasi booking. Terima kasih! 🙏`;
-
-  const adminWa = ADMIN_WA_PER_KOTA[data.kota] || ADMIN_WA_DEFAULT;
-  const waUrl = `https://api.whatsapp.com/send/?phone=${adminWa}&text=${encodeURIComponent(pesan)}&type=phone_number&app_absent=0`;
-  const btnWa = document.getElementById('btnWa');
-
-  btnWa.href = waUrl;
-  btnWa.dataset.bookingId = data.booking_id;
-  btnWa.dataset.kota = data.kota;
-
-  document.getElementById('invoiceOverlay').style.display = 'flex';
-}
-
-// ============================================================
-// HANDLE CLICK WHATSAPP - AUTO RELOAD
-// ============================================================
-document.addEventListener('click', function(e) {
-  const btnWa = document.getElementById('btnWa');
-  if (e.target === btnWa || btnWa.contains(e.target)) {
-    e.preventDefault();
-
-    trackEvent('klik_wa_booking', {
-      kota: btnWa.dataset.kota || '',
-      booking_id: btnWa.dataset.bookingId || ''
-    });
-
-    btnWa.disabled = true;
-    showLoading('Mengarahkan ke WhatsApp...');
-
-    window.open(btnWa.href, '_blank');
-
-    setTimeout(function() {
+    }).then(function (res) {
       hideLoading();
-      setTimeout(function() {
-        window.location.reload();
-      }, 1000);
-    }, 3000);
+      btn.disabled = false;
+      btn.classList.remove('btn-loading');
+
+      if (res.error) {
+        errorBox.innerText = '❌ ' + res.error.message;
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      var data = res.data;
+      data.nama_client = nama;
+      data.kampus = kampus;
+      data.lokasi = lokasi;
+      data.wa = wa;
+      data.ig = ig;
+      data.email = email;
+
+      tutupForm();
+      tampilkanInvoice(data);
+
+      // invalidate cache
+      delete CACHE.slot[state.kotaAktif + '|' + state.tanggalTerpilih];
+      delete CACHE.allData[state.kotaAktif];
+      var bulanStr = state.tanggalTerpilih.substring(0, 7);
+      delete CACHE.kalenderBulan[state.kotaAktif + '|' + bulanStr];
+      if (state.allData && state.allData.kalender && state.allData.kalender[state.tanggalTerpilih]) {
+        delete state.allData.kalender[state.tanggalTerpilih];
+      }
+    }).catch(function (err) {
+      hideLoading();
+      btn.disabled = false;
+      btn.classList.remove('btn-loading');
+      errorBox.innerText = '❌ Gagal mengirim booking. Cek koneksi.';
+      errorBox.style.display = 'block';
+      console.error(err);
+    });
   }
-});
 
-// ============================================================
-// TUTUP INVOICE
-// ============================================================
-function tutupInvoice(){
-  document.getElementById('invoiceOverlay').style.display = 'none';
-  const btnWa = document.getElementById('btnWa');
-  btnWa.disabled = false;
-}
+  // ============================================================
+  // INVOICE
+  // ============================================================
+  function tampilkanInvoice(data) {
+    document.getElementById('invKode').innerText = data.booking_id || 'Pending';
+    document.getElementById('invStatus').innerText = '⏳ Pending';
+    document.getElementById('invStatus').className = 'status-badge pending';
+    document.getElementById('invExpiry').innerText = '⏳ Berlaku ' + (data.expired_in || '24 jam');
+    document.getElementById('invTanggal').innerText = data.tanggal || '-';
+    document.getElementById('invJam').innerText = (data.jam_mulai || '') + ' - ' + (data.jam_selesai || '');
+    document.getElementById('invKota').innerText = data.kota || '-';
+    document.getElementById('invPaket').innerText = data.paket || '-';
+    document.getElementById('invNama').innerText = data.nama_client || '-';
+    document.getElementById('invKampus').innerText = data.kampus || '-';
+    document.getElementById('invLokasi').innerText = data.lokasi || '-';
+    document.getElementById('invWa').innerText = data.wa || '-';
+    document.getElementById('invIg').innerText = data.ig || '-';
+    document.getElementById('invEmail').innerText = data.email || '-';
+    document.getElementById('invTotal').innerText = 'Rp' + Number(data.total_harga || 0).toLocaleString('id-ID');
 
-// ============================================================
-// TOAST
-// ============================================================
-function showToast(message, duration = 3000) {
-  const existing = document.querySelector('.toast');
-  if (existing) existing.remove();
+    var totalHarga = Number(data.total_harga || 0);
+    var pesan =
+      '🎓 *Lavelle Graduation Shot*\n\n' +
+      '📋 *Detail Booking:*\n\n' +
+      'Kode Booking : ' + (data.booking_id || 'Pending') + '\n' +
+      'Nama         : ' + (data.nama_client || '-') + '\n' +
+      'Kampus       : ' + (data.kampus || '-') + '\n' +
+      'Lokasi       : ' + (data.lokasi || '-') + '\n' +
+      'No. WA       : ' + (data.wa || '-') + '\n' +
+      'Instagram    : ' + (data.ig || '-') + '\n' +
+      'Email        : ' + (data.email || '-') + '\n' +
+      '📅 Tanggal    : ' + (data.tanggal || '-') + '\n' +
+      '⏰ Jam        : ' + (data.jam_mulai || '') + ' - ' + (data.jam_selesai || '') + '\n' +
+      '📍 Kota       : ' + (data.kota || '-') + '\n' +
+      '📦 Paket      : ' + (data.paket || '-') + '\n' +
+      '💰 Total      : Rp' + totalHarga.toLocaleString('id-ID') + '\n\n' +
+      'Saya mau konfirmasi booking. Terima kasih! 🙏';
 
-  const toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.innerText = message;
-  document.body.appendChild(toast);
+    var adminWa = ADMIN_WA_PER_KOTA[data.kota] || ADMIN_WA_DEFAULT;
+    var waUrl = 'https://api.whatsapp.com/send/?phone=' + adminWa +
+      '&text=' + encodeURIComponent(pesan) +
+      '&type=phone_number&app_absent=0';
+    var btnWa = document.getElementById('btnWa');
 
-  setTimeout(() => toast.remove(), duration);
-}
+    btnWa.href = waUrl;
+    btnWa.dataset.bookingId = data.booking_id;
+    btnWa.dataset.kota = data.kota;
 
-// ============================================================
-// INIT
-// ============================================================
-window.addEventListener('DOMContentLoaded', () => {
-  // Render ulang secara aman setelah DOM siap; tetap tidak bergantung Supabase.
-  if (typeof window.renderLavelleRegions === 'function') window.renderLavelleRegions();
-  showToast('📷 Studio Lavelle - Pilih wilayah untuk booking', 2000);
-});
+    document.getElementById('invoiceOverlay').style.display = 'flex';
+  }
+
+  function tutupInvoice() {
+    document.getElementById('invoiceOverlay').style.display = 'none';
+    var btnWa = document.getElementById('btnWa');
+    if (btnWa) btnWa.disabled = false;
+  }
+
+  // ============================================================
+  // HANDLE CLICK WHATSAPP
+  // ============================================================
+  document.addEventListener('click', function (e) {
+    var btnWa = document.getElementById('btnWa');
+    if (!btnWa) return;
+    if (e.target === btnWa || btnWa.contains(e.target)) {
+      e.preventDefault();
+      trackEvent('klik_wa_booking', {
+        kota: btnWa.dataset.kota || '',
+        booking_id: btnWa.dataset.bookingId || ''
+      });
+      btnWa.disabled = true;
+      showLoading('Mengarahkan ke WhatsApp...');
+      window.open(btnWa.href, '_blank');
+      setTimeout(function () {
+        hideLoading();
+        setTimeout(function () { window.location.reload(); }, 1000);
+      }, 3000);
+    }
+  });
+
+  // ============================================================
+  // EXPOSE KE WINDOW (agar onclick di HTML bisa akses)
+  // ============================================================
+  window.pilihKota = pilihKota;
+  window.pilihTanggal = pilihTanggal;
+  window.ubahBulan = ubahBulan;
+  window.bukaForm = bukaForm;
+  window.tutupForm = tutupForm;
+  window.submitBooking = submitBooking;
+  window.tutupInvoice = tutupInvoice;
+  window.kembaliKeHome = kembaliKeHome;
+  window.renderRegions = renderRegions;
+  window.showToast = showToast;
+
+  // ============================================================
+  // INIT
+  // ============================================================
+  function init() {
+    renderRegions();
+    showToast('📷 Studio Lavelle - Pilih wilayah untuk booking', 2000);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+
+  console.log('✅ Semua fungsi Lavelle terekspos ke window.');
+})();
 </script>
 </body>
 </html>
