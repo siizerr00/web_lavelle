@@ -8,152 +8,165 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400..600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#2E2532;
-    --paper:#FBF6F2;
-    --rose:#B76E79;
-    --gold:#C9A66B;
-    --sage:#6B8F71;
-    --mute:#8C8389;
-    --line:#E4D9D3;
-    --card:#ffffff;
+    --ink:#2E2532; --paper:#FBF6F2; --rose:#B76E79; --gold:#C9A66B;
+    --sage:#6B8F71; --mute:#8C8389; --line:#E4D9D3; --card:#ffffff;
   }
   *{box-sizing:border-box;}
   body{
-    margin:0;
-    background:var(--paper);
-    color:var(--ink);
-    font-family:'Inter',sans-serif;
-    -webkit-font-smoothing:antialiased;
-    min-height:100vh;
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; min-height:100vh;
   }
   h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
   .mono{font-family:'IBM Plex Mono',monospace;}
 
   .container{max-width:800px;margin:0 auto;padding:24px;}
   .card{
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:12px;
-    padding:24px;
-    box-shadow:0 4px 24px rgba(46,37,50,.08);
-    margin-bottom:20px;
+    background:var(--card); border:1px solid var(--line);
+    border-radius:12px; padding:24px;
+    box-shadow:0 4px 24px rgba(46,37,50,.08); margin-bottom:20px;
   }
-  .logo{
-    text-align:center;padding:12px 0 8px;
-  }
-  .logo h1{font-size:28px;font-style:italic;font-weight:500;}
-  .logo p{color:var(--mute);font-size:14px;margin-top:4px;}
+  .logo{ text-align:center; padding:12px 0 8px; }
+  .logo h1{ font-size:28px; font-style:italic; font-weight:500; }
+  .logo p{ color:var(--mute); font-size:14px; margin-top:4px; }
 
-  .field{margin-bottom:16px;}
-  .field label{display:block;font-size:12px;color:var(--mute);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+  .field{ margin-bottom:16px; }
+  .field label{
+    display:block; font-size:12px; color:var(--mute);
+    margin-bottom:6px; text-transform:uppercase;
+    letter-spacing:.04em; font-weight:600;
+  }
   .field input{
-    width:100%;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
-    font-family:'Inter',sans-serif;font-size:14px;background:#fff;color:var(--ink);
+    width:100%; padding:10px 14px;
+    border:1px solid var(--line); border-radius:8px;
+    font-family:'Inter',sans-serif; font-size:14px;
+    background:#fff; color:var(--ink);
   }
-  .field input:focus{outline:none;border-color:var(--rose);box-shadow:0 0 0 3px rgba(183,110,121,.15);}
-  
+  .field input:focus{
+    outline:none; border-color:var(--rose);
+    box-shadow:0 0 0 3px rgba(183,110,121,.15);
+  }
+
   .btn-primary{
-    width:100%;padding:12px;background:var(--ink);color:#fff;border:none;border-radius:8px;
-    font-size:14px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;
-    transition:background .2s;
+    width:100%; padding:12px; background:var(--ink); color:#fff;
+    border:none; border-radius:8px; font-size:14px; cursor:pointer;
+    font-family:'Inter',sans-serif; font-weight:500; transition:background .2s;
   }
-  .btn-primary:hover{background:var(--rose);}
-  .btn-primary:disabled{opacity:0.6;cursor:not-allowed;}
-  
+  .btn-primary:hover{ background:var(--rose); }
+  .btn-primary:disabled{ opacity:0.6; cursor:not-allowed; }
+
   .btn-secondary{
-    padding:10px 20px;background:none;color:var(--mute);border:1px solid var(--line);border-radius:8px;
-    font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;
+    padding:10px 20px; background:none; color:var(--mute);
+    border:1px solid var(--line); border-radius:8px;
+    font-size:13px; cursor:pointer; font-family:'Inter',sans-serif;
+    transition:all .2s;
   }
-  .btn-secondary:hover{color:var(--ink);border-color:var(--ink);}
+  .btn-secondary:hover{ color:var(--ink); border-color:var(--ink); }
 
   .btn-save-foto{
-    width:100%;padding:12px;background:var(--sage);color:#fff;border:none;border-radius:8px;
-    font-size:14px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;
-    transition:background .2s;margin-top:12px;
+    width:100%; padding:12px; background:var(--sage); color:#fff;
+    border:none; border-radius:8px; font-size:14px; cursor:pointer;
+    font-family:'Inter',sans-serif; font-weight:500;
+    transition:background .2s; margin-top:12px;
   }
-  .btn-save-foto:hover{background:#597A5F;}
-  .btn-save-foto:disabled{opacity:0.6;cursor:not-allowed;}
+  .btn-save-foto:hover{ background:#597A5F; }
+  .btn-save-foto:disabled{ opacity:0.6; cursor:not-allowed; }
 
-  .error-box{display:none;color:#B3413E;font-size:13px;padding:10px 14px;background:#FDE8E8;border-radius:8px;margin-top:8px;}
-  .success-box{display:none;color:#065F46;font-size:13px;padding:10px 14px;background:#D1FAE5;border-radius:8px;margin-top:8px;}
+  .error-box{
+    display:none; color:#B3413E; font-size:13px;
+    padding:10px 14px; background:#FDE8E8; border-radius:8px; margin-top:8px;
+  }
+  .success-box{
+    display:none; color:#065F46; font-size:13px;
+    padding:10px 14px; background:#D1FAE5; border-radius:8px; margin-top:8px;
+  }
 
   .toast{
-    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-    background:var(--ink);color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:100;animation:slideUp .3s;
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:#fff; padding:12px 24px;
+    border-radius:8px; font-size:14px; z-index:100; animation:slideUp .3s;
   }
-  @keyframes slideUp{from{transform:translate(-50%,20px);opacity:0;}to{transform:translate(-50%,0);opacity:1;}}
+  @keyframes slideUp{
+    from{transform:translate(-50%,20px);opacity:0;}
+    to{transform:translate(-50%,0);opacity:1;}
+  }
   @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
-  .btn-loading{position:relative;pointer-events:none;opacity:0.7;}
-  .btn-loading::after{
-    content:"";position:absolute;right:16px;top:50%;transform:translateY(-50%);
-    width:18px;height:18px;border:2px solid #fff;border-top:2px solid transparent;border-radius:50%;animation:spin 0.8s linear infinite;
+
+  .loading-spinner{
+    display:inline-block; width:20px; height:20px;
+    border:2px solid var(--line); border-top:2px solid var(--rose);
+    border-radius:50%; animation:spin 0.8s linear infinite;
+    vertical-align:middle; margin-right:8px;
   }
-  .loading-spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--line);border-top:2px solid var(--rose);border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:8px;}
 
-  .status-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px;}
-  .status-header .booking-id{font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--mute);}
-  .status-icon{font-size:48px;text-align:center;margin:8px 0;}
-  .status-label{font-size:22px;font-weight:600;text-align:center;color:var(--rose);}
-  .status-desc{text-align:center;color:var(--mute);font-size:14px;margin-top:4px;}
-  
-  .progress-bar{background:var(--line);border-radius:8px;height:8px;overflow:hidden;margin:16px 0;}
-  .progress-bar .fill{background:var(--rose);height:100%;border-radius:8px;transition:width .5s;}
-  .progress-steps{display:flex;justify-content:space-between;font-size:10px;color:var(--mute);margin-top:4px;}
+  .status-header{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:12px; }
+  .status-header .booking-id{ font-family:'IBM Plex Mono',monospace; font-size:14px; color:var(--mute); }
+  .status-icon{ font-size:48px; text-align:center; margin:8px 0; }
+  .status-label{ font-size:22px; font-weight:600; text-align:center; color:var(--rose); }
+  .status-desc{ text-align:center; color:var(--mute); font-size:14px; margin-top:4px; }
 
-  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;}
-  .info-grid .item{background:var(--paper);border-radius:8px;padding:12px;border:1px solid var(--line);}
-  .info-grid .item .label{font-size:10px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;}
-  .info-grid .item .value{font-size:14px;font-weight:500;margin-top:4px;}
-  .info-grid .item .value a{color:var(--rose);text-decoration:none;word-break:break-all;}
-  .info-grid .item .value a:hover{text-decoration:underline;}
-  .info-grid .item.full{grid-column:1/3;}
+  .progress-bar{ background:var(--line); border-radius:8px; height:8px; overflow:hidden; margin:16px 0; }
+  .progress-bar .fill{ background:var(--rose); height:100%; border-radius:8px; transition:width .5s; }
+  .progress-steps{ display:flex; justify-content:space-between; font-size:10px; color:var(--mute); margin-top:4px; }
 
-  .countdown{text-align:center;padding:12px;background:var(--paper);border-radius:8px;border:1px solid var(--gold);margin-top:12px;font-weight:500;}
+  .info-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+  .info-grid .item{ background:var(--paper); border-radius:8px; padding:12px; border:1px solid var(--line); }
+  .info-grid .item .label{ font-size:10px; color:var(--mute); text-transform:uppercase; letter-spacing:.04em; }
+  .info-grid .item .value{ font-size:14px; font-weight:500; margin-top:4px; }
+  .info-grid .item .value a{ color:var(--rose); text-decoration:none; word-break:break-all; }
+  .info-grid .item .value a:hover{ text-decoration:underline; }
+  .info-grid .item.full{ grid-column:1/3; }
 
-  .foto-list{margin-top:16px;}
-  .foto-list .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
-  .foto-list .header h3{font-size:16px;font-weight:500;}
-  .foto-list .header .counter{font-size:12px;color:var(--mute);}
+  .countdown{
+    text-align:center; padding:12px; background:var(--paper);
+    border-radius:8px; border:1px solid var(--gold); margin-top:12px; font-weight:500;
+  }
+
+  .foto-list{ margin-top:16px; }
+  .foto-list .header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .foto-list .header h3{ font-size:16px; font-weight:500; }
+  .foto-list .header .counter{ font-size:12px; color:var(--mute); }
   .foto-item{
-    display:flex;align-items:center;gap:12px;padding:10px 14px;
-    border:1px solid var(--line);border-radius:8px;margin-bottom:8px;
-    background:var(--card);transition:all .2s;
+    display:flex; align-items:center; gap:12px; padding:10px 14px;
+    border:1px solid var(--line); border-radius:8px; margin-bottom:8px;
+    background:var(--card); transition:all .2s;
   }
-  .foto-item:hover{background:var(--paper);}
-  .foto-item .number{font-size:12px;color:var(--mute);min-width:30px;font-weight:600;}
+  .foto-item:hover{ background:var(--paper); }
+  .foto-item .number{ font-size:12px; color:var(--mute); min-width:30px; font-weight:600; }
   .foto-item input{
-    flex:1;border:none;background:transparent;padding:6px 0;
-    font-family:'Inter',sans-serif;font-size:14px;color:var(--ink);
+    flex:1; border:none; background:transparent; padding:6px 0;
+    font-family:'Inter',sans-serif; font-size:14px; color:var(--ink);
     transition:border .2s;
   }
-  .foto-item input:focus{outline:none;border-bottom:2px solid var(--rose);}
-  .foto-item input::placeholder{color:#C9BFC3;}
-  .foto-item .status-badge{font-size:10px;padding:2px 10px;border-radius:12px;font-weight:600;white-space:nowrap;}
-  .foto-item .status-badge.done{background:#D1FAE5;color:#065F46;}
-  .foto-item .status-badge.pending{background:#FEF3C7;color:#92400E;}
+  .foto-item input:focus{ outline:none; border-bottom:2px solid var(--rose); }
+  .foto-item input::placeholder{ color:#C9BFC3; }
+  .foto-item .status-badge{ font-size:10px; padding:2px 10px; border-radius:12px; font-weight:600; white-space:nowrap; }
+  .foto-item .status-badge.done{ background:#D1FAE5; color:#065F46; }
+  .foto-item .status-badge.pending{ background:#FEF3C7; color:#92400E; }
 
   .gdrive-box{
-    background:var(--paper);border-radius:8px;padding:16px;border:1px solid var(--sage);margin-top:12px;
-    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    background:var(--paper); border-radius:8px; padding:16px;
+    border:1px solid var(--sage); margin-top:12px;
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
   }
-  .gdrive-box .icon{font-size:24px;}
-  .gdrive-box .link{flex:1;word-break:break-all;}
-  .gdrive-box .link a{color:var(--rose);text-decoration:none;}
-  .gdrive-box .link a:hover{text-decoration:underline;}
+  .gdrive-box .icon{ font-size:24px; }
+  .gdrive-box .link{ flex:1; word-break:break-all; }
+  .gdrive-box .link a{ color:var(--rose); text-decoration:none; }
+  .gdrive-box .link a:hover{ text-decoration:underline; }
 
-  .empty-state{text-align:center;padding:20px;color:var(--mute);}
+  .empty-state{ text-align:center; padding:20px; color:var(--mute); }
 
-  .foto-item.saved{background:#F0FAF0;border-color:var(--sage);}
-  .foto-item .save-indicator{font-size:12px;color:var(--sage);display:none;}
-  .foto-item.saved .save-indicator{display:inline;}
+  .foto-item.saved{ background:#F0FAF0; border-color:var(--sage); }
+  .foto-item .save-indicator{ font-size:12px; color:var(--sage); display:none; }
+  .foto-item.saved .save-indicator{ display:inline; }
 
   .keyboard-hint{
-    font-size:11px;color:var(--mute);text-align:center;margin-top:8px;
-    padding:6px 12px;background:var(--paper);border-radius:6px;border:1px dashed var(--line);
+    font-size:11px; color:var(--mute); text-align:center;
+    margin-top:8px; padding:6px 12px; background:var(--paper);
+    border-radius:6px; border:1px dashed var(--line);
   }
   .keyboard-hint kbd{
-    background:var(--card);padding:2px 8px;border-radius:4px;
-    border:1px solid var(--line);font-family:'IBM Plex Mono',monospace;font-size:10px;
+    background:var(--card); padding:2px 8px; border-radius:4px;
+    border:1px solid var(--line); font-family:'IBM Plex Mono',monospace; font-size:10px;
   }
 
   @media (max-width:640px){
@@ -165,15 +178,19 @@
     .status-header{flex-direction:column;align-items:flex-start;}
   }
 
-  .login-card{max-width:450px;margin:40px auto;}
-  .login-card .logo{margin-bottom:20px;}
+  .login-card{ max-width:450px; margin:40px auto; }
+  .login-card .logo{ margin-bottom:20px; }
+
+  .text-muted{ color:var(--mute); font-size:12px; }
+  .text-center{ text-align:center; }
 </style>
 </head>
 <body>
 
 <div class="container" id="app">
 
-  <div class="card login-card" id="loginCard">
+  <!-- LOGIN CARD (kalau tidak ada token di URL) -->
+  <div class="card login-card" id="loginCard" style="display:none;">
     <div class="logo">
       <h1>Studio Lavelle</h1>
       <p>Cek Status Booking</p>
@@ -181,20 +198,21 @@
 
     <div class="field">
       <label>📧 Email</label>
-      <input type="email" id="inputEmail" placeholder="Email kamu">
+      <input type="email" id="inputEmail" placeholder="Email kamu" autocomplete="off">
     </div>
     <div class="field">
       <label>🆔 Booking ID</label>
-      <input type="text" id="inputBookingId" placeholder="Contoh: SBY20260825-01-D">
+      <input type="text" id="inputBookingId" placeholder="Contoh: JGY20260825-01-MTH" autocomplete="off">
     </div>
 
     <button class="btn-primary" id="btnCek" onclick="cekStatusManual()">🔍 Cek Status</button>
     <div style="text-align:center;margin-top:12px;">
-      <span class="text-muted" style="font-size:12px;">Atau gunakan magic link dari admin</span>
+      <span class="text-muted">Atau gunakan magic link dari admin</span>
     </div>
     <div class="error-box" id="errorBox"></div>
   </div>
 
+  <!-- STATUS CARD -->
   <div id="statusCard" style="display:none;">
 
     <div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
@@ -206,7 +224,9 @@
     </div>
 
     <div class="card" id="statusContent">
-      <div class="text-center" style="padding:40px;"><span class="loading-spinner"></span> Memuat status...</div>
+      <div class="text-center" style="padding:40px;">
+        <span class="loading-spinner"></span> Memuat status...
+      </div>
     </div>
 
   </div>
@@ -216,31 +236,342 @@
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-(function(){
-  var supabase = window.supabase.createClient(
-    window.LAVELLE_CONFIG.SUPABASE_URL,
-    window.LAVELLE_CONFIG.SUPABASE_KEY
-  );
-  var token = new URLSearchParams(window.location.search).get('token');
+(function () {
+  'use strict';
 
-  if(!token){ document.body.innerHTML = '<p style="text-align:center;padding:40px;">Token tidak ditemukan.</p>'; return; }
-
-  supabase.rpc('get_client_status_by_token',{ p_token: token })
-    .then(function(res){
-      if(res.error){ console.error(res.error); return; }
-      var d = res.data;
-      if(d.error){ document.body.innerHTML = '<p style="text-align:center;padding:40px;">'+d.error+'</p>'; return; }
-      renderClientStatus(d);
-    });
-
-  function renderClientStatus(d){
-    // ... render pakai field yang sama seperti sebelumnya ...
+  var supabase = null;
+  try {
+    supabase = window.supabase.createClient(
+      window.LAVELLE_CONFIG.SUPABASE_URL,
+      window.LAVELLE_CONFIG.SUPABASE_KEY
+    );
+  } catch (err) {
+    console.error('❌ Supabase gagal init:', err);
   }
 
-  window.saveFotoList = function(list){
-    supabase.rpc('client_save_foto_list',{ p_token: token, p_foto_list: list })
-      .then(function(){ alert('Daftar foto tersimpan'); });
-  };
+  var currentToken = null;
+  var currentData = null;
+
+  // ---------- TOAST ----------
+  function showToast(msg, dur) {
+    dur = dur || 3000;
+    var e = document.querySelector('.toast'); if (e) e.remove();
+    var t = document.createElement('div');
+    t.className = 'toast'; t.innerText = msg;
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, dur);
+  }
+
+  // ---------- LOAD BY TOKEN ----------
+  function loadByToken(token) {
+    currentToken = token;
+    var statusCard = document.getElementById('statusCard');
+    var statusContent = document.getElementById('statusContent');
+    var loginCard = document.getElementById('loginCard');
+
+    loginCard.style.display = 'none';
+    statusCard.style.display = 'block';
+    statusContent.innerHTML = '<div class="text-center" style="padding:40px;"><span class="loading-spinner"></span> Memuat status...</div>';
+
+    if (!supabase) {
+      statusContent.innerHTML = '<div class="empty-state">❌ Sistem belum siap.</div>';
+      return;
+    }
+
+    supabase.rpc('get_client_status_by_token', { p_token: token })
+      .then(function (res) {
+        if (res.error) {
+          console.error(res.error);
+          statusContent.innerHTML = '<div class="empty-state">❌ ' + res.error.message + '</div>';
+          return;
+        }
+        var d = res.data;
+        if (d.error) {
+          statusContent.innerHTML = '<div class="empty-state">❌ ' + d.error + '</div>';
+          return;
+        }
+        currentData = d;
+        renderClientStatus(d);
+      })
+      .catch(function (err) {
+        console.error(err);
+        statusContent.innerHTML = '<div class="empty-state">❌ Gagal memuat status.</div>';
+      });
+  }
+
+  // ---------- CEK MANUAL (email + booking_id) ----------
+  function cekStatusManual() {
+    var email = (document.getElementById('inputEmail').value || '').trim();
+    var bookingId = (document.getElementById('inputBookingId').value || '').trim();
+    var err = document.getElementById('errorBox');
+    err.style.display = 'none';
+
+    if (!email || !bookingId) {
+      err.innerText = '⚠️ Email dan Booking ID wajib diisi.';
+      err.style.display = 'block';
+      return;
+    }
+
+    if (!supabase) {
+      err.innerText = '❌ Sistem belum siap. Refresh halaman.';
+      err.style.display = 'block';
+      return;
+    }
+
+    var btn = document.getElementById('btnCek');
+    btn.disabled = true;
+    btn.classList.add('btn-loading');
+
+    supabase.rpc('get_client_status_by_email', {
+      p_email: email,
+      p_booking_id: bookingId
+    })
+      .then(function (res) {
+        btn.disabled = false;
+        btn.classList.remove('btn-loading');
+
+        if (res.error) {
+          err.innerText = '❌ ' + res.error.message;
+          err.style.display = 'block';
+          return;
+        }
+        var d = res.data;
+        if (d.error) {
+          err.innerText = '❌ ' + d.error;
+          err.style.display = 'block';
+          return;
+        }
+        currentData = d;
+        document.getElementById('loginCard').style.display = 'none';
+        document.getElementById('statusCard').style.display = 'block';
+        renderClientStatus(d);
+      })
+      .catch(function (e) {
+        btn.disabled = false;
+        btn.classList.remove('btn-loading');
+        err.innerText = '❌ Gagal cek status.';
+        err.style.display = 'block';
+        console.error(e);
+      });
+  }
+
+  function kembaliKeLogin() {
+    currentToken = null;
+    currentData = null;
+    document.getElementById('statusCard').style.display = 'none';
+    document.getElementById('loginCard').style.display = 'block';
+    document.getElementById('inputEmail').value = '';
+    document.getElementById('inputBookingId').value = '';
+  }
+
+  // ---------- RENDER STATUS ----------
+  function renderClientStatus(d) {
+    var statusList = ['booking','dp','lunas','upload_gdrive','edit_foto','done_edit'];
+    var currentIdx = d.status.index || 0;
+
+    var stepsHtml = '';
+    statusList.forEach(function (s, i) {
+      var cls = i <= currentIdx ? 'color:var(--rose);font-weight:600;' : '';
+      stepsHtml += '<span style="' + cls + '">' + (i + 1) + '</span>';
+    });
+
+    var html = '';
+
+    // HEADER STATUS
+    html += '<div class="status-header">' +
+      '<div class="booking-id">' + (d.booking_id || '-') + '</div>' +
+      '<div style="font-size:12px;color:var(--mute);">' + (d.kampus || '-') + '</div>' +
+      '</div>';
+
+    html += '<div class="status-icon">' + (d.status.icon || '📋') + '</div>';
+    html += '<div class="status-label">' + (d.status.label || '-') + '</div>';
+    html += '<div class="status-desc">' + (d.status.desc || '-') + '</div>';
+
+    // PROGRESS BAR
+    var pct = Math.round(((currentIdx + 1) / statusList.length) * 100);
+    html += '<div class="progress-bar"><div class="fill" style="width:' + pct + '%"></div></div>';
+    html += '<div class="progress-steps">' + stepsHtml + '</div>';
+
+    // COUNTDOWN
+    if (d.countdown_text) {
+      html += '<div class="countdown">' + d.countdown_text + '</div>';
+    }
+
+    // INFO GRID
+    html += '<div class="info-grid" style="margin-top:20px;">';
+    html += '<div class="item"><div class="label">Nama</div><div class="value">' + (d.nama_client || '-') + '</div></div>';
+    html += '<div class="item"><div class="label">Kota</div><div class="value">' + (d.kota || '-') + '</div></div>';
+    html += '<div class="item"><div class="label">Tanggal</div><div class="value">' + (d.tanggal || '-') + '</div></div>';
+    html += '<div class="item"><div class="label">Jam</div><div class="value">' + (d.jam_mulai || '') + ' - ' + (d.jam_selesai || '') + '</div></div>';
+    html += '<div class="item"><div class="label">Paket</div><div class="value">' + (d.paket || '-') + '</div></div>';
+    html += '<div class="item"><div class="label">Total</div><div class="value">Rp' + Number(d.total_harga || 0).toLocaleString('id-ID') + '</div></div>';
+    html += '<div class="item full"><div class="label">Lokasi</div><div class="value">' + (d.lokasi || '-') + '</div></div>';
+    html += '</div>';
+
+    // REKENING (kalau status booking)
+    if (d.status.key === 'booking' && d.rekening) {
+      html += '<div class="gdrive-box" style="border-color:var(--gold);">' +
+        '<div class="icon">💳</div>' +
+        '<div class="link">' +
+          '<div style="font-size:11px;color:var(--mute);text-transform:uppercase;">Transfer DP ke</div>' +
+          '<div style="font-weight:600;margin-top:4px;">' + (d.rekening.bank || '-') + '</div>' +
+          '<div>' + (d.rekening.nomor || '-') + ' a/n ' + (d.rekening.atas_nama || '-') + '</div>' +
+        '</div>' +
+        '</div>';
+    }
+
+    // GDRIVE LINK
+    if (d.gdrive_link) {
+      html += '<div class="gdrive-box">' +
+        '<div class="icon">📁</div>' +
+        '<div class="link"><a href="' + d.gdrive_link + '" target="_blank">' + d.gdrive_link + '</a></div>' +
+        '</div>';
+    }
+
+    // FOTO PROGRESS
+    if (d.foto && d.foto.total > 0) {
+      html += '<div style="margin-top:20px;">' +
+        '<div style="display:flex;justify-content:space-between;margin-bottom:8px;">' +
+          '<span style="font-size:13px;font-weight:600;">📸 Progress Edit Foto</span>' +
+          '<span style="font-size:12px;color:var(--mute);">' + d.foto.selesai + '/' + d.foto.total + '</span>' +
+        '</div>' +
+        '<div class="progress-bar"><div class="fill" style="width:' + d.foto.progress + '%"></div></div>' +
+        '<div style="text-align:center;font-size:12px;color:var(--mute);margin-top:4px;">' + d.foto.text + '</div>' +
+        '</div>';
+    }
+
+    // FOTO LIST (input nama foto)
+    if (d.status.key === 'upload_gdrive' || d.status.key === 'edit_foto' || d.status.key === 'done_edit') {
+      html += renderFotoList(d);
+    }
+
+    // SISA HARI EDIT
+    if (d.sisa_hari_edit_text) {
+      html += '<div class="countdown" style="border-color:var(--sage);margin-top:16px;">' + d.sisa_hari_edit_text + '</div>';
+    }
+
+    document.getElementById('statusContent').innerHTML = html;
+
+    // Attach event ke input foto
+    attachFotoListeners();
+  }
+
+  function renderFotoList(d) {
+    var fotoList = d.foto_list || [];
+    var h = '<div class="foto-list">' +
+      '<div class="header">' +
+        '<h3>📷 Daftar Foto yang Mau Diedit</h3>' +
+        '<span class="counter">' + fotoList.length + ' foto</span>' +
+      '</div>';
+
+    if (d.status.key === 'upload_gdrive') {
+      h += '<p style="font-size:12px;color:var(--mute);margin:0 0 12px;">Tuliskan nama file foto yang mau diedit. Admin akan meng-copy dari Gdrive.</p>';
+    }
+
+    for (var i = 0; i < 10; i++) {
+      var val = fotoList[i] || '';
+      var isDone = d.status.key !== 'upload_gdrive' && val;
+      h += '<div class="foto-item' + (isDone ? ' saved' : '') + '">' +
+        '<span class="number">' + (i + 1) + '.</span>' +
+        '<input type="text" data-idx="' + i + '" placeholder="Nama file foto ' + (i + 1) + '" value="' + val + '"' +
+          (d.status.key === 'upload_gdrive' ? '' : ' readonly') + '>' +
+        (isDone ? '<span class="status-badge done">✓ Tersimpan</span>' : '') +
+        '</div>';
+    }
+
+    if (d.status.key === 'upload_gdrive') {
+      h += '<button class="btn-save-foto" id="btnSaveFoto" onclick="saveFotoList()">💾 Simpan Daftar Foto</button>' +
+        '<div class="keyboard-hint">Tekan <kbd>Tab</kbd> untuk pindah field, <kbd>Enter</kbd> untuk simpan</div>';
+    }
+
+    h += '</div>';
+    return h;
+  }
+
+  function attachFotoListeners() {
+    var inputs = document.querySelectorAll('.foto-item input');
+    inputs.forEach(function (inp) {
+      inp.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          saveFotoList();
+        }
+      });
+    });
+  }
+
+  // ---------- SAVE FOTO LIST ----------
+  function saveFotoList() {
+    if (!currentToken || !currentData) {
+      showToast('❌ Data tidak ditemukan'); return;
+    }
+    if (currentData.status.key !== 'upload_gdrive') {
+      showToast('ℹ️ Sudah tersimpan'); return;
+    }
+
+    var inputs = document.querySelectorAll('.foto-item input');
+    var list = [];
+    inputs.forEach(function (inp) { list.push((inp.value || '').trim()); });
+
+    var btn = document.getElementById('btnSaveFoto');
+    if (btn) { btn.disabled = true; btn.classList.add('btn-loading'); }
+
+    supabase.rpc('client_save_foto_list', { p_token: currentToken, p_foto_list: list })
+      .then(function (res) {
+        if (btn) { btn.disabled = false; btn.classList.remove('btn-loading'); }
+
+        if (res.error) {
+          showToast('❌ ' + res.error.message, 4000);
+          return;
+        }
+        var d = res.data;
+        if (d.error) {
+          showToast('❌ ' + d.error, 4000);
+          return;
+        }
+        showToast('✅ Daftar foto tersimpan', 2500);
+
+        // Re-render
+        if (currentData) {
+          currentData.foto_list = list;
+          // Tandai item yang tersimpan
+          inputs.forEach(function (inp) {
+            if (inp.value.trim()) inp.closest('.foto-item').classList.add('saved');
+          });
+        }
+      })
+      .catch(function (e) {
+        if (btn) { btn.disabled = false; btn.classList.remove('btn-loading'); }
+        showToast('❌ Gagal menyimpan: ' + e.message, 4000);
+        console.error(e);
+      });
+  }
+
+  // ---------- INIT ----------
+  function init() {
+    var token = new URLSearchParams(window.location.search).get('token');
+
+    if (token) {
+      // Buka via magic link
+      loadByToken(token);
+    } else {
+      // Buka manual → tampilkan form
+      document.getElementById('loginCard').style.display = 'block';
+    }
+  }
+
+  // ---------- EXPOSE ----------
+  window.cekStatusManual = cekStatusManual;
+  window.kembaliKeLogin = kembaliKeLogin;
+  window.saveFotoList = saveFotoList;
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+
+  console.log('✅ Client panel siap.');
 })();
 </script>
 </body>
