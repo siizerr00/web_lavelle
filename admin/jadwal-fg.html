@@ -52,28 +52,12 @@
   .btn-save:hover{background:#597A5F;}
   .btn-save:disabled{background:#C9BFC3;cursor:not-allowed;}
 
-  .login-box{max-width:400px;margin:60px auto;}
-
-  .field{margin-bottom:16px;}
-  .field label{
-    display:block; font-size:12px; color:var(--mute); margin-bottom:6px;
-    text-transform:uppercase; letter-spacing:.04em; font-weight:600;
+  /* Layar blokir (kalau belum login admin) */
+  .blocked{
+    max-width:480px;margin:80px auto;text-align:center;
   }
-  .field input, .field select{
-    width:100%; padding:10px 14px; border:1px solid var(--line);
-    border-radius:8px; font-family:inherit; font-size:14px;
-    background:#fff; color:var(--ink);
-  }
-  .field input:focus, .field select:focus{
-    outline:none; border-color:var(--rose);
-    box-shadow:0 0 0 3px rgba(183,110,121,.15);
-  }
-
-  .error-box{
-    display:none; color:var(--danger); font-size:13px;
-    padding:10px 14px; background:var(--danger-bg);
-    border-radius:8px; margin-top:8px;
-  }
+  .blocked h1{font-size:24px;font-style:italic;font-weight:500;}
+  .blocked p{color:var(--mute);font-size:14px;margin:8px 0 24px;}
 
   .filter-bar{
     display:flex; flex-wrap:wrap; gap:10px; align-items:center;
@@ -177,19 +161,12 @@
 
 <div class="container">
 
-  <!-- LOGIN -->
-  <div id="loginSection">
-    <div class="card login-box" style="text-align:center;">
-      <h1 style="font-size:28px;font-style:italic;font-weight:500;">Studio Lavelle</h1>
-      <p style="color:var(--mute);font-size:14px;margin:4px 0 24px;">Jadwal Fotografer</p>
-
-      <div class="field" style="text-align:left;">
-        <label>🔑 Password Admin</label>
-        <input type="password" id="adminPassword" placeholder="Masukkan password admin">
-      </div>
-
-      <button class="btn btn-primary" style="width:100%;padding:12px;" id="btnLogin" onclick="loginAdmin()">Login</button>
-      <div class="error-box" id="loginError"></div>
+  <!-- BLOKIR kalau belum login admin -->
+  <div id="blockedSection" style="display:none;">
+    <div class="card blocked">
+      <h1>🔒 Belum Login</h1>
+      <p>Silakan login dulu di Admin Panel untuk mengakses halaman ini.</p>
+      <a href="./index.html" class="btn btn-primary">← Ke Admin Panel</a>
     </div>
   </div>
 
@@ -203,8 +180,7 @@
       </div>
       <div class="actions">
         <span style="font-size:12px;color:var(--mute);" id="adminInfo">👤 Admin</span>
-        <a href="index.html" class="btn btn-secondary btn-sm">← Admin Panel</a>
-        <button class="btn btn-secondary btn-sm" onclick="logoutAdmin()">🚪 Logout</button>
+        <a href="./index.html" class="btn btn-secondary btn-sm">← Admin Panel</a>
       </div>
     </div>
 
@@ -252,15 +228,17 @@
       window.LAVELLE_CONFIG.SUPABASE_KEY
     );
     supabaseReady = true;
-    console.log('✅ Supabase siap.');
   } catch (err) {
     console.error('❌ Supabase gagal:', err);
   }
 
+  // 🔑 Ambil token dari sessionStorage (di-set oleh admin/index.html saat login)
+  var ADMIN_TOKEN = sessionStorage.getItem('lavelle_admin_token');
+  var ADMIN_NAMA  = sessionStorage.getItem('lavelle_admin_nama') || 'Admin';
+
   var state = {
-    isLoggedIn: false,
-    adminToken: null,
-    adminNama: '',
+    adminToken: ADMIN_TOKEN,
+    adminNama: ADMIN_NAMA,
     bookings: [],
     fotograferList: [],
     changes: {},
@@ -268,7 +246,6 @@
     dirty: {}
   };
 
-  // ---------- TOAST ----------
   function showToast(msg, dur) {
     dur = dur || 3000;
     var e = document.querySelector('.toast'); if (e) e.remove();
@@ -278,74 +255,61 @@
     setTimeout(function () { t.remove(); }, dur);
   }
 
-  // ---------- LOGIN ----------
-  function loginAdmin() {
-    var pwd = document.getElementById('adminPassword').value.trim();
-    var err = document.getElementById('loginError');
-    err.style.display = 'none';
-
-    if (!pwd) {
-      err.innerText = '⚠️ Password wajib diisi.';
-      err.style.display = 'block';
-      return;
-    }
-
+  // ---------- INISIALISASI ----------
+  function init() {
     if (!supabaseReady) {
-      err.innerText = '❌ Sistem belum siap. Refresh halaman.';
-      err.style.display = 'block';
+      document.getElementById('blockedSection').style.display = 'block';
+      document.querySelector('#blockedSection .blocked h1').innerText = '❌ Sistem belum siap';
+      document.querySelector('#blockedSection .blocked p').innerText = 'Coba refresh halaman.';
       return;
     }
 
-    var btn = document.getElementById('btnLogin');
-    btn.disabled = true;
+    // Kalau belum login (token tidak ada) → tampilkan layar blokir
+    if (!state.adminToken) {
+      document.getElementById('blockedSection').style.display = 'block';
+      return;
+    }
 
-    supabase.rpc('admin_login', { p_nama: 'admin', p_password: pwd })
+    // Verifikasi token masih valid dengan test call
+    supabase.rpc('admin_get_jadwal_list', { p_token: state.adminToken })
       .then(function (res) {
-        btn.disabled = false;
-        if (res.error) { err.innerText = '❌ ' + res.error.message; err.style.display = 'block'; return; }
+        if (res.error) {
+          // Token tidak valid / expired → minta login ulang
+          sessionStorage.removeItem('lavelle_admin_token');
+          sessionStorage.removeItem('lavelle_admin_nama');
+          document.getElementById('blockedSection').style.display = 'block';
+          var h = document.querySelector('#blockedSection .blocked h1');
+          var p = document.querySelector('#blockedSection .blocked p');
+          if (h) h.innerText = '🔒 Sesi Berakhir';
+          if (p) p.innerText = 'Silakan login ulang di Admin Panel.';
+          return;
+        }
+
         var d = res.data;
-        if (d.error) { err.innerText = '❌ ' + d.error; err.style.display = 'block'; return; }
+        if (d.error) {
+          sessionStorage.removeItem('lavelle_admin_token');
+          sessionStorage.removeItem('lavelle_admin_nama');
+          document.getElementById('blockedSection').style.display = 'block';
+          return;
+        }
 
-        state.isLoggedIn = true;
-        state.adminToken = d.token;
-        state.adminNama = d.nama;
-
-        document.getElementById('loginSection').style.display = 'none';
+        // Token valid → tampilkan dashboard
         document.getElementById('dashboardSection').style.display = 'block';
-        document.getElementById('adminInfo').innerText = '👤 ' + d.nama;
-
-        loadData();
-        showToast('✅ Login berhasil');
+        document.getElementById('adminInfo').innerText = '👤 ' + state.adminNama;
+        state.bookings = d.bookings || [];
+        state.fotograferList = d.fotografer || [];
+        buildFilterOptions();
+        renderTable();
       })
       .catch(function (e) {
-        btn.disabled = false;
-        err.innerText = '❌ Gagal koneksi.';
-        err.style.display = 'block';
         console.error(e);
+        document.getElementById('blockedSection').style.display = 'block';
       });
   }
 
-  function logoutAdmin() {
-    if (state.adminToken && supabase) {
-      supabase.rpc('admin_logout', { p_token: state.adminToken }).then(function () {});
-    }
-    state.isLoggedIn = false;
-    state.adminToken = null;
-    state.adminNama = '';
-    state.bookings = [];
-    state.fotograferList = [];
-    state.changes = {};
-    state.conflicts = {};
-    state.dirty = {};
-
-    document.getElementById('loginSection').style.display = 'block';
-    document.getElementById('dashboardSection').style.display = 'none';
-    document.getElementById('adminPassword').value = '';
-    showToast('👋 Logout');
-  }
-
-  // ---------- LOAD DATA ----------
+  // ---------- LOAD DATA (refresh) ----------
   function loadData() {
+    if (!state.adminToken) return;
     var c = document.getElementById('tableContainer');
     c.innerHTML = '<div class="empty-state"><span class="loading-spinner"></span> Memuat data...</div>';
 
@@ -366,7 +330,6 @@
       })
       .catch(function (e) {
         c.innerHTML = '<div class="empty-state">❌ Gagal memuat: ' + e.message + '</div>';
-        console.error(e);
       });
   }
 
@@ -386,10 +349,7 @@
       }).join('');
   }
 
-  // ---------- FILTER ----------
-  function applyFilter() {
-    renderTable();
-  }
+  function applyFilter() { renderTable(); }
 
   function getFilteredBookings() {
     var fk = document.getElementById('filterKota').value;
@@ -398,10 +358,8 @@
 
     return state.bookings.filter(function (b) {
       if (fk !== 'all' && b.kota !== fk) return false;
-
       var fidNow = state.changes[b.booking_id] || b.fotografer_id;
       if (ff !== 'all' && fidNow !== ff) return false;
-
       if (q) {
         var hay = ((b.nama_client || '') + ' ' + (b.booking_id || '') + ' ' + (b.kampus || '')).toLowerCase();
         if (hay.indexOf(q) === -1) return false;
@@ -410,7 +368,6 @@
     });
   }
 
-  // ---------- RENDER ----------
   function renderTable() {
     var c = document.getElementById('tableContainer');
     var list = getFilteredBookings();
@@ -448,7 +405,6 @@
 
       if (!fidNow) selectHtml += '<option value="">-- Pilih Fotografer --</option>';
 
-      // Group per kota
       var perKota = {};
       state.fotograferList.forEach(function (f) {
         if (!perKota[f.kota]) perKota[f.kota] = [];
@@ -469,7 +425,6 @@
 
       selectHtml += '</select>';
 
-      // Pesan bentrok
       var pesanHtml = '';
       if (konflik.length > 0) {
         var teks = konflik.map(function (k) {
@@ -478,7 +433,6 @@
         pesanHtml = '<div class="pesan-bentrok show">⚠️ Bentrok dengan: ' + teks + '</div>';
       }
 
-      // Tombol simpan per baris
       var tombolSimpan = '';
       if (isDirty || konflik.length > 0) {
         var disabled = konflik.length > 0 ? ' disabled' : '';
@@ -515,7 +469,6 @@
     return '<span class="badge ' + s[0] + '">' + s[1] + '</span>';
   }
 
-  // ---------- UBAH FOTOGRAFER ----------
   function onChangeFotografer(bookingId, fotograferIdBaru) {
     var b = state.bookings.find(function (x) { return x.booking_id === bookingId; });
     if (!b) return;
@@ -532,7 +485,6 @@
     state.dirty[bookingId] = true;
 
     if (fotograferIdBaru) {
-      // Cek bentrok ke server
       supabase.rpc('admin_cek_bentrok_jadwal', {
         p_token: state.adminToken,
         p_booking_id: bookingId,
@@ -541,12 +493,8 @@
         if (res.error) { console.error(res.error); return; }
         var d = res.data;
         if (d.error) { console.error(d.error); return; }
-
-        if (d.jumlah > 0) {
-          state.conflicts[bookingId] = d.bentrok || [];
-        } else {
-          delete state.conflicts[bookingId];
-        }
+        if (d.jumlah > 0) state.conflicts[bookingId] = d.bentrok || [];
+        else delete state.conflicts[bookingId];
         renderTable();
       });
     } else {
@@ -556,7 +504,6 @@
     renderTable();
   }
 
-  // ---------- SIMPAN SATU ----------
   function simpanSatu(bookingId) {
     var fidBaru = state.changes[bookingId];
     if (!fidBaru) { showToast('⚠️ Tidak ada perubahan.'); return; }
@@ -582,12 +529,9 @@
 
       showToast('✅ ' + (d.message || 'Tersimpan'));
       renderTable();
-    }).catch(function (e) {
-      showToast('❌ ' + e.message);
-    });
+    }).catch(function (e) { showToast('❌ ' + e.message); });
   }
 
-  // ---------- SIMPAN SEMUA ----------
   function simpanSemuaPerubahan() {
     var ids = Object.keys(state.changes);
     if (ids.length === 0) { showToast('⚠️ Tidak ada perubahan.'); return; }
@@ -606,10 +550,7 @@
     btn.disabled = true;
     btn.innerText = '⏳ Menyimpan...';
 
-    // Simpan satu per satu secara berurutan
-    var i = 0;
-    var sukses = 0;
-    var gagal = 0;
+    var i = 0, sukses = 0, gagal = 0;
 
     function next() {
       if (i >= ids.length) {
@@ -627,9 +568,8 @@
         p_booking_id: bookingId,
         p_fotografer_id_baru: fidBaru
       }).then(function (res) {
-        if (res.error || (res.data && res.data.error)) {
-          gagal++;
-        } else {
+        if (res.error || (res.data && res.data.error)) gagal++;
+        else {
           sukses++;
           var b = state.bookings.find(function (x) { return x.booking_id === bookingId; });
           if (b) b.fotografer_id = fidBaru;
@@ -638,17 +578,12 @@
         }
         i++;
         next();
-      }).catch(function () {
-        gagal++;
-        i++;
-        next();
-      });
+      }).catch(function () { gagal++; i++; next(); });
     }
 
     next();
   }
 
-  // ---------- STATS ----------
   function updateStats() {
     document.getElementById('statTotal').innerText = state.bookings.length;
     var dirtyCount = Object.keys(state.dirty).length;
@@ -665,20 +600,20 @@
     if (btnSimpan) btnSimpan.disabled = (dirtyCount === 0);
   }
 
-  // ---------- EXPOSE ----------
-  window.loginAdmin = loginAdmin;
-  window.logoutAdmin = logoutAdmin;
-  window.loadData = loadData;
   window.applyFilter = applyFilter;
+  window.loadData = loadData;
   window.onChangeFotografer = onChangeFotografer;
   window.simpanSatu = simpanSatu;
   window.simpanSemuaPerubahan = simpanSemuaPerubahan;
 
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' && !state.isLoggedIn) loginAdmin();
-  });
+  // Langsung init — tanpa login form
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
 
-  console.log('✅ Semua fungsi jadwal-fg terekspos ke window.');
+  console.log('✅ Jadwal-fg siap. Admin:', state.adminNama);
 })();
 </script>
 </body>
