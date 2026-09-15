@@ -553,6 +553,10 @@
     } else {
       a.push('<span class="text-muted">-</span>');
     }
+
+    // ⬇️ TOMBOL TOKEN — selalu tampil di setiap booking
+    a.push('<button class="btn-link btn-sm" onclick="copyTokenText(\''+b.booking_id+'\')" style="background:#10B981;">🔑 Token</button>');
+
     return a.join('');
   }
 
@@ -566,6 +570,25 @@
         showToast('✅ Link disalin! Kirim ke client.');
       }).catch(function(){ fallbackCopy(link); });
     } else fallbackCopy(link);
+  }
+  // ---------- COPY TOKEN TEXT ----------
+  function copyTokenText(bookingId){
+    var b = state.bookings.find(function(x){ return x.booking_id === bookingId; });
+    if(!b || !b.token){ showToast('❌ Token tidak ditemukan'); return; }
+  
+    var teks =
+      'Berikut kami sampaikan link untuk proses photoshoot\n\n' +
+      'Email: ' + (b.email || '-') + '\n' +
+      'Booking ID: ' + (b.booking_id || '-') + '\n' +
+      'Token: ' + (b.token || '-');
+  
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(teks).then(function(){
+        showToast('✅ Token disalin!');
+      }).catch(function(){ fallbackCopy(teks); });
+    } else {
+      fallbackCopy(teks);
+    }
   }
   function fallbackCopy(text){
     var ta = document.createElement('textarea');
@@ -694,6 +717,8 @@
   window.submitGdrive = submitGdrive;
   window.startCopyProcess = startCopyProcess;
   window.copyMagicLink = copyMagicLink;
+  window.copyMagicLink = copyMagicLink;
+  window.copyTokenText = copyTokenText;
 
   // ---------- INIT ----------
   function init(){
