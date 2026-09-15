@@ -187,9 +187,17 @@
     max-height:650px;
     overflow-y:auto;
   }
-  .pricelist-scroll::-webkit-scrollbar { width:6px; }
-  .pricelist-scroll::-webkit-scrollbar-track { background:var(--line); border-radius:4px; }
-  .pricelist-scroll::-webkit-scrollbar-thumb { background:var(--rose); border-radius:4px; }
+  .pricelist-scroll::-webkit-scrollbar {
+    width:6px;
+  }
+  .pricelist-scroll::-webkit-scrollbar-track {
+    background:var(--line);
+    border-radius:4px;
+  }
+  .pricelist-scroll::-webkit-scrollbar-thumb {
+    background:var(--rose);
+    border-radius:4px;
+  }
   .pricelist-scroll .item {
     border:1px solid var(--line);
     border-radius:8px;
@@ -197,8 +205,13 @@
     background:var(--card);
     transition:transform .2s;
   }
-  .pricelist-scroll .item:hover { transform:scale(1.01); }
-  .pricelist-scroll .item img { width:100%; display:block; }
+  .pricelist-scroll .item:hover {
+    transform:scale(1.01);
+  }
+  .pricelist-scroll .item img {
+    width:100%;
+    display:block;
+  }
   .pricelist-scroll .item .label {
     padding:10px 16px;
     font-size:12px;
@@ -216,7 +229,11 @@
   }
   .pricelist-scroll .item .pdf-container iframe {
     position:absolute;
-    top:0; left:0; width:100%; height:100%; border:none;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    border:none;
   }
 
   .cal-nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
@@ -232,12 +249,22 @@
   .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
   .cal-wrap{ position:relative; }
   .cal-fully-booked{
-    position:absolute; inset:0; display:none;
-    align-items:center; justify-content:center; text-align:center;
-    background:rgba(46,37,50,.72); color:#F1E6CE;
-    font-family:'Fraunces',serif; font-style:italic; font-weight:600;
-    font-size:clamp(22px,4.5vw,32px); letter-spacing:.03em;
-    border-radius:6px; z-index:5; pointer-events:none;
+    position:absolute;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    background:rgba(46,37,50,.72);
+    color:#F1E6CE;
+    font-family:'Fraunces',serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:clamp(22px,4.5vw,32px);
+    letter-spacing:.03em;
+    border-radius:6px;
+    z-index:5;
+    pointer-events:none;
   }
   .cal-fully-booked.show{ display:flex; }
   .cal-hari{ text-align:center; font-size:11px; color:var(--mute); padding-bottom:4px; font-weight:600; }
@@ -476,9 +503,18 @@
     font-size:11px;
     font-weight:600;
   }
-  .status-badge.pending { background:#FEF3C7; color:#92400E; }
-  .status-badge.paid { background:#D1FAE5; color:#065F46; }
-  .status-badge.expired { background:#FEE2E2; color:#991B1B; }
+  .status-badge.pending {
+    background:#FEF3C7;
+    color:#92400E;
+  }
+  .status-badge.paid {
+    background:#D1FAE5;
+    color:#065F46;
+  }
+  .status-badge.expired {
+    background:#FEE2E2;
+    color:#991B1B;
+  }
 </style>
 </head>
 <body>
@@ -694,26 +730,63 @@
   </div>
 </div>
 
+<script>
+// ============================================================
+// LAVELLE REGION BOOTSTRAP (INDEPENDEN DARI SUPABASE)
+// Kartu wilayah harus tetap tampil walaupun Supabase/CDN gagal.
+// ============================================================
+window.LAVELLE_REGIONS = [
+  { kota: "Jogja", kode: "JGY" },
+  { kota: "Solo", kode: "SLO" },
+  { kota: "Surabaya", kode: "SBY" }
+];
+
+window.renderLavelleRegions = function () {
+  const grid = document.getElementById('regionGrid');
+  if (!grid) return;
+  const regions = window.LAVELLE_REGIONS;
+  grid.innerHTML = regions.map(r => `
+    <div class="region-card" data-kota="${r.kota}" onclick="pilihKota('${r.kota}')">
+      <div class="kode mono">${r.kode}</div>
+      <h3>${r.kota}</h3>
+      <div class="tarik">📅 Lihat jadwal</div>
+      <div class="badge-loading"><span class="loading-spinner"></span>Memuat...</div>
+    </div>
+  `).join('');
+};
+
+// Jalankan segera; tidak menunggu Supabase.
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', window.renderLavelleRegions, { once: true });
+} else {
+  window.renderLavelleRegions();
+}
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ============================================================
 // KONFIGURASI SUPABASE
+// Ambil dari: Supabase Dashboard → Settings → API Keys → tab "API Keys"
+// (BUKAN tab "Legacy" — project baru pakai sistem publishable/secret key)
 // ============================================================
 const SUPABASE_URL = "https://xgdlzlyjmnuzdytycree.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_2CSjGRSMIKSl_KTUX2hr0A_crngTzEf";
 
-// ⚠️ Jangan biarkan error di sini mematikan seluruh script.
-// Pakai try/catch + nullable client.
+// Jangan pernah biarkan kegagalan Supabase menghentikan script utama.
 let supabase = null;
+let supabaseReady = false;
 try {
   if (window.supabase && typeof window.supabase.createClient === 'function') {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-    console.log('✅ Supabase client siap.');
+    supabaseReady = true;
   } else {
-    console.warn('⚠️ Supabase library belum tersedia. UI tetap tampil, tapi booking tidak aktif.');
+    console.warn('⚠️ Supabase CDN belum tersedia. Wilayah tetap bisa dirender.');
   }
 } catch (err) {
-  console.error('❌ Supabase gagal diinisialisasi:', err);
+  console.error('❌ Gagal inisialisasi Supabase:', err);
+  supabase = null;
+  supabaseReady = false;
 }
 
 // Nomor WA admin berbeda per wilayah.
@@ -722,27 +795,28 @@ const ADMIN_WA_PER_KOTA = {
   "Solo": "6282132439700",
   "Surabaya": "6283112053117"
 };
-const ADMIN_WA_DEFAULT = "6283112053117";
+const ADMIN_WA_DEFAULT = "6283112053117"; // fallback kalau kota tidak terdaftar
 
-const REGIONS = [
-  { kota: "Jogja",    kode: "JGY" },
-  { kota: "Solo",     kode: "SLO" },
+const REGIONS = window.LAVELLE_REGIONS || [
+  { kota: "Jogja", kode: "JGY" },
+  { kota: "Solo", kode: "SLO" },
   { kota: "Surabaya", kode: "SBY" }
 ];
 
-// Bulan yang ditutup untuk booking (format "YYYY-MM")
+// Bulan yang ditutup untuk booking (format "YYYY-MM"). Tanggal di bulan ini
+// akan otomatis tampil sebagai "full" / tidak bisa diklik di kalender.
 const BLOCKED_MONTHS = ["2026-09", "2026-10"];
 
-// Batas berapa bulan ke depan yang boleh dibuka
+// Batas berapa bulan ke depan yang boleh dibuka (biar tidak spam fetch ke masa depan jauh)
 const MAKS_BULAN_KE_DEPAN = 6;
 
 // ============================================================
 // CACHE
 // ============================================================
 const CACHE = {
-  allData: {},
-  kalenderBulan: {},
-  slot: {}
+  allData: {},   // "kota" -> {data, timestamp}  (khusus data awal: pricelist, paket, 14 hari pertama)
+  kalenderBulan: {}, // "kota|YYYY-MM" -> {data, timestamp}
+  slot: {}       // "kota|YYYY-MM-DD" -> {data, timestamp}
 };
 
 function isCacheValid(timestamp) {
@@ -767,9 +841,11 @@ let state = {
   tanggalTerpilih: null,
   slotTerpilih: null,
   paketList: [],
-  allData: null,
+  allData: null,          // { pricelist, pricelistMedia, kalender: {tgl:{tersedia,jumlah_slot}}, slot: {...} }
   isLoading: false
 };
+
+// (Fungsi jsonp() dihapus — semua request sekarang lewat Supabase client)
 
 // ============================================================
 // LOADING FUNCTIONS
@@ -787,31 +863,32 @@ function hideLoading() {
 // RENDER REGIONS
 // ============================================================
 function renderRegions(){
-  const grid = document.getElementById('regionGrid');
-  if (!grid) {
-    console.error('❌ Elemen #regionGrid tidak ditemukan!');
-    return;
+  try {
+    if (typeof window.renderLavelleRegions === 'function') {
+      window.renderLavelleRegions();
+      return;
+    }
+    const grid = document.getElementById('regionGrid');
+    if (!grid) return;
+    grid.innerHTML = REGIONS.map(r => `
+      <div class="region-card" data-kota="${r.kota}" onclick="pilihKota('${r.kota}')">
+        <div class="kode mono">${r.kode}</div>
+        <h3>${r.kota}</h3>
+        <div class="tarik">📅 Lihat jadwal</div>
+        <div class="badge-loading"><span class="loading-spinner"></span>Memuat...</div>
+      </div>
+    `).join('');
+  } catch (err) {
+    console.error('❌ Gagal render wilayah:', err);
   }
-  grid.innerHTML = REGIONS.map(r => `
-    <div class="region-card" data-kota="${r.kota}" onclick="pilihKota('${r.kota}')">
-      <div class="kode mono">${r.kode}</div>
-      <h3>${r.kota}</h3>
-      <div class="tarik">📅 Lihat jadwal</div>
-      <div class="badge-loading"><span class="loading-spinner"></span>Memuat...</div>
-    </div>
-  `).join('');
-  console.log('✅ Region cards rendered:', REGIONS.length);
 }
-
-// Panggil setelah DOM siap
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', renderRegions);
-} else {
-  renderRegions();
-}
+renderRegions();
 
 // ============================================================
 // NAVIGASI
+// ============================================================
+// ============================================================
+// GOOGLE ANALYTICS - TRACK EVENT (aman walau GA gagal load)
 // ============================================================
 function trackEvent(name, params) {
   if (typeof gtag === 'function') gtag('event', name, params || {});
@@ -820,8 +897,11 @@ function trackEvent(name, params) {
 async function pilihKota(kota){
   if (state.isLoading) return;
 
-  if (!supabase) {
-    showToast('❌ Koneksi booking belum siap. Coba refresh halaman.', 4000);
+  // Klik kota tetap aman walaupun Supabase gagal. Jangan pindahkan user ke
+  // halaman booking yang datanya tidak bisa dimuat.
+  if (!supabaseReady || !supabase) {
+    showToast('⚠️ Sistem booking sedang tidak terhubung. Coba refresh halaman.', 4000);
+    console.warn('⚠️ pilihKota dibatalkan: Supabase tidak tersedia.');
     return;
   }
 
@@ -851,7 +931,7 @@ async function pilihKota(kota){
   const m = state.bulanAktif.getMonth();
   document.getElementById('bulanLabel').innerText = `${NAMA_BULAN[m]} ${y}`;
 
-  // 3 request ini dijalankan BERSAMAAN (paralel)
+  // 🔥 3 request ini dijalankan BERSAMAAN (paralel), bukan berurutan.
   const pPricelist = supabase.from('pricelist').select('*').eq('kota', kota)
     .then(({ data, error }) => error ? [] : data)
     .catch(() => []);
@@ -860,26 +940,39 @@ async function pilihKota(kota){
     .catch(() => []);
   const pKalender = fetchKalenderBulanKota(kota, y, m);
 
+  // Pricelist biasanya paling cepat selesai (nggak ada perhitungan slot) -
+  // begitu dia selesai, langsung tampilkan tanpa nunggu kalender.
   pPricelist.then(data => { state.paketList = Array.isArray(data) ? data : []; });
   pPricelistMedia.then(data => tampilkanPricelist(Array.isArray(data) ? data : []));
 
-  await Promise.all([pPricelist, pPricelistMedia, pKalender]);
-
-  renderKalender(y, m);
-
-  if (card) card.classList.remove('loading');
-  state.isLoading = false;
-  console.log('✅ Selesai load', kota);
+  try {
+    await Promise.all([pPricelist, pPricelistMedia, pKalender]);
+    renderKalender(y, m);
+    console.log('✅ Selesai load', kota);
+  } catch (err) {
+    console.error('❌ Gagal memuat data kota:', err);
+    showToast('❌ Gagal memuat data wilayah. Coba lagi.', 4000);
+  } finally {
+    if (card) card.classList.remove('loading');
+    state.isLoading = false;
+  }
   window.scrollTo(0,0);
 }
 
+// Fetch kalender 1 bulan penuh untuk kota tertentu, pakai cache per-bulan.
+// Dipakai baik saat pilih kota pertama kali maupun saat pindah bulan.
 async function fetchKalenderBulanKota(kota, y, m) {
   const bulanStr = `${y}-${String(m+1).padStart(2,'0')}`;
+
+  if (!supabaseReady || !supabase) {
+    console.warn('⚠️ Kalender tidak dapat dimuat: Supabase tidak tersedia.');
+    return {};
+  }
   const totalHari = new Date(y, m+1, 0).getDate();
   const cacheKey = `${kota}|${bulanStr}`;
 
   if (BLOCKED_MONTHS.includes(bulanStr)) {
-    return {};
+    return {}; // bulan ditutup, tidak perlu fetch ke API
   }
 
   const cached = CACHE.kalenderBulan[cacheKey];
@@ -899,6 +992,7 @@ async function fetchKalenderBulanKota(kota, y, m) {
       showToast('❌ ' + error.message, 3000);
       return {};
     }
+    // RPC balikin array baris {tanggal, tersedia, jumlah_slot} -> ubah jadi object per tanggal
     const hasil = {};
     (data || []).forEach(row => {
       hasil[row.tanggal] = { tersedia: row.tersedia, jumlah_slot: row.jumlah_slot };
@@ -936,6 +1030,9 @@ function kembaliKeHome(){
   document.getElementById('kotaPage').style.display = 'none';
   document.getElementById('regionPage').style.display = 'block';
 }
+
+// (fungsi loadAllData/applyAllData/pastikanKalenderBulanLengkap versi lama sudah digantikan
+//  oleh pilihKota() + fetchKalenderBulanKota() di atas yang jalan paralel — lebih cepat)
 
 // ============================================================
 // TAMPILKAN PRICELIST - SUPPORT PDF & IMAGE
@@ -1036,7 +1133,7 @@ async function ubahBulan(delta){
   const bulanIni = new Date(today.getFullYear(), today.getMonth(), 1);
   const calonBulanAwal = new Date(calonBulan.getFullYear(), calonBulan.getMonth(), 1);
 
-  if (calonBulanAwal < bulanIni || calonBulanAwal > batasMaks) return;
+  if (calonBulanAwal < bulanIni || calonBulanAwal > batasMaks) return; // di luar rentang, abaikan
 
   state.bulanAktif = calonBulan;
   state.tanggalTerpilih = null;
@@ -1108,12 +1205,12 @@ function renderKalender(y, m) {
 // PILIH TANGGAL
 // ============================================================
 async function pilihTanggal(tanggal){
-  if (!supabase) {
-    showToast('❌ Koneksi booking belum siap. Coba refresh halaman.', 4000);
+  console.log('📅 Pilih tanggal:', tanggal);
+
+  if (!supabaseReady || !supabase) {
+    showToast('⚠️ Sistem booking sedang tidak terhubung. Coba refresh halaman.', 4000);
     return;
   }
-
-  console.log('📅 Pilih tanggal:', tanggal);
   state.tanggalTerpilih = tanggal;
 
   const y = state.bulanAktif.getFullYear();
@@ -1199,14 +1296,16 @@ function tutupForm(){
 // SUBMIT BOOKING
 // ============================================================
 async function submitBooking(){
-  if (!supabase) {
+  trackEvent('klik_booking_sekarang', { kota: state.kotaAktif });
+
+  if (!supabaseReady || !supabase) {
     const errorBox = document.getElementById('errorBox');
-    errorBox.innerText = '❌ Koneksi booking belum siap. Coba refresh halaman.';
-    errorBox.style.display = 'block';
+    if (errorBox) {
+      errorBox.innerText = '⚠️ Sistem booking sedang tidak terhubung. Silakan refresh halaman.';
+      errorBox.style.display = 'block';
+    }
     return;
   }
-
-  trackEvent('klik_booking_sekarang', { kota: state.kotaAktif });
 
   const btn = document.getElementById('btnBooking');
   const nama = document.getElementById('fNama').value.trim();
@@ -1267,6 +1366,7 @@ async function submitBooking(){
     tutupForm();
     tampilkanInvoice(data);
 
+    // Hapus cache tanggal ini & data awal kota ini supaya kalender ke-refresh
     const tanggalCacheKey = `${state.kotaAktif}|${state.tanggalTerpilih}`;
     delete CACHE.slot[tanggalCacheKey];
     delete CACHE.allData[state.kotaAktif];
@@ -1345,7 +1445,6 @@ Saya mau konfirmasi booking. Terima kasih! 🙏`;
 // ============================================================
 document.addEventListener('click', function(e) {
   const btnWa = document.getElementById('btnWa');
-  if (!btnWa) return;
   if (e.target === btnWa || btnWa.contains(e.target)) {
     e.preventDefault();
 
@@ -1396,6 +1495,8 @@ function showToast(message, duration = 3000) {
 // INIT
 // ============================================================
 window.addEventListener('DOMContentLoaded', () => {
+  // Render ulang secara aman setelah DOM siap; tetap tidak bergantung Supabase.
+  if (typeof window.renderLavelleRegions === 'function') window.renderLavelleRegions();
   showToast('📷 Studio Lavelle - Pilih wilayah untuk booking', 2000);
 });
 </script>
