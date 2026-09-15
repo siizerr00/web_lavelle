@@ -1,1 +1,740 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin | Studio Lavelle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400..600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2E2532;
+    --paper:#FBF6F2;
+    --rose:#B76E79;
+    --gold:#C9A66B;
+    --sage:#6B8F71;
+    --mute:#8C8389;
+    --line:#E4D9D3;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
 
+  .container{max-width:1100px;margin:0 auto;padding:24px;}
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:24px;
+    box-shadow:0 4px 24px rgba(46,37,50,.06);
+    margin-bottom:20px;
+  }
+  .card-header{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:16px;flex-wrap:wrap;gap:12px;
+  }
+  .card-header h2{font-size:20px;font-weight:500;}
+
+  .logo{
+    text-align:center;padding:20px 0;
+  }
+  .logo h1{font-size:28px;font-style:italic;font-weight:500;}
+  .logo p{color:var(--mute);font-size:14px;margin-top:4px;}
+
+  .login-box{max-width:400px;margin:40px auto;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12px;color:var(--mute);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+  .field input{
+    width:100%;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+    font-family:'Inter',sans-serif;font-size:14px;background:#fff;color:var(--ink);
+  }
+  .field input:focus{outline:none;border-color:var(--rose);box-shadow:0 0 0 3px rgba(183,110,121,.15);}
+  
+  .btn-primary{
+    padding:12px 24px;background:var(--ink);color:#fff;border:none;border-radius:8px;
+    font-size:14px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;
+    transition:background .2s;
+  }
+  .btn-primary:hover{background:var(--rose);}
+  .btn-primary:disabled{opacity:0.6;cursor:not-allowed;}
+  .btn-primary.btn-sm{padding:6px 14px;font-size:12px;}
+  
+  .btn-secondary{
+    padding:10px 20px;background:none;color:var(--mute);border:1px solid var(--line);border-radius:8px;
+    font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;
+  }
+  .btn-secondary:hover{color:var(--ink);border-color:var(--ink);}
+  
+  .btn-success{
+    padding:6px 14px;background:var(--sage);color:#fff;border:none;border-radius:6px;
+    font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;
+    transition:background .2s;
+  }
+  .btn-success:hover{background:#597A5F;}
+  
+  .btn-danger{
+    padding:6px 14px;background:#B3413E;color:#fff;border:none;border-radius:6px;
+    font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;
+    transition:background .2s;
+  }
+  .btn-danger:hover{background:#991B1B;}
+  .btn-warning{
+    padding:6px 14px;background:#D97706;color:#fff;border:none;border-radius:6px;
+    font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;
+    transition:background .2s;
+  }
+  .btn-warning:hover{background:#B45309;}
+
+  .btn-gdrive{
+    padding:6px 14px;background:#4285F4;color:#fff;border:none;border-radius:6px;
+    font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;
+    transition:background .2s;
+  }
+  .btn-gdrive:hover{background:#3367D6;}
+
+  .btn-copy{
+    padding:6px 14px;background:#8B5CF6;color:#fff;border:none;border-radius:6px;
+    font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;
+    transition:background .2s;
+  }
+  .btn-copy:hover{background:#7C3AED;}
+  .btn-copy:disabled{opacity:0.6;cursor:not-allowed;}
+
+  .error-box{display:none;color:#B3413E;font-size:13px;padding:10px 14px;background:#FDE8E8;border-radius:8px;margin-top:8px;}
+  .success-box{display:none;color:#065F46;font-size:13px;padding:10px 14px;background:#D1FAE5;border-radius:8px;margin-top:8px;}
+
+  .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{
+    background:var(--paper);padding:10px 12px;text-align:left;font-weight:600;
+    color:var(--mute);font-size:11px;text-transform:uppercase;letter-spacing:.04em;
+    border-bottom:2px solid var(--line);
+    position:sticky;top:0;z-index:2;
+  }
+  td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  tr:hover td{background:#FAF8F6;}
+  
+  .badge{
+    display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;
+  }
+  .badge-booking{background:#FEF3C7;color:#92400E;}
+  .badge-dp{background:#DBEAFE;color:#1E40AF;}
+  .badge-pelunasan{background:#D1FAE5;color:#065F46;}
+  .badge-upload{background:#FEF3C7;color:#92400E;}
+  .badge-proses_edit{background:#FCE7F3;color:#9D174D;}
+  .badge-selesai{background:#D1FAE5;color:#065F46;font-weight:700;}
+  .badge-expired{background:#FEE2E2;color:#991B1B;}
+
+  .status-actions{display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
+  .status-actions .btn-sm{font-size:10px;padding:4px 10px;}
+
+  .empty-state{text-align:center;padding:40px;color:var(--mute);}
+
+  .filter-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px;}
+  .filter-bar select,.filter-bar input{
+    padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;background:#fff;
+  }
+  .filter-bar select:focus,.filter-bar input:focus{outline:none;border-color:var(--rose);}
+
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:100;animation:slideUp .3s;
+  }
+  @keyframes slideUp{from{transform:translate(-50%,20px);opacity:0;}to{transform:translate(-50%,0);opacity:1;}}
+  @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+  .btn-loading{position:relative;pointer-events:none;opacity:0.7;}
+  .btn-loading::after{
+    content:"";position:absolute;right:10px;top:50%;transform:translateY(-50%);
+    width:14px;height:14px;border:2px solid #fff;border-top:2px solid transparent;border-radius:50%;animation:spin 0.8s linear infinite;
+  }
+
+  .loading-spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--line);border-top:2px solid var(--rose);border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:8px;}
+
+  .text-muted{color:var(--mute);font-size:12px;}
+  .text-center{text-align:center;}
+  .mt-12{margin-top:12px;}
+  .mb-8{margin-bottom:8px;}
+  .flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+
+  .modal-overlay{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;
+    align-items:center;justify-content:center;padding:20px;
+  }
+  .modal-overlay.active{display:flex;}
+  .modal-box{
+    background:var(--paper);border-radius:12px;padding:32px;max-width:500px;width:100%;
+    box-shadow:0 20px 60px rgba(0,0,0,0.3);
+  }
+  .modal-box h3{font-size:22px;font-style:italic;margin-bottom:4px;}
+  .modal-box .sub{color:var(--mute);font-size:14px;margin-bottom:20px;}
+  .modal-box .field{margin-bottom:16px;}
+  .modal-box .field label{display:block;font-size:12px;color:var(--mute);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+  .modal-box .field input,.modal-box .field textarea{
+    width:100%;padding:10px 14px;border:1px solid var(--line);border-radius:8px;
+    font-family:'Inter',sans-serif;font-size:14px;background:#fff;color:var(--ink);
+  }
+  .modal-box .field input:focus,.modal-box .field textarea:focus{outline:none;border-color:var(--rose);box-shadow:0 0 0 3px rgba(183,110,121,.15);}
+  .modal-box .field textarea{resize:vertical;min-height:80px;}
+  .modal-actions{display:flex;gap:12px;margin-top:20px;}
+  .modal-actions .btn-primary{flex:1;}
+  .modal-actions .btn-secondary{flex:1;text-align:center;}
+
+  /* 🔥 PROGRESS BAR COPY */
+  .copy-progress-container {
+    margin-top:8px;
+    padding:8px 12px;
+    background:var(--paper);
+    border-radius:6px;
+    border:1px solid var(--line);
+  }
+  .copy-progress-container .progress-text {
+    font-size:12px;
+    font-weight:500;
+  }
+  .copy-progress-container .progress-bar {
+    height:4px;
+    background:var(--line);
+    border-radius:4px;
+    margin-top:4px;
+    overflow:hidden;
+  }
+  .copy-progress-container .progress-bar .fill {
+    height:100%;
+    background:var(--rose);
+    border-radius:4px;
+    transition:width .3s;
+  }
+  .copy-progress-container .progress-detail {
+    font-size:11px;
+    color:var(--mute);
+    margin-top:4px;
+  }
+  .copy-result {
+    font-size:11px;
+    margin-top:4px;
+    padding:4px 8px;
+    border-radius:4px;
+  }
+  .copy-result.success { background:#D1FAE5; color:#065F46; }
+  .copy-result.failed { background:#FDE8E8; color:#B3413E; }
+  .copy-result.partial { background:#FEF3C7; color:#92400E; }
+
+  /* 🔥 DAFTAR DETAIL FOTO */
+  .detail-photo-list {
+    margin-top:6px;
+    max-height:100px;
+    overflow-y:auto;
+    font-size:11px;
+  }
+  .detail-photo-list .item {
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:2px 4px;
+    border-bottom:1px solid var(--line);
+  }
+  .detail-photo-list .item.success { color:#065F46; }
+  .detail-photo-list .item.failed { color:#B3413E; }
+
+  @media (max-width:640px){
+    .card{padding:16px;}
+    .card-header{flex-direction:column;align-items:flex-start;}
+    td,th{padding:6px 8px;font-size:12px;}
+    .filter-bar{flex-direction:column;align-items:stretch;}
+    .status-actions .btn-sm{font-size:9px;padding:3px 8px;}
+    .modal-box{padding:20px;}
+  }
+  /* 🔥 TOMBOL EDIT */
+  .btn-edit{
+    padding:6px 14px;
+    background:#8B5CF6;
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    font-size:12px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+    font-weight:500;
+    transition:background .2s;
+  }
+  .btn-edit:hover{background:#7C3AED;}
+  .btn-edit:disabled{opacity:0.6;cursor:not-allowed;}
+
+  /* 🔥 TOMBOL MAGIC LINK */
+  .btn-link{
+    padding:4px 10px;
+    background:#4285F4;
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    font-size:10px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+    font-weight:500;
+    transition:background .2s;
+  }
+  .btn-link:hover{background:#3367D6;}
+</style>
+</head>
+<body>
+
+<div class="container" id="app">
+
+  <!-- LOGIN SECTION -->
+  <div id="loginSection">
+    <div class="logo">
+      <h1>Studio Lavelle</h1>
+      <p>Admin Panel</p>
+    </div>
+    <div class="card login-box">
+      <div class="field">
+        <label>🔑 Password</label>
+        <input type="password" id="adminPassword" placeholder="Masukkan password admin">
+      </div>
+      <button class="btn-primary" id="btnLogin" onclick="loginAdmin()" style="width:100%;">Login</button>
+      <div class="error-box" id="loginError"></div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboardSection" style="display:none;">
+
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h1 style="font-size:24px;font-style:italic;font-weight:500;">📋 Admin Panel</h1>
+        <span class="text-muted">Kelola status booking client</span>
+      </div>
+      <div class="flex">
+        <span class="text-muted" id="adminInfo">👤 Admin</span>
+        <button class="btn-secondary" onclick="logoutAdmin()" style="padding:6px 16px;">🚪 Logout</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:20px;" id="statsContainer">
+      <div class="card" style="padding:16px;text-align:center;">
+        <div style="font-size:24px;font-weight:700;" id="statTotal">0</div>
+        <div class="text-muted" style="font-size:12px;">Total Booking</div>
+      </div>
+      <div class="card" style="padding:16px;text-align:center;border-left:3px solid #FEF3C7;">
+        <div style="font-size:24px;font-weight:700;color:#92400E;" id="statBooking">0</div>
+        <div class="text-muted" style="font-size:12px;">Booking</div>
+      </div>
+      <div class="card" style="padding:16px;text-align:center;border-left:3px solid #DBEAFE;">
+        <div style="font-size:24px;font-weight:700;color:#1E40AF;" id="statDp">0</div>
+        <div class="text-muted" style="font-size:12px;">DP</div>
+      </div>
+      <div class="card" style="padding:16px;text-align:center;border-left:3px solid #D1FAE5;">
+        <div style="font-size:24px;font-weight:700;color:#065F46;" id="statSelesai">0</div>
+        <div class="text-muted" style="font-size:12px;">Selesai</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="filter-bar">
+        <select id="filterStatus" onchange="loadBookings()">
+          <option value="all">📋 Semua Status</option>
+          <option value="booking">📋 Booking</option>
+          <option value="dp">💰 DP</option>
+          <option value="lunas">✅ Lunas</option>
+          <option value="upload_gdrive">📁 Upload Gdrive</option>
+          <option value="edit_foto">🎨 Edit Foto</option>
+          <option value="done_edit">🎉 Selesai</option>
+          <option value="expired">⏰ Expired</option>
+        </select>
+        <select id="filterKota" onchange="loadBookings()">
+          <option value="all">📍 Semua Kota</option>
+          <option value="Jogja">Jogja</option>
+          <option value="Solo">Solo</option>
+          <option value="Surabaya">Surabaya</option>
+          <option value="Jakarta">Jakarta</option>
+        </select>
+        <input type="text" id="searchInput" placeholder="🔍 Cari nama / booking ID" oninput="loadBookings()" style="flex:1;min-width:150px;">
+        <button class="btn-primary btn-sm" onclick="loadBookings()" style="white-space:nowrap;">🔄 Refresh</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>📋 Daftar Booking</h2>
+        <span class="text-muted" id="resultCount">0 data</span>
+      </div>
+      <div class="table-wrap" id="tableContainer">
+        <div class="text-center" style="padding:40px;"><span class="loading-spinner"></span> Memuat data...</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL UPLOAD GDRIVE -->
+<div class="modal-overlay" id="modalGdrive">
+  <div class="modal-box">
+    <h3>📁 Upload Link Gdrive</h3>
+    <div class="sub">Masukkan link Google Drive untuk booking <strong id="modalBookingId">-</strong></div>
+    
+    <div class="field">
+      <label>🔗 Link Google Drive</label>
+      <input type="url" id="inputGdriveLink" placeholder="https://drive.google.com/drive/folders/...">
+    </div>
+    
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeGdriveModal()">Batal</button>
+      <button class="btn-primary" id="btnGdriveSubmit" onclick="submitGdrive()">📤 Upload Link</button>
+    </div>
+    <div class="error-box" id="gdriveError"></div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function () {
+  'use strict';
+  var supabase = window.supabase.createClient(
+    window.LAVELLE_CONFIG.SUPABASE_URL,
+    window.LAVELLE_CONFIG.SUPABASE_KEY
+  );
+
+  var state = {
+    bookings: [],
+    isLoggedIn: false,
+    adminToken: null,
+    adminNama: '',
+    gdriveBookingId: null,
+    copyInterval: null
+  };
+
+  function showToast(msg, dur){
+    dur = dur || 3000;
+    var e = document.querySelector('.toast'); if(e) e.remove();
+    var t = document.createElement('div'); t.className='toast'; t.innerText=msg;
+    document.body.appendChild(t); setTimeout(function(){ t.remove(); }, dur);
+  }
+
+  // ---------- LOGIN ----------
+  function loginAdmin(){
+    var namaEl = document.getElementById('adminNama');
+    var passEl = document.getElementById('adminPassword');
+    var err = document.getElementById('loginError');
+    err.style.display = 'none';
+
+    var nama = namaEl ? namaEl.value.trim() : '';
+    var password = passEl ? passEl.value.trim() : '';
+
+    if(!nama || !password){
+      err.innerText = '⚠️ Nama & password wajib diisi.'; err.style.display='block'; return;
+    }
+
+    var btn = document.getElementById('btnLogin');
+    if(btn){ btn.disabled = true; btn.classList.add('btn-loading'); }
+
+    supabase.rpc('admin_login',{ p_nama: nama, p_password: password })
+      .then(function(res){
+        if(btn){ btn.disabled=false; btn.classList.remove('btn-loading'); }
+        if(res.error){ err.innerText='❌ '+res.error.message; err.style.display='block'; return; }
+        var d = res.data;
+        if(d.error){ err.innerText='❌ '+d.error; err.style.display='block'; return; }
+
+        state.isLoggedIn = true;
+        state.adminToken = d.token;
+        state.adminNama = d.nama;
+
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('dashboardSection').style.display = 'block';
+        var info = document.getElementById('adminInfo');
+        if(info) info.innerText = '👤 ' + d.nama;
+
+        loadBookings();
+        showToast('✅ Selamat datang, '+d.nama+'!');
+      }).catch(function(e){
+        if(btn){ btn.disabled=false; btn.classList.remove('btn-loading'); }
+        err.innerText='❌ Gagal koneksi.'; err.style.display='block'; console.error(e);
+      });
+  }
+
+  function logoutAdmin(){
+    if(state.adminToken){
+      supabase.rpc('admin_logout',{ p_token: state.adminToken }).then(function(){});
+    }
+    state.isLoggedIn=false; state.adminToken=null;
+    document.getElementById('loginSection').style.display='block';
+    document.getElementById('dashboardSection').style.display='none';
+    document.getElementById('adminPassword').value='';
+    showToast('👋 Logout');
+  }
+
+  // ---------- LOAD BOOKINGS ----------
+  function loadBookings(){
+    if(!state.isLoggedIn) return;
+    var c = document.getElementById('tableContainer');
+    c.innerHTML = '<div class="text-center" style="padding:40px;"><span class="loading-spinner"></span> Memuat...</div>';
+
+    supabase.rpc('admin_get_all_bookings',{ p_token: state.adminToken })
+      .then(function(res){
+        if(res.error){ c.innerHTML = '<div class="empty-state">❌ '+res.error.message+'</div>'; return; }
+        var d = res.data;
+        if(d.error){ c.innerHTML = '<div class="empty-state">❌ '+d.error+'</div>'; return; }
+        state.bookings = d.data || [];
+        renderBookings();
+      }).catch(function(e){
+        c.innerHTML = '<div class="empty-state">❌ Gagal muat: '+e.message+'</div>';
+      });
+  }
+
+  function renderBookings(){
+    var c = document.getElementById('tableContainer');
+    var fs = document.getElementById('filterStatus').value;
+    var fk = document.getElementById('filterKota').value;
+    var q = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+
+    var list = state.bookings.slice().filter(function(b){ return b.status !== 'done_edit'; });
+    if(fs !== 'all') list = list.filter(function(b){ return b.status === fs; });
+    if(fk !== 'all') list = list.filter(function(b){ return b.kota === fk; });
+    if(q) list = list.filter(function(b){
+      return (b.booking_id||'').toLowerCase().indexOf(q) !== -1 ||
+             (b.nama_client||'').toLowerCase().indexOf(q) !== -1 ||
+             (b.kampus||'').toLowerCase().indexOf(q) !== -1;
+    });
+    list.sort(function(a,b){ return (b.tanggal_dibuat||'').localeCompare(a.tanggal_dibuat||''); });
+
+    document.getElementById('resultCount').innerText = list.length + ' data';
+    updateStats();
+
+    if(!list.length){ c.innerHTML = '<div class="empty-state">📭 Tidak ada booking aktif</div>'; return; }
+
+    var html = '<table><thead><tr>'+
+      '<th>Booking ID</th><th>Client</th><th>Kampus</th><th>Kota</th>'+
+      '<th>Tanggal Foto</th><th>Status</th><th style="min-width:250px;">Aksi</th>'+
+      '</tr></thead><tbody>';
+
+    list.forEach(function(b){
+      html += '<tr>'+
+        '<td><span class="mono" style="font-size:12px;">'+(b.booking_id||'-')+'</span></td>'+
+        '<td><strong>'+(b.nama_client||'-')+'</strong></td>'+
+        '<td>'+(b.kampus||'-')+'</td>'+
+        '<td>'+(b.kota||'-')+'</td>'+
+        '<td>'+(b.tanggal||'-')+'</td>'+
+        '<td>'+getStatusBadge(b.status)+'</td>'+
+        '<td><div class="status-actions">'+getStatusActions(b)+'</div></td>'+
+      '</tr>';
+    });
+    html += '</tbody></table>';
+    c.innerHTML = html;
+  }
+
+  function getStatusBadge(status){
+    var m = {
+      'booking':      ['badge-booking','📋 Booking'],
+      'dp':           ['badge-dp','💰 DP'],
+      'lunas':        ['badge-pelunasan','✅ Lunas'],
+      'upload_gdrive':['badge-upload','📁 Upload Gdrive'],
+      'edit_foto':    ['badge-proses_edit','🎨 Edit Foto'],
+      'done_edit':    ['badge-selesai','🎉 Selesai'],
+      'expired':      ['badge-expired','⏰ Expired']
+    };
+    var s = m[status] || m['booking'];
+    return '<span class="badge '+s[0]+'">'+s[1]+'</span>';
+  }
+
+  function getStatusActions(b){
+    var s = b.status;
+    var a = [];
+
+    if(s==='booking'){
+      a.push('<button class="btn-success btn-sm" onclick="updateStatus(\''+b.booking_id+'\',\'dp\')">💰 DP</button>');
+      a.push('<button class="btn-primary btn-sm" onclick="updateStatus(\''+b.booking_id+'\',\'lunas\')" style="background:var(--sage);">✅ Lunas</button>');
+      a.push('<button class="btn-danger btn-sm" onclick="deleteBooking(\''+b.booking_id+'\')">🗑️</button>');
+    } else if(s==='dp'){
+      a.push('<button class="btn-success btn-sm" onclick="updateStatus(\''+b.booking_id+'\',\'lunas\')">✅ Lunas</button>');
+      a.push('<button class="btn-warning btn-sm" onclick="updateStatus(\''+b.booking_id+'\',\'booking\')">↺ Reset</button>');
+    } else if(s==='lunas'){
+      a.push('<button class="btn-gdrive btn-sm" onclick="openGdriveModal(\''+b.booking_id+'\')">📁 Upload Gdrive</button>');
+      a.push('<button class="btn-warning btn-sm" onclick="updateStatus(\''+b.booking_id+'\',\'booking\')">↺ Reset</button>');
+    } else if(s==='upload_gdrive'){
+      if(b.copy_done){
+        a.push('<button class="btn-edit btn-sm" onclick="updateStatus(\''+b.booking_id+'\',\'edit_foto\')">🎨 Edit Foto</button>');
+      } else {
+        var ada = false;
+        try { var fl = b.foto_list || []; ada = fl.length>0 && fl.some(function(f){ return f && f.trim(); }); } catch(e){}
+        if(ada){
+          if(b.copy_status === 'processing'){
+            var pct = b.copy_total>0 ? Math.round((b.copy_progress/b.copy_total)*100) : 0;
+            a.push('<span class="text-muted" style="font-size:11px;">⏳ Copy '+pct+'%</span>');
+          } else {
+            a.push('<button class="btn-copy btn-sm" onclick="startCopyProcess(\''+b.booking_id+'\')">📁 Copy Foto</button>');
+          }
+        } else {
+          a.push('<span class="text-muted" style="font-size:10px;">📭 Client belum isi list</span>');
+        }
+      }
+      a.push('<button class="btn-sm" onclick="copyMagicLink(\''+b.booking_id+'\')" style="background:#4285F4;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:10px;cursor:pointer;">🔗 Link</button>');
+      a.push('<button class="btn-warning btn-sm" onclick="updateStatus(\''+b.booking_id+'\',\'booking\')">↺ Reset</button>');
+    } else if(s==='edit_foto'){
+      a.push('<button class="btn-success btn-sm" onclick="updateStatus(\''+b.booking_id+'\',\'done_edit\')">🎉 Done Edit</button>');
+      a.push('<button class="btn-sm" onclick="copyMagicLink(\''+b.booking_id+'\')" style="background:#4285F4;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:10px;cursor:pointer;">🔗 Link</button>');
+      a.push('<button class="btn-warning btn-sm" onclick="updateStatus(\''+b.booking_id+'\',\'booking\')">↺ Reset</button>');
+    } else if(s==='expired'){
+      a.push('<button class="btn-danger btn-sm" onclick="deleteBooking(\''+b.booking_id+'\')">🗑️</button>');
+    } else {
+      a.push('<span class="text-muted">-</span>');
+    }
+    return a.join('');
+  }
+
+  // ---------- MAGIC LINK ----------
+  function copyMagicLink(bookingId){
+    var b = state.bookings.find(function(x){ return x.booking_id === bookingId; });
+    if(!b || !b.token){ showToast('❌ Token tidak ditemukan'); return; }
+    var link = window.LAVELLE_CONFIG.APP_URL + '/client.html?token=' + b.token;
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(link).then(function(){
+        showToast('✅ Link disalin! Kirim ke client.');
+      }).catch(function(){ fallbackCopy(link); });
+    } else fallbackCopy(link);
+  }
+  function fallbackCopy(text){
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position='fixed'; ta.style.left='-9999px';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); showToast('✅ Link disalin!'); } catch(e){ prompt('Salin:', text); }
+    document.body.removeChild(ta);
+  }
+
+  // ---------- COPY FOTO ----------
+  function startCopyProcess(bookingId){
+    if(!confirm('Copy foto untuk '+bookingId+'?')) return;
+    var btn = document.querySelector('[onclick*="startCopyProcess(\''+bookingId+'\')"]');
+    if(btn){ btn.disabled=true; btn.classList.add('btn-loading'); btn.innerText='⏳ Proses...'; }
+
+    supabase.rpc('admin_start_copy_queue',{ p_token: state.adminToken, p_booking_id: bookingId })
+      .then(function(res){
+        if(res.error || (res.data && res.data.error)){
+          var m = res.error ? res.error.message : res.data.error;
+          showToast('❌ '+m); if(btn){ btn.disabled=false; btn.classList.remove('btn-loading'); btn.innerText='📁 Copy Foto'; }
+          return;
+        }
+        showToast('✅ '+(res.data.message || 'Antrian dimulai'));
+
+        if(state.copyInterval) clearInterval(state.copyInterval);
+        state.copyInterval = setInterval(function(){
+          supabase.rpc('admin_get_queue_status',{ p_token: state.adminToken, p_booking_id: bookingId })
+            .then(function(r){
+              var d = r.data || {};
+              if(d.status === 'done' || d.status === 'failed'){
+                clearInterval(state.copyInterval); state.copyInterval = null;
+                showToast(d.result || 'Proses selesai', 5000);
+                if(d.status === 'done' && !(d.result || '').includes('gagal')){
+                  supabase.rpc('admin_update_status',{ p_token:state.adminToken, p_booking_id:bookingId, p_status:'edit_foto' })
+                    .then(function(){ loadBookings(); });
+                } else setTimeout(loadBookings, 1000);
+              } else if(btn){
+                var pct = Math.round(d.persentase||0);
+                btn.innerText = '⏳ '+pct+'% ('+(d.progress||0)+'/'+(d.total||0)+')';
+              }
+            });
+        }, 3000);
+      }).catch(function(e){
+        showToast('❌ '+e.message);
+        if(btn){ btn.disabled=false; btn.classList.remove('btn-loading'); btn.innerText='📁 Copy Foto'; }
+      });
+  }
+
+  // ---------- GDRIVE MODAL ----------
+  function openGdriveModal(bookingId){
+    state.gdriveBookingId = bookingId;
+    document.getElementById('modalBookingId').innerText = bookingId;
+    document.getElementById('inputGdriveLink').value = '';
+    document.getElementById('gdriveError').style.display = 'none';
+    document.getElementById('modalGdrive').classList.add('active');
+  }
+  function closeGdriveModal(){
+    document.getElementById('modalGdrive').classList.remove('active');
+    state.gdriveBookingId = null;
+  }
+  function submitGdrive(){
+    var link = document.getElementById('inputGdriveLink').value.trim();
+    var err = document.getElementById('gdriveError');
+    err.style.display='none';
+    if(!link){ err.innerText='⚠️ Link wajib diisi.'; err.style.display='block'; return; }
+    if(link.indexOf('drive.google.com')===-1){ err.innerText='⚠️ Link tidak valid.'; err.style.display='block'; return; }
+
+    var btn = document.getElementById('btnGdriveSubmit');
+    btn.disabled=true; btn.classList.add('btn-loading');
+
+    supabase.rpc('admin_update_gdrive',{
+      p_token: state.adminToken, p_booking_id: state.gdriveBookingId, p_link: link
+    }).then(function(res){
+      btn.disabled=false; btn.classList.remove('btn-loading');
+      if(res.error || (res.data && res.data.error)){
+        err.innerText = '❌ '+((res.error && res.error.message) || res.data.error);
+        err.style.display='block'; return;
+      }
+      closeGdriveModal();
+      showToast('✅ '+(res.data.message||'Tersimpan'));
+      loadBookings();
+    }).catch(function(e){
+      btn.disabled=false; btn.classList.remove('btn-loading');
+      err.innerText='❌ '+e.message; err.style.display='block';
+    });
+  }
+
+  // ---------- UPDATE / DELETE ----------
+  function updateStatus(bookingId, newStatus){
+    if(!confirm('Ubah status '+bookingId+' → '+newStatus+'?')) return;
+    supabase.rpc('admin_update_status',{ p_token:state.adminToken, p_booking_id:bookingId, p_status:newStatus })
+      .then(function(res){
+        if(res.error || (res.data && res.data.error)){
+          showToast('❌ '+((res.error && res.error.message) || res.data.error)); return;
+        }
+        showToast('✅ Status diubah'); loadBookings();
+      }).catch(function(e){ showToast('❌ '+e.message); });
+  }
+  function deleteBooking(bookingId){
+    if(!confirm('Hapus '+bookingId+'?')) return;
+    supabase.rpc('admin_delete_booking',{ p_token:state.adminToken, p_booking_id:bookingId })
+      .then(function(res){
+        if(res.error || (res.data && res.data.error)){
+          showToast('❌ '+((res.error && res.error.message) || res.data.error)); return;
+        }
+        showToast('✅ Booking dihapus'); loadBookings();
+      }).catch(function(e){ showToast('❌ '+e.message); });
+  }
+
+  function updateStats(){
+    var aktif = state.bookings.filter(function(b){ return b.status !== 'done_edit'; });
+    document.getElementById('statTotal').innerText = aktif.length;
+    document.getElementById('statBooking').innerText = aktif.filter(function(b){ return b.status==='booking'; }).length;
+    document.getElementById('statDp').innerText = aktif.filter(function(b){ return b.status==='dp'; }).length;
+    document.getElementById('statSelesai').innerText = state.bookings.filter(function(b){ return b.status==='done_edit'; }).length;
+  }
+
+  // ---------- EXPOSE ----------
+  window.loginAdmin = loginAdmin;
+  window.logoutAdmin = logoutAdmin;
+  window.loadBookings = loadBookings;
+  window.updateStatus = updateStatus;
+  window.deleteBooking = deleteBooking;
+  window.openGdriveModal = openGdriveModal;
+  window.closeGdriveModal = closeGdriveModal;
+  window.submitGdrive = submitGdrive;
+  window.startCopyProcess = startCopyProcess;
+  window.copyMagicLink = copyMagicLink;
+
+  document.getElementById('modalGdrive').addEventListener('click', function(e){
+    if(e.target === this) closeGdriveModal();
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' && !state.isLoggedIn) loginAdmin();
+  });
+})();
+</script>
+</body>
+</html>
