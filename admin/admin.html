@@ -420,56 +420,59 @@
   }
 
   // ---------- LOGIN ----------
-  function loginAdmin(){
-    var namaEl = document.getElementById('adminNama');
-    var passEl = document.getElementById('adminPassword');
-    var err = document.getElementById('loginError');
-    err.style.display = 'none';
+  // ---------- LOGIN ----------
+function loginAdmin(){
+  var passEl = document.getElementById('adminPassword');
+  var err = document.getElementById('loginError');
+  err.style.display = 'none';
 
-    var nama = namaEl ? namaEl.value.trim() : '';
-    var password = passEl ? passEl.value.trim() : '';
+  var password = passEl ? passEl.value.trim() : '';
 
-    if(!nama || !password){
-      err.innerText = '⚠️ Nama & password wajib diisi.'; err.style.display='block'; return;
-    }
-
-    var btn = document.getElementById('btnLogin');
-    if(btn){ btn.disabled = true; btn.classList.add('btn-loading'); }
-
-    supabase.rpc('admin_login',{ p_nama: nama, p_password: password })
-      .then(function(res){
-        if(btn){ btn.disabled=false; btn.classList.remove('btn-loading'); }
-        if(res.error){ err.innerText='❌ '+res.error.message; err.style.display='block'; return; }
-        var d = res.data;
-        if(d.error){ err.innerText='❌ '+d.error; err.style.display='block'; return; }
-
-        state.isLoggedIn = true;
-        state.adminToken = d.token;
-        state.adminNama = d.nama;
-
-        document.getElementById('loginSection').style.display = 'none';
-        document.getElementById('dashboardSection').style.display = 'block';
-        var info = document.getElementById('adminInfo');
-        if(info) info.innerText = '👤 ' + d.nama;
-
-        loadBookings();
-        showToast('✅ Selamat datang, '+d.nama+'!');
-      }).catch(function(e){
-        if(btn){ btn.disabled=false; btn.classList.remove('btn-loading'); }
-        err.innerText='❌ Gagal koneksi.'; err.style.display='block'; console.error(e);
-      });
+  if(!password){
+    err.innerText = '⚠️ Password wajib diisi.';
+    err.style.display='block';
+    return;
   }
 
-  function logoutAdmin(){
-    if(state.adminToken){
-      supabase.rpc('admin_logout',{ p_token: state.adminToken }).then(function(){});
-    }
-    state.isLoggedIn=false; state.adminToken=null;
-    document.getElementById('loginSection').style.display='block';
-    document.getElementById('dashboardSection').style.display='none';
-    document.getElementById('adminPassword').value='';
-    showToast('👋 Logout');
+  var btn = document.getElementById('btnLogin');
+  if(btn){ btn.disabled = true; btn.classList.add('btn-loading'); }
+
+  // Login selalu pakai user 'admin', password dari input
+  supabase.rpc('admin_login',{ p_nama: 'admin', p_password: password })
+    .then(function(res){
+      if(btn){ btn.disabled=false; btn.classList.remove('btn-loading'); }
+      if(res.error){ err.innerText='❌ '+res.error.message; err.style.display='block'; return; }
+      var d = res.data;
+      if(d.error){ err.innerText='❌ '+d.error; err.style.display='block'; return; }
+
+      state.isLoggedIn = true;
+      state.adminToken = d.token;
+      state.adminNama = d.nama;
+
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('dashboardSection').style.display = 'block';
+      var info = document.getElementById('adminInfo');
+      if(info) info.innerText = '👤 ' + d.nama;
+
+      loadBookings();
+      showToast('✅ Selamat datang, '+d.nama+'!');
+    }).catch(function(e){
+      if(btn){ btn.disabled=false; btn.classList.remove('btn-loading'); }
+      err.innerText='❌ Gagal koneksi.'; err.style.display='block'; console.error(e);
+    });
+}
+
+function logoutAdmin(){
+  if(state.adminToken){
+    supabase.rpc('admin_logout',{ p_token: state.adminToken }).then(function(){});
   }
+  state.isLoggedIn=false; state.adminToken=null; state.adminNama='';
+  document.getElementById('loginSection').style.display='block';
+  document.getElementById('dashboardSection').style.display='none';
+  var passEl = document.getElementById('adminPassword');
+  if(passEl) passEl.value='';
+  showToast('👋 Logout');
+}
 
   // ---------- LOAD BOOKINGS ----------
   function loadBookings(){
