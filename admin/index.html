@@ -423,6 +423,10 @@
         state.isLoggedIn = true;
         state.adminToken = d.token;
         state.adminNama = d.nama;
+        
+        // ⬇️ TAMBAHKAN 2 BARIS INI
+        sessionStorage.setItem('lavelle_admin_token', d.token);
+        sessionStorage.setItem('lavelle_admin_nama', d.nama);
 
         document.getElementById('loginSection').style.display = 'none';
         document.getElementById('dashboardSection').style.display = 'block';
@@ -437,17 +441,22 @@
       });
   }
 
-  function logoutAdmin(){
-    if(state.adminToken && supabase){
-      supabase.rpc('admin_logout',{ p_token: state.adminToken }).then(function(){});
-    }
-    state.isLoggedIn=false; state.adminToken=null; state.adminNama='';
-    document.getElementById('loginSection').style.display='block';
-    document.getElementById('dashboardSection').style.display='none';
-    var passEl = document.getElementById('adminPassword');
-    if(passEl) passEl.value='';
-    showToast('👋 Logout');
+function logoutAdmin(){
+  if(state.adminToken && supabase){
+    supabase.rpc('admin_logout',{ p_token: state.adminToken }).then(function(){});
   }
+  state.isLoggedIn=false; state.adminToken=null; state.adminNama='';
+
+  // ⬇️ TAMBAHKAN 2 BARIS INI
+  sessionStorage.removeItem('lavelle_admin_token');
+  sessionStorage.removeItem('lavelle_admin_nama');
+
+  document.getElementById('loginSection').style.display='block';
+  document.getElementById('dashboardSection').style.display='none';
+  var passEl = document.getElementById('adminPassword');
+  if(passEl) passEl.value='';
+  showToast('👋 Logout');
+}
 
   // ---------- LOAD BOOKINGS ----------
   function loadBookings(){
