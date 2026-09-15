@@ -739,29 +739,16 @@
 // ============================================================
 const SUPABASE_URL = "https://xgdlzlyjmnuzdytycree.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_2CSjGRSMIKSl_KTUX2hr0A_crngTzEf";
-
-// PENTING: dibungkus try/catch dengan sengaja. Baris ini satu-satunya titik di
-// blok ini yang bisa throw sebelum sempat dites (misal CDN Supabase gagal
-// dimuat, atau window.supabase belum terdaftar). Tanpa try/catch, throw di
-// sini menghentikan SELURUH blok script ini — termasuk renderRegions() dan
-// fitur lain yang sama sekali tidak butuh Supabase. Lihat requireSupabase()
-// di bawah untuk penanganan saat fitur yang memang butuh Supabase dipanggil.
 let supabase = null;
 try {
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-} catch (err) {
-  console.error('❌ Gagal membuat Supabase client:', err);
-}
-
-// Dipanggil di awal setiap fungsi yang butuh Supabase (pilihKota, submitBooking,
-// dll). Kalau client gagal dibuat, lempar error dengan pesan yang jelas untuk
-// pengguna, ditangkap oleh try/catch yang sudah ada di masing-masing fungsi —
-// daripada gagal diam-diam dengan "Cannot read properties of null".
-function requireSupabase() {
-  if (!supabase) {
-    throw new Error('Koneksi ke server bermasalah. Muat ulang halaman.');
+  if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+    throw new Error('Supabase client library belum tersedia.');
   }
-  return supabase;
+  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  console.log('✅ Supabase client siap.');
+} catch (err) {
+  // Jangan biarkan kegagalan Supabase mematikan script lain yang independen.
+  console.error('❌ Supabase gagal diinisialisasi:', err);
 }
 
 // Nomor WA admin berbeda per wilayah.
@@ -862,6 +849,10 @@ function trackEvent(name, params) {
 
 async function pilihKota(kota){
   if (state.isLoading) return;
+  if (!supabase) {
+    showToast('❌ Koneksi booking belum siap. Silakan refresh halaman.', 4000);
+    return;
+  }
   state.isLoading = true;
 
   trackEvent('pilih_wilayah', { kota: kota });
@@ -888,42 +879,37 @@ async function pilihKota(kota){
   const m = state.bulanAktif.getMonth();
   document.getElementById('bulanLabel').innerText = `${NAMA_BULAN[m]} ${y}`;
 
-  try {
-    const sb = requireSupabase();
+  // 🔥 3 request ini dijalankan BERSAMAAN (paralel), bukan berurutan.
+  const pPricelist = supabase.from('pricelist').select('*').eq('kota', kota)
+    .then(({ data, error }) => error ? [] : data)
+    .catch(() => []);
+  const pPricelistMedia = supabase.from('pricelist_media').select('*').eq('kota', kota).order('urutan')
+    .then(({ data, error }) => error ? [] : data)
+    .catch(() => []);
+  const pKalender = fetchKalenderBulanKota(kota, y, m);
 
-    // 🔥 3 request ini dijalankan BERSAMAAN (paralel), bukan berurutan.
-    const pPricelist = sb.from('pricelist').select('*').eq('kota', kota)
-      .then(({ data, error }) => error ? [] : data)
-      .catch(() => []);
-    const pPricelistMedia = sb.from('pricelist_media').select('*').eq('kota', kota).order('urutan')
-      .then(({ data, error }) => error ? [] : data)
-      .catch(() => []);
-    const pKalender = fetchKalenderBulanKota(kota, y, m);
+  // Pricelist biasanya paling cepat selesai (nggak ada perhitungan slot) -
+  // begitu dia selesai, langsung tampilkan tanpa nunggu kalender.
+  pPricelist.then(data => { state.paketList = Array.isArray(data) ? data : []; });
+  pPricelistMedia.then(data => tampilkanPricelist(Array.isArray(data) ? data : []));
 
-    // Pricelist biasanya paling cepat selesai (nggak ada perhitungan slot) -
-    // begitu dia selesai, langsung tampilkan tanpa nunggu kalender.
-    pPricelist.then(data => { state.paketList = Array.isArray(data) ? data : []; });
-    pPricelistMedia.then(data => tampilkanPricelist(Array.isArray(data) ? data : []));
+  await Promise.all([pPricelist, pPricelistMedia, pKalender]);
 
-    await Promise.all([pPricelist, pPricelistMedia, pKalender]);
+  renderKalender(y, m);
 
-    renderKalender(y, m);
-    window.scrollTo(0,0);
-  } catch (err) {
-    console.error('❌ Gagal memuat data kota:', err);
-    showToast('❌ ' + err.message, 4000);
-  } finally {
-    // finally, bukan setelah await: supaya status loading tetap dilepas
-    // walaupun requireSupabase() atau salah satu request di atas gagal.
-    if (card) card.classList.remove('loading');
-    state.isLoading = false;
-  }
+  if (card) card.classList.remove('loading');
+  state.isLoading = false;
   console.log('✅ Selesai load', kota);
+  window.scrollTo(0,0);
 }
 
 // Fetch kalender 1 bulan penuh untuk kota tertentu, pakai cache per-bulan.
 // Dipakai baik saat pilih kota pertama kali maupun saat pindah bulan.
 async function fetchKalenderBulanKota(kota, y, m) {
+  if (!supabase) {
+    console.warn('⚠️ Supabase belum siap; kalender tidak dapat dimuat.');
+    return {};
+  }
   const bulanStr = `${y}-${String(m+1).padStart(2,'0')}`;
   const totalHari = new Date(y, m+1, 0).getDate();
   const cacheKey = `${kota}|${bulanStr}`;
@@ -940,7 +926,7 @@ async function fetchKalenderBulanKota(kota, y, m) {
 
   const tanggalMulai = `${bulanStr}-01`;
   try {
-    const { data, error } = await requireSupabase().rpc('get_kalender_bulk', {
+    const { data, error } = await supabase.rpc('get_kalender_bulk', {
       p_kota: kota,
       p_tanggal_mulai: tanggalMulai,
       p_jumlah_hari: totalHari
@@ -1162,6 +1148,10 @@ function renderKalender(y, m) {
 // PILIH TANGGAL
 // ============================================================
 async function pilihTanggal(tanggal){
+  if (!supabase) {
+    showToast('❌ Koneksi booking belum siap. Silakan refresh halaman.', 4000);
+    return;
+  }
   console.log('📅 Pilih tanggal:', tanggal);
   state.tanggalTerpilih = tanggal;
 
@@ -1183,7 +1173,7 @@ async function pilihTanggal(tanggal){
   area.innerHTML = '<div class="slot-empty"><span class="loading-spinner"></span> Memuat jam tersedia...</div>';
 
   try {
-    const { data: slots, error } = await requireSupabase().rpc('get_slot_tersedia', {
+    const { data: slots, error } = await supabase.rpc('get_slot_tersedia', {
       p_kota: state.kotaAktif,
       p_tanggal: tanggal
     });
@@ -1248,6 +1238,12 @@ function tutupForm(){
 // SUBMIT BOOKING
 // ============================================================
 async function submitBooking(){
+  if (!supabase) {
+    const errorBox = document.getElementById('errorBox');
+    errorBox.innerText = '❌ Koneksi booking belum siap. Silakan refresh halaman.';
+    errorBox.style.display = 'block';
+    return;
+  }
   trackEvent('klik_booking_sekarang', { kota: state.kotaAktif });
 
   const btn = document.getElementById('btnBooking');
@@ -1274,7 +1270,7 @@ async function submitBooking(){
   errorBox.style.display = 'none';
 
   try {
-    const { data, error } = await requireSupabase().rpc('buat_booking', {
+    const { data, error } = await supabase.rpc('buat_booking', {
       p_kota: state.kotaAktif,
       p_tanggal: state.tanggalTerpilih,
       p_jam_mulai: state.slotTerpilih.jam_mulai,
