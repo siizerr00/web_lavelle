@@ -427,410 +427,379 @@
 
 </div>
 
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ============================================================
-// KONFIGURASI
-// ============================================================
-const CONFIG = {
-  API_URL: "https://script.google.com/macros/s/AKfycby39gEd8A6qPB98YmiIbvrOeR-aDmr1g-hkn78okq2nXVnDcEdwO9iT_AHHkhca0hzU/exec"
-};
+(function () {
+  'use strict';
 
-// ============================================================
-// STATE
-// ============================================================
-let fotografer = null; // { fotografer_id, nama, kota }
-
-// ============================================================
-// JSONP Helper
-// ============================================================
-function jsonp(url, callbackName) {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    const callback = callbackName || 'jsonp_callback_' + Date.now() + '_' + Math.floor(Math.random()*100000);
-    
-    window[callback] = function(data) {
-      delete window[callback];
-      document.body.removeChild(script);
-      resolve(data);
-    };
-    
-    script.src = url + '&callback=' + callback;
-    script.onerror = function() {
-      delete window[callback];
-      document.body.removeChild(script);
-      reject(new Error('JSONP request failed'));
-    };
-    
-    document.body.appendChild(script);
-  });
-}
-
-// ============================================================
-// TOAST
-// ============================================================
-function showToast(message, duration = 3000) {
-  const existing = document.querySelector('.toast');
-  if (existing) existing.remove();
-  
-  const toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.innerText = message;
-  document.body.appendChild(toast);
-  
-  setTimeout(() => toast.remove(), duration);
-}
-
-// ============================================================
-// LOGIN
-// ============================================================
-async function handleLogin() {
-  const nama = document.getElementById('loginNama').value.trim();
-  const pin = document.getElementById('loginPin').value.trim();
-  const errorBox = document.getElementById('loginError');
-  
-  if (!nama || !pin) {
-    errorBox.innerText = '⚠️ Nama dan PIN wajib diisi.';
-    errorBox.style.display = 'block';
-    return;
-  }
-  
-  const btn = document.getElementById('btnLogin');
-  btn.disabled = true;
-  btn.classList.add('btn-loading');
-  errorBox.style.display = 'none';
-  
+  var supabase = null;
+  var supabaseReady = false;
   try {
-    // 🔥 CEK LOGIN KE SHEET FOTOGRAFER
-    const url = `${CONFIG.API_URL}?action=fotografLogin&nama=${encodeURIComponent(nama)}&pin=${encodeURIComponent(pin)}`;
-    const data = await jsonp(url);
-    
-    btn.disabled = false;
-    btn.classList.remove('btn-loading');
-    
-    if (data.error) {
-      errorBox.innerText = '❌ ' + data.error;
+    supabase = window.supabase.createClient(
+      window.LAVELLE_CONFIG.SUPABASE_URL,
+      window.LAVELLE_CONFIG.SUPABASE_KEY
+    );
+    supabaseReady = true;
+  } catch (err) {
+    console.error('❌ Supabase gagal:', err);
+  }
+
+  var fotografer = null;
+  var lastJadwalLavelle = [];
+
+  // ---------- TOAST ----------
+  function showToast(message, duration) {
+    duration = duration || 3000;
+    var existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    var toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerText = message;
+    document.body.appendChild(toast);
+    setTimeout(function () { toast.remove(); }, duration);
+  }
+
+  // ---------- LOGIN ----------
+  function handleLogin() {
+    var nama = document.getElementById('loginNama').value.trim();
+    var pin = document.getElementById('loginPin').value.trim();
+    var errorBox = document.getElementById('loginError');
+
+    if (!nama || !pin) {
+      errorBox.innerText = '⚠️ Nama dan PIN wajib diisi.';
       errorBox.style.display = 'block';
       return;
     }
-    
-    fotografer = data;
-    showToast('✅ Selamat datang, ' + fotografer.nama + '!');
-    showJadwalCard();
-    
-  } catch(err) {
-    btn.disabled = false;
-    btn.classList.remove('btn-loading');
-    errorBox.innerText = '❌ Gagal login. Cek koneksi.';
-    errorBox.style.display = 'block';
-    console.error(err);
-  }
-}
 
-// ============================================================
-// SHOW JADWAL CARD
-// ============================================================
-function showJadwalCard() {
-  document.getElementById('loginCard').style.display = 'none';
-  document.getElementById('jadwalCard').style.display = 'block';
-  document.getElementById('namaFotografer').innerText = fotografer.nama;
-  document.getElementById('kotaFotografer').innerText = fotografer.kota;
-  
-  // Set default tanggal = hari ini
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('inputTanggal').value = today;
-  
-  loadJadwal();
-}
-
-// ============================================================
-// LOGOUT
-// ============================================================
-function handleLogout() {
-  fotografer = null;
-  document.getElementById('jadwalCard').style.display = 'none';
-  document.getElementById('loginCard').style.display = 'block';
-  document.getElementById('loginNama').value = '';
-  document.getElementById('loginPin').value = '';
-  showToast('👋 Logout berhasil');
-}
-
-// ============================================================
-// SIMPAN JADWAL (vendor_lain)
-// ============================================================
-async function simpanJadwal() {
-  const tanggal = document.getElementById('inputTanggal').value;
-  const jamMulai = document.getElementById('inputJamMulai').value;
-  const jamSelesai = document.getElementById('inputJamSelesai').value;
-  const errorBox = document.getElementById('formError');
-  const successBox = document.getElementById('formSuccess');
-  
-  errorBox.style.display = 'none';
-  successBox.style.display = 'none';
-  
-  if (!tanggal || !jamMulai || !jamSelesai) {
-    errorBox.innerText = '⚠️ Semua field wajib diisi.';
-    errorBox.style.display = 'block';
-    return;
-  }
-  
-  if (jamMulai >= jamSelesai) {
-    errorBox.innerText = '⚠️ Jam selesai harus lebih besar dari jam mulai.';
-    errorBox.style.display = 'block';
-    return;
-  }
-  
-  const btn = document.getElementById('btnSimpan');
-  btn.disabled = true;
-  btn.classList.add('btn-loading');
-  
-  try {
-    const params = new URLSearchParams({
-      action: 'simpanJadwal',
-      fotografer_id: fotografer.fotografer_id,
-      kota: fotografer.kota,
-      tanggal: tanggal,
-      jam_mulai: jamMulai,
-      jam_selesai: jamSelesai,
-      sumber: 'vendor_lain'
-    });
-    
-    const url = `${CONFIG.API_URL}?${params.toString()}`;
-    const data = await jsonp(url);
-    
-    btn.disabled = false;
-    btn.classList.remove('btn-loading');
-    
-    if (data.error) {
-      errorBox.innerText = '❌ ' + data.error;
+    if (!supabaseReady) {
+      errorBox.innerText = '❌ Sistem login belum siap. Refresh halaman.';
       errorBox.style.display = 'block';
       return;
     }
-    
-    successBox.innerText = '✅ Jadwal berhasil disimpan!';
-    successBox.style.display = 'block';
-    
-    // Reset form
-    document.getElementById('inputTanggal').value = new Date().toISOString().split('T')[0];
-    document.getElementById('inputJamMulai').value = '';
-    document.getElementById('inputJamSelesai').value = '';
-    
+
+    var btn = document.getElementById('btnLogin');
+    btn.disabled = true;
+    btn.classList.add('btn-loading');
+    errorBox.style.display = 'none';
+
+    supabase.rpc('fotografer_login', { p_nama: nama, p_pin: pin })
+      .then(function (res) {
+        btn.disabled = false;
+        btn.classList.remove('btn-loading');
+
+        if (res.error) {
+          errorBox.innerText = '❌ ' + res.error.message;
+          errorBox.style.display = 'block';
+          return;
+        }
+
+        var d = res.data;
+        if (d.error) {
+          errorBox.innerText = '❌ ' + d.error;
+          errorBox.style.display = 'block';
+          return;
+        }
+
+        fotografer = d;
+        showToast('✅ Selamat datang, ' + fotografer.nama + '!');
+        showJadwalCard();
+      })
+      .catch(function (err) {
+        btn.disabled = false;
+        btn.classList.remove('btn-loading');
+        errorBox.innerText = '❌ Gagal login. Cek koneksi.';
+        errorBox.style.display = 'block';
+        console.error(err);
+      });
+  }
+
+  // ---------- SHOW CARD ----------
+  function showJadwalCard() {
+    document.getElementById('loginCard').style.display = 'none';
+    document.getElementById('jadwalCard').style.display = 'block';
+    document.getElementById('namaFotografer').innerText = fotografer.nama;
+    document.getElementById('kotaFotografer').innerText = fotografer.kota;
+
+    var today = new Date().toISOString().split('T')[0];
+    document.getElementById('inputTanggal').value = today;
+
     loadJadwal();
-    showToast('✅ Jadwal vendor lain berhasil disimpan!');
-    
-  } catch(err) {
-    btn.disabled = false;
-    btn.classList.remove('btn-loading');
-    errorBox.innerText = '❌ Gagal menyimpan. Cek koneksi.';
-    errorBox.style.display = 'block';
-    console.error(err);
-  }
-}
-
-// ============================================================
-// LOAD JADWAL FOTOGRAFER
-// ============================================================
-// ============================================================
-// TAB SWITCH
-// ============================================================
-function gantiTabJadwal(tab) {
-  document.getElementById('tabLavelleBtn').classList.toggle('active', tab === 'lavelle');
-  document.getElementById('tabVendorBtn').classList.toggle('active', tab === 'vendor');
-  document.getElementById('tableJadwalLavelle').style.display = tab === 'lavelle' ? 'block' : 'none';
-  document.getElementById('tableJadwal').style.display = tab === 'vendor' ? 'block' : 'none';
-}
-
-// ============================================================
-// FORMAT NOMOR WA -> 62xxxx & LINK CHAT
-// ============================================================
-function formatWaNumber(nomor) {
-  let n = String(nomor || '').replace(/[^0-9]/g, '');
-  if (n.startsWith('0')) n = '62' + n.slice(1);
-  else if (n && !n.startsWith('62')) n = '62' + n;
-  return n;
-}
-
-function buatLinkWaClient(row) {
-  const nomor = formatWaNumber(row.wa);
-  if (!nomor) return '';
-  const jam = `${(row.jam_mulai || '').replace(':', '.')} - ${(row.jam_selesai || '').replace(':', '.')}`;
-  const pesan = `Halo saya fotografer Lavelle, ingin konfirmasi untuk jadwal foto berikut:\nNama: ${row.nama_client || '-'}\nTanggal: ${row.tanggal || '-'}\nJam: ${jam}\nLokasi: ${row.lokasi || '-'}`;
-  return `https://api.whatsapp.com/send/?phone=${nomor}&text=${encodeURIComponent(pesan)}&type=phone_number&app_absent=0`;
-}
-
-// ============================================================
-// COPY JADWAL LAVELLE KE CLIPBOARD (termasuk No. WA)
-// ============================================================
-function copyJadwalLavelle(i) {
-  const row = lastJadwalLavelle[i];
-  if (!row) return;
-  const jam = `${(row.jam_mulai || '').replace(':', '.')} - ${(row.jam_selesai || '').replace(':', '.')}`;
-  const teks = `Tanggal: ${row.tanggal || '-'}\nJam: ${jam}\nNama Client: ${row.nama_client || '-'}\nLokasi: ${row.lokasi || '-'}\nNo. WA: ${row.wa || '-'}`;
-
-  navigator.clipboard.writeText(teks)
-    .then(() => showToast('✅ Jadwal disalin ke clipboard'))
-    .catch(() => showToast('❌ Gagal menyalin jadwal'));
-}
-
-function copySemuaJadwalLavelle() {
-  if (!lastJadwalLavelle || lastJadwalLavelle.length === 0) {
-    showToast('📭 Belum ada jadwal untuk disalin');
-    return;
   }
 
-  const teks = lastJadwalLavelle.map((row, i) => {
-    const jam = `${(row.jam_mulai || '').replace(':', '.')} - ${(row.jam_selesai || '').replace(':', '.')}`;
-    return `${i + 1}. Tanggal: ${row.tanggal || '-'}\nJam: ${jam}\nNama Client: ${row.nama_client || '-'}\nLokasi: ${row.lokasi || '-'}\nNo. WA: ${row.wa || '-'}`;
-  }).join('\n\n');
-
-  navigator.clipboard.writeText(teks)
-    .then(() => showToast(`✅ ${lastJadwalLavelle.length} jadwal disalin ke clipboard`))
-    .catch(() => showToast('❌ Gagal menyalin jadwal'));
-}
-
-// ============================================================
-// LOAD JADWAL LAVELLE (dari sheet Booking)
-// ============================================================
-let lastJadwalLavelle = [];
-
-function renderTabelLavelle(data) {
-  const container = document.getElementById('tableJadwalLavelle');
-
-  if (!data || data.length === 0) {
-    container.innerHTML = '<div class="no-data">📭 Belum ada jadwal Lavelle</div>';
-    return;
+  // ---------- LOGOUT ----------
+  function handleLogout() {
+    fotografer = null;
+    lastJadwalLavelle = [];
+    document.getElementById('jadwalCard').style.display = 'none';
+    document.getElementById('loginCard').style.display = 'block';
+    document.getElementById('loginNama').value = '';
+    document.getElementById('loginPin').value = '';
+    showToast('👋 Logout berhasil');
   }
 
-  lastJadwalLavelle = data;
+  // ---------- SIMPAN JADWAL ----------
+  function simpanJadwal() {
+    var tanggal = document.getElementById('inputTanggal').value;
+    var jamMulai = document.getElementById('inputJamMulai').value;
+    var jamSelesai = document.getElementById('inputJamSelesai').value;
+    var errorBox = document.getElementById('formError');
+    var successBox = document.getElementById('formSuccess');
 
-  let html = `
-    <table>
-      <thead>
-        <tr>
-          <th>Tanggal</th>
-          <th>Jam</th>
-          <th>Nama Client</th>
-          <th>Lokasi</th>
-          <th>Gdrive</th>
-          <th>No. WA</th>
-          <th>Copy</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
+    errorBox.style.display = 'none';
+    successBox.style.display = 'none';
 
-  data.forEach((row, i) => {
-    const jam = `${(row.jam_mulai || '').replace(':', '.')} - ${(row.jam_selesai || '').replace(':', '.')}`;
-    const linkWa = buatLinkWaClient(row);
-    const waCell = linkWa ? `<a class="wa-link" href="${linkWa}" target="_blank">💬 Chat</a>` : '-';
-    const gdriveCell = row.link_gdrive ? `<a href="${row.link_gdrive}" target="_blank">📁 Buka</a>` : '-';
+    if (!tanggal || !jamMulai || !jamSelesai) {
+      errorBox.innerText = '⚠️ Semua field wajib diisi.';
+      errorBox.style.display = 'block';
+      return;
+    }
+    if (jamMulai >= jamSelesai) {
+      errorBox.innerText = '⚠️ Jam selesai harus lebih besar dari jam mulai.';
+      errorBox.style.display = 'block';
+      return;
+    }
+    if (!supabaseReady) {
+      errorBox.innerText = '❌ Sistem belum siap. Refresh halaman.';
+      errorBox.style.display = 'block';
+      return;
+    }
 
-    html += `
-      <tr>
-        <td>${row.tanggal}</td>
-        <td>${jam}</td>
-        <td>${row.nama_client || '-'}</td>
-        <td>${row.lokasi || '-'}</td>
-        <td>${gdriveCell}</td>
-        <td>${waCell}</td>
-        <td><button class="copy-btn" onclick="copyJadwalLavelle(${i})">📋 Copy</button></td>
-      </tr>
-    `;
-  });
+    var btn = document.getElementById('btnSimpan');
+    btn.disabled = true;
+    btn.classList.add('btn-loading');
 
-  html += '</tbody></table>';
-  container.innerHTML = html;
-}
+    supabase.rpc('fotografer_simpan_jadwal', {
+      p_fotografer_id: fotografer.fotografer_id,
+      p_kota: fotografer.kota,
+      p_tanggal: tanggal,
+      p_jam_mulai: jamMulai,
+      p_jam_selesai: jamSelesai,
+      p_sumber: 'vendor_lain'
+    })
+    .then(function (res) {
+      btn.disabled = false;
+      btn.classList.remove('btn-loading');
 
-function renderTabelVendor(data) {
-  const container = document.getElementById('tableJadwal');
+      if (res.error) {
+        errorBox.innerText = '❌ ' + res.error.message;
+        errorBox.style.display = 'block';
+        return;
+      }
 
-  if (!data || data.length === 0) {
-    container.innerHTML = '<div class="no-data">📭 Belum ada jadwal vendor lain</div>';
-    return;
+      var d = res.data;
+      if (d.error) {
+        errorBox.innerText = '❌ ' + d.error;
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      successBox.innerText = '✅ Jadwal berhasil disimpan!';
+      successBox.style.display = 'block';
+
+      document.getElementById('inputTanggal').value = new Date().toISOString().split('T')[0];
+      document.getElementById('inputJamMulai').value = '';
+      document.getElementById('inputJamSelesai').value = '';
+
+      loadJadwal();
+      showToast('✅ Jadwal vendor lain berhasil disimpan!');
+    })
+    .catch(function (err) {
+      btn.disabled = false;
+      btn.classList.remove('btn-loading');
+      errorBox.innerText = '❌ Gagal menyimpan. Cek koneksi.';
+      errorBox.style.display = 'block';
+      console.error(err);
+    });
   }
 
-  let html = `
-    <table>
-      <thead>
-        <tr>
-          <th>Tanggal</th>
-          <th>Jam</th>
-          <th>Sumber</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
+  // ---------- TAB SWITCH ----------
+  function gantiTabJadwal(tab) {
+    document.getElementById('tabLavelleBtn').classList.toggle('active', tab === 'lavelle');
+    document.getElementById('tabVendorBtn').classList.toggle('active', tab === 'vendor');
+    document.getElementById('tableJadwalLavelle').style.display = tab === 'lavelle' ? 'block' : 'none';
+    document.getElementById('tableJadwal').style.display = tab === 'vendor' ? 'block' : 'none';
+  }
 
-  data.forEach(row => {
-    html += `
-      <tr>
-        <td>${row.tanggal}</td>
-        <td>${row.jam_mulai} - ${row.jam_selesai}</td>
-        <td><span class="badge-vendor">Vendor Lain</span></td>
-      </tr>
-    `;
-  });
+  // ---------- WA HELPERS ----------
+  function formatWaNumber(nomor) {
+    var n = String(nomor || '').replace(/[^0-9]/g, '');
+    if (n.startsWith('0')) n = '62' + n.slice(1);
+    else if (n && !n.startsWith('62')) n = '62' + n;
+    return n;
+  }
 
-  html += '</tbody></table>';
-  container.innerHTML = html;
-}
+  function buatLinkWaClient(row) {
+    var nomor = formatWaNumber(row.wa);
+    if (!nomor) return '';
+    var jam = (row.jam_mulai || '').replace(':', '.') + ' - ' + (row.jam_selesai || '').replace(':', '.');
+    var pesan = 'Halo saya fotografer Lavelle, ingin konfirmasi untuk jadwal foto berikut:\n' +
+      'Nama: ' + (row.nama_client || '-') + '\n' +
+      'Tanggal: ' + (row.tanggal || '-') + '\n' +
+      'Jam: ' + jam + '\n' +
+      'Lokasi: ' + (row.lokasi || '-');
+    return 'https://api.whatsapp.com/send/?phone=' + nomor +
+      '&text=' + encodeURIComponent(pesan) +
+      '&type=phone_number&app_absent=0';
+  }
 
-// ============================================================
-// LOAD JADWAL (1x request untuk kedua tab, lebih cepat)
-// ============================================================
-async function loadJadwal() {
-  const containerLavelle = document.getElementById('tableJadwalLavelle');
-  const containerVendor = document.getElementById('tableJadwal');
-  containerLavelle.innerHTML = '<div class="no-data">⏳ Memuat...</div>';
-  containerVendor.innerHTML = '<div class="no-data">⏳ Memuat...</div>';
+  // ---------- COPY ----------
+  function copyJadwalLavelle(i) {
+    var row = lastJadwalLavelle[i];
+    if (!row) return;
+    var jam = (row.jam_mulai || '').replace(':', '.') + ' - ' + (row.jam_selesai || '').replace(':', '.');
+    var teks = 'Tanggal: ' + (row.tanggal || '-') + '\n' +
+      'Jam: ' + jam + '\n' +
+      'Nama Client: ' + (row.nama_client || '-') + '\n' +
+      'Lokasi: ' + (row.lokasi || '-') + '\n' +
+      'No. WA: ' + (row.wa || '-');
+    navigator.clipboard.writeText(teks)
+      .then(function () { showToast('✅ Jadwal disalin ke clipboard'); })
+      .catch(function () { showToast('❌ Gagal menyalin jadwal'); });
+  }
 
-  if (!fotografer) return;
+  function copySemuaJadwalLavelle() {
+    if (!lastJadwalLavelle || lastJadwalLavelle.length === 0) {
+      showToast('📭 Belum ada jadwal untuk disalin');
+      return;
+    }
+    var teks = lastJadwalLavelle.map(function (row, i) {
+      var jam = (row.jam_mulai || '').replace(':', '.') + ' - ' + (row.jam_selesai || '').replace(':', '.');
+      return (i + 1) + '. Tanggal: ' + (row.tanggal || '-') + '\n' +
+        'Jam: ' + jam + '\n' +
+        'Nama Client: ' + (row.nama_client || '-') + '\n' +
+        'Lokasi: ' + (row.lokasi || '-') + '\n' +
+        'No. WA: ' + (row.wa || '-');
+    }).join('\n\n');
+    navigator.clipboard.writeText(teks)
+      .then(function () { showToast('✅ ' + lastJadwalLavelle.length + ' jadwal disalin ke clipboard'); })
+      .catch(function () { showToast('❌ Gagal menyalin jadwal'); });
+  }
 
-  try {
-    const url = `${CONFIG.API_URL}?action=jadwalGabungan&fotografer_id=${encodeURIComponent(fotografer.fotografer_id)}`;
-    const data = await jsonp(url);
+  // ---------- RENDER TABEL ----------
+  function renderTabelLavelle(data) {
+    var container = document.getElementById('tableJadwalLavelle');
 
-    if (data.error) {
-      const pesan = `<div class="no-data">❌ Gagal memuat jadwal: ${data.error}</div>`;
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="no-data">📭 Belum ada jadwal Lavelle</div>';
+      lastJadwalLavelle = [];
+      return;
+    }
+
+    lastJadwalLavelle = data;
+
+    var html = '<table><thead><tr>' +
+      '<th>Tanggal</th><th>Jam</th><th>Nama Client</th><th>Lokasi</th>' +
+      '<th>Gdrive</th><th>No. WA</th><th>Copy</th>' +
+      '</tr></thead><tbody>';
+
+    data.forEach(function (row, i) {
+      var jam = (row.jam_mulai || '').replace(':', '.') + ' - ' + (row.jam_selesai || '').replace(':', '.');
+      var linkWa = buatLinkWaClient(row);
+      var waCell = linkWa ? '<a class="wa-link" href="' + linkWa + '" target="_blank">💬 Chat</a>' : '-';
+      var gdriveCell = row.link_gdrive ? '<a href="' + row.link_gdrive + '" target="_blank">📁 Buka</a>' : '-';
+
+      html += '<tr>' +
+        '<td>' + (row.tanggal || '-') + '</td>' +
+        '<td>' + jam + '</td>' +
+        '<td>' + (row.nama_client || '-') + '</td>' +
+        '<td>' + (row.lokasi || '-') + '</td>' +
+        '<td>' + gdriveCell + '</td>' +
+        '<td>' + waCell + '</td>' +
+        '<td><button class="copy-btn" onclick="copyJadwalLavelle(' + i + ')">📋 Copy</button></td>' +
+        '</tr>';
+    });
+
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  }
+
+  function renderTabelVendor(data) {
+    var container = document.getElementById('tableJadwal');
+
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="no-data">📭 Belum ada jadwal vendor lain</div>';
+      return;
+    }
+
+    var html = '<table><thead><tr>' +
+      '<th>Tanggal</th><th>Jam</th><th>Sumber</th>' +
+      '</tr></thead><tbody>';
+
+    data.forEach(function (row) {
+      html += '<tr>' +
+        '<td>' + (row.tanggal || '-') + '</td>' +
+        '<td>' + (row.jam_mulai || '') + ' - ' + (row.jam_selesai || '') + '</td>' +
+        '<td><span class="badge-vendor">Vendor Lain</span></td>' +
+        '</tr>';
+    });
+
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  }
+
+  // ---------- LOAD JADWAL ----------
+  function loadJadwal() {
+    var containerLavelle = document.getElementById('tableJadwalLavelle');
+    var containerVendor = document.getElementById('tableJadwal');
+    containerLavelle.innerHTML = '<div class="no-data">⏳ Memuat...</div>';
+    containerVendor.innerHTML = '<div class="no-data">⏳ Memuat...</div>';
+
+    if (!fotografer) return;
+
+    if (!supabaseReady) {
+      var pesan = '<div class="no-data">❌ Sistem belum siap. Refresh halaman.</div>';
       containerLavelle.innerHTML = pesan;
       containerVendor.innerHTML = pesan;
       return;
     }
 
-    renderTabelLavelle(data.lavelle || []);
-    renderTabelVendor(data.vendor || []);
+    supabase.rpc('fotografer_get_jadwal', { p_fotografer_id: fotografer.fotografer_id })
+      .then(function (res) {
+        if (res.error) {
+          var p = '<div class="no-data">❌ Gagal memuat jadwal: ' + res.error.message + '</div>';
+          containerLavelle.innerHTML = p;
+          containerVendor.innerHTML = p;
+          return;
+        }
 
-  } catch (err) {
-    const pesan = '<div class="no-data">❌ Gagal memuat jadwal</div>';
-    containerLavelle.innerHTML = pesan;
-    containerVendor.innerHTML = pesan;
-    console.error(err);
+        var d = res.data || {};
+        renderTabelLavelle(d.lavelle || []);
+        renderTabelVendor(d.vendor || []);
+      })
+      .catch(function (err) {
+        var p = '<div class="no-data">❌ Gagal memuat jadwal</div>';
+        containerLavelle.innerHTML = p;
+        containerVendor.innerHTML = p;
+        console.error(err);
+      });
   }
-}
 
-// ============================================================
-// ENTER KEY SUPPORT
-// ============================================================
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') {
-    if (document.getElementById('loginCard').style.display !== 'none') {
-      handleLogin();
+  // ---------- EXPOSE KE WINDOW ----------
+  window.handleLogin = handleLogin;
+  window.handleLogout = handleLogout;
+  window.simpanJadwal = simpanJadwal;
+  window.loadJadwal = loadJadwal;
+  window.gantiTabJadwal = gantiTabJadwal;
+  window.copyJadwalLavelle = copyJadwalLavelle;
+  window.copySemuaJadwalLavelle = copySemuaJadwalLavelle;
+
+  // ---------- ENTER KEY ----------
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      var lc = document.getElementById('loginCard');
+      if (lc && lc.style.display !== 'none') handleLogin();
     }
+  });
+
+  // ---------- PIN ONLY NUMBERS ----------
+  var pinEl = document.getElementById('loginPin');
+  if (pinEl) {
+    pinEl.addEventListener('input', function () {
+      this.value = this.value.replace(/\D/g, '');
+    });
   }
-});
-
-// ============================================================
-// PIN INPUT - ONLY NUMBERS
-// ============================================================
-document.getElementById('loginPin').addEventListener('input', function() {
-  this.value = this.value.replace(/\D/g, '');
-});
-
-// ============================================================
-// TAMBAHKAN STATUS CHECK (opsional)
-// ============================================================
-// Fungsi ini bisa ditambahkan di backend untuk mengecek status fotografer
-// Jika status 'paused', login ditolak
+})();
 </script>
 </body>
 </html>
