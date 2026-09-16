@@ -461,29 +461,31 @@
     var h = '<div class="foto-list">' +
       '<div class="header">' +
         '<h3>📷 Daftar Foto yang Mau Diedit</h3>' +
-        '<span class="counter">' + fotoList.length + ' foto</span>' +
+        '<span class="counter">' + fotoList.filter(function(f){ return f && f.trim(); }).length + ' terisi</span>' +
       '</div>';
-
+  
     if (d.status.key === 'upload_gdrive') {
-      h += '<p style="font-size:12px;color:var(--mute);margin:0 0 12px;">Tuliskan nama file foto yang <strong>SAMA PERSIS</strong>. Misal "IMG_1184" atau "DSC003385" atau "DSCF3832" atau "REFD6024" atau "_DSC8468"</p>'. Jika tidak, foto tidak bisa di edit.;
+      h += '<p style="font-size:12px;color:var(--mute);margin:0 0 12px;">Tuliskan nama file foto yang <strong>SAMA PERSIS</strong>. Misal "IMG_1184" atau "DSC003385" atau "DSCF3832" atau "REFD6024" atau "_DSC8468"</p>';
     }
-
+  
     for (var i = 0; i < 10; i++) {
       var val = fotoList[i] || '';
-      var isDone = d.status.key !== 'upload_gdrive' && val;
-      h += '<div class="foto-item' + (isDone ? ' saved' : '') + '">' +
+      var adaIsi = val && val.trim() !== '';
+      var isEditable = d.status.key === 'upload_gdrive';
+  
+      h += '<div class="foto-item' + (adaIsi ? ' saved' : '') + '">' +
         '<span class="number">' + (i + 1) + '.</span>' +
         '<input type="text" data-idx="' + i + '" placeholder="Nama file foto ' + (i + 1) + '" value="' + val + '"' +
-          (d.status.key === 'upload_gdrive' ? '' : ' readonly') + '>' +
-        (isDone ? '<span class="status-badge done">✓ Tersimpan</span>' : '') +
+          (isEditable ? '' : ' readonly') + '>' +
+        (adaIsi ? '<span class="status-badge done">✓ Tersimpan</span>' : '') +
         '</div>';
     }
-
+  
     if (d.status.key === 'upload_gdrive') {
       h += '<button class="btn-save-foto" id="btnSaveFoto" onclick="saveFotoList()">💾 Simpan Daftar Foto</button>' +
         '<div class="keyboard-hint">Tekan <kbd>Tab</kbd> untuk pindah field, <kbd>Enter</kbd> untuk simpan</div>';
     }
-
+  
     h += '</div>';
     return h;
   }
