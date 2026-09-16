@@ -465,7 +465,7 @@
       '</div>';
 
     if (d.status.key === 'upload_gdrive') {
-      h += '<p style="font-size:12px;color:var(--mute);margin:0 0 12px;">Tuliskan nama file foto yang mau diedit. Admin akan meng-copy dari Gdrive.</p>';
+      h += '<p style="font-size:12px;color:var(--mute);margin:0 0 12px;">Tuliskan nama file foto yang <strong>SAMA PERSIS</strong>. Misal "IMG_1184" atau "DSC003385" atau "DSCF3832" atau "REFD6024" atau "_DSC8468"</p>'. Jika tidak, foto tidak bisa di edit.;
     }
 
     for (var i = 0; i < 10; i++) {
@@ -508,18 +508,18 @@
     if (currentData.status.key !== 'upload_gdrive') {
       showToast('ℹ️ Sudah tersimpan'); return;
     }
-
+  
     var inputs = document.querySelectorAll('.foto-item input');
     var list = [];
     inputs.forEach(function (inp) { list.push((inp.value || '').trim()); });
-
+  
     var btn = document.getElementById('btnSaveFoto');
-    if (btn) { btn.disabled = true; btn.classList.add('btn-loading'); }
-
+    if (btn) { btn.disabled = true; btn.classList.add('btn-loading'); btn.innerText = '⏳ Menyimpan...'; }
+  
     supabase.rpc('client_save_foto_list', { p_token: currentToken, p_foto_list: list })
       .then(function (res) {
-        if (btn) { btn.disabled = false; btn.classList.remove('btn-loading'); }
-
+        if (btn) { btn.disabled = false; btn.classList.remove('btn-loading'); btn.innerText = '💾 Simpan Daftar Foto'; }
+  
         if (res.error) {
           showToast('❌ ' + res.error.message, 4000);
           return;
@@ -529,19 +529,29 @@
           showToast('❌ ' + d.error, 4000);
           return;
         }
+  
+        // Toast sukses
         showToast('✅ Daftar foto tersimpan', 2500);
-
-        // Re-render
-        if (currentData) {
-          currentData.foto_list = list;
-          // Tandai item yang tersimpan
-          inputs.forEach(function (inp) {
-            if (inp.value.trim()) inp.closest('.foto-item').classList.add('saved');
+  
+        // 🔥 Reload status dari server biar tanda "tersimpan" muncul
+        supabase.rpc('get_client_status_by_token', { p_token: currentToken })
+          .then(function (r2) {
+            if (r2.error) return;
+            var d2 = r2.data;
+            if (d2.error) return;
+  
+            currentData = d2;
+            renderClientStatus(d2);
+  
+            // Scroll ke bagian daftar foto biar client lihat perubahannya
+            setTimeout(function () {
+              var el = document.querySelector('.foto-list');
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 300);
           });
-        }
       })
       .catch(function (e) {
-        if (btn) { btn.disabled = false; btn.classList.remove('btn-loading'); }
+        if (btn) { btn.disabled = false; btn.classList.remove('btn-loading'); btn.innerText = '💾 Simpan Daftar Foto'; }
         showToast('❌ Gagal menyimpan: ' + e.message, 4000);
         console.error(e);
       });
