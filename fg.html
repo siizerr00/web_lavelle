@@ -154,6 +154,14 @@
   }
   .copy-btn:hover{ background:var(--rose); color:#fff; border-color:var(--rose); }
 
+  /* 🔥 TOMBOL KALENDER */
+  .calendar-btn{
+    display:inline-block; padding:3px 10px; border-radius:6px;
+    background:#DBEAFE; color:#1E40AF; font-size:11px;
+    font-weight:600; text-decoration:none; white-space:nowrap;
+  }
+  .calendar-btn:hover{ background:#1E40AF; color:#fff; }
+
   .no-data{ text-align:center; color:var(--mute); padding:16px; font-size:13px; }
 </style>
 </head>
@@ -466,6 +474,49 @@
       '&type=phone_number&app_absent=0';
   }
 
+  // ---------- GOOGLE CALENDAR LINK ----------
+  function buatLinkKalender(row, sumber) {
+    // Judul event
+    var judul;
+    if (sumber === 'lavelle') {
+      judul = 'Job Lavelle - ' + (row.nama_client || 'Client');
+    } else {
+      judul = 'Job Vendor Lain - Lavelle';
+    }
+
+    // Format tanggal: YYYYMMDD
+    var tanggalClean = String(row.tanggal || '').replace(/-/g, '');
+
+    // Format jam: HHMMSS (ambil 5 karakter pertama untuk handle "HH:MM:SS")
+    var jamMulaiClean = String(row.jam_mulai || '00:00').substring(0, 5).replace(':', '') + '00';
+    var jamSelesaiClean = String(row.jam_selesai || '00:00').substring(0, 5).replace(':', '') + '00';
+
+    var startDT = tanggalClean + 'T' + jamMulaiClean;
+    var endDT = tanggalClean + 'T' + jamSelesaiClean;
+
+    // Detail
+    var details;
+    if (sumber === 'lavelle') {
+      details = 'Nama Client: ' + (row.nama_client || '-') + '\n' +
+                'Lokasi: ' + (row.lokasi || '-') + '\n' +
+                'No. WA: ' + (row.wa || '-');
+    } else {
+      details = 'Job dari vendor lain';
+    }
+
+    var location = sumber === 'lavelle' ? (row.lokasi || '') : '';
+
+    var params = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: judul,
+      dates: startDT + '/' + endDT,
+      details: details,
+      location: location
+    });
+
+    return 'https://calendar.google.com/calendar/render?' + params.toString();
+  }
+
   // ---------- COPY ----------
   function copyJadwalLavelle(i) {
     var row = lastJadwalLavelle[i];
@@ -521,7 +572,7 @@
 
     var html = '<table><thead><tr>' +
       '<th>Tanggal</th><th>Jam</th><th>Nama Client</th><th>Lokasi</th>' +
-      '<th>Gdrive</th><th>No. WA</th><th>Copy</th>' +
+      '<th>Gdrive</th><th>No. WA</th><th>Kalender</th><th>Copy</th>' +
       '</tr></thead><tbody>';
 
     data.forEach(function (row, i) {
@@ -530,6 +581,10 @@
       var waCell = linkWa ? '<a class="wa-link" href="' + linkWa + '" target="_blank">💬 Chat</a>' : '-';
       var gdriveCell = row.link_gdrive ? '<a href="' + row.link_gdrive + '" target="_blank">📁 Buka</a>' : '-';
 
+      // Tombol kalender
+      var linkKalender = buatLinkKalender(row, 'lavelle');
+      var kalenderCell = '<a class="calendar-btn" href="' + linkKalender + '" target="_blank">📅 Tambah</a>';
+
       html += '<tr>' +
         '<td>' + (row.tanggal || '-') + '</td>' +
         '<td>' + jam + '</td>' +
@@ -537,6 +592,7 @@
         '<td>' + (row.lokasi || '-') + '</td>' +
         '<td>' + gdriveCell + '</td>' +
         '<td>' + waCell + '</td>' +
+        '<td>' + kalenderCell + '</td>' +
         '<td><button class="copy-btn" onclick="copyJadwalLavelle(' + i + ')">📋 Copy</button></td>' +
         '</tr>';
     });
@@ -554,14 +610,18 @@
     }
 
     var html = '<table><thead><tr>' +
-      '<th>Tanggal</th><th>Jam</th><th>Sumber</th>' +
+      '<th>Tanggal</th><th>Jam</th><th>Sumber</th><th>Kalender</th>' +
       '</tr></thead><tbody>';
 
     data.forEach(function (row) {
+      var linkKalender = buatLinkKalender(row, 'vendor');
+      var kalenderCell = '<a class="calendar-btn" href="' + linkKalender + '" target="_blank">📅 Tambah</a>';
+
       html += '<tr>' +
         '<td>' + (row.tanggal || '-') + '</td>' +
         '<td>' + (row.jam_mulai || '') + ' - ' + (row.jam_selesai || '') + '</td>' +
         '<td><span class="badge-vendor">Vendor Lain</span></td>' +
+        '<td>' + kalenderCell + '</td>' +
         '</tr>';
     });
 
