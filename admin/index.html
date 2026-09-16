@@ -598,41 +598,50 @@
     document.body.removeChild(ta);
   }
 
-  // ---------- COPY FOTO ----------
+  // ---------- COPY FOTO (via Edge Function) ----------
   function startCopyProcess(bookingId){
     if(!confirm('Copy foto untuk '+bookingId+'?')) return;
+  
     var btn = document.querySelector('[onclick*="startCopyProcess(\''+bookingId+'\')"]');
     if(btn){ btn.disabled=true; btn.classList.add('btn-loading'); btn.innerText='⏳ Proses...'; }
-
+  
+    // Init copy_queue
     supabase.rpc('admin_start_copy_queue',{ p_token: state.adminToken, p_booking_id: bookingId })
       .then(function(res){
         if(res.error || (res.data && res.data.error)){
           var m = res.error ? res.error.message : res.data.error;
-          showToast('❌ '+m); if(btn){ btn.disabled=false; btn.classList.remove('btn-loading'); btn.innerText='📁 Copy Foto'; }
+          showToast('❌ '+m);
+          if(btn){ btn.disabled=false; btn.classList.remove('btn-loading'); btn.innerText='📁 Copy Foto'; }
           return;
         }
-        showToast('✅ '+(res.data.message || 'Antrian dimulai'));
-
-        if(state.copyInterval) clearInterval(state.copyInterval);
-        state.copyInterval = setInterval(function(){
-          supabase.rpc('admin_get_queue_status',{ p_token: state.adminToken, p_booking_id: bookingId })
-            .then(function(r){
-              var d = r.data || {};
-              if(d.status === 'done' || d.status === 'failed'){
-                clearInterval(state.copyInterval); state.copyInterval = null;
-                showToast(d.result || 'Proses selesai', 5000);
-                if(d.status === 'done' && !(d.result || '').includes('gagal')){
-                  supabase.rpc('admin_update_status',{ p_token:state.adminToken, p_booking_id:bookingId, p_status:'edit_foto' })
-                    .then(function(){ loadBookings(); });
-                } else setTimeout(loadBookings, 1000);
-              } else if(btn){
-                var pct = Math.round(d.persentase||0);
-                btn.innerText = '⏳ '+pct+'% ('+(d.progress||0)+'/'+(d.total||0)+')';
-              }
-            });
-        }, 3000);
-      }).catch(function(e){
-        showToast('❌ '+e.message);
+  
+        // Panggil Edge Function
+        var edgeUrl = window.LAVELLE_CONFIG.SUPABASE_URL + '/functions/v1/copy-foto';
+        fetch(edgeUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + window.LAVELLE_CONFIG.SUPABASE_KEY
+          },
+          body: JSON.stringify({ booking_id: bookingId })
+        })
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          if(d.error){
+            showToast('❌ ' + d.error, 5000);
+            if(btn){ btn.disabled=false; btn.classList.remove('btn-loading'); btn.innerText='📁 Copy Foto'; }
+            return;
+          }
+          showToast('✅ ' + d.sukses + ' berhasil, ' + d.gagal + ' gagal', 5000);
+          setTimeout(loadBookings, 1000);
+        })
+        .catch(function(e){
+          showToast('❌ Edge function error: ' + e.message, 5000);
+          if(btn){ btn.disabled=false; btn.classList.remove('btn-loading'); btn.innerText='📁 Copy Foto'; }
+        });
+      })
+      .catch(function(e){
+        showToast('❌ ' + e.message);
         if(btn){ btn.disabled=false; btn.classList.remove('btn-loading'); btn.innerText='📁 Copy Foto'; }
       });
   }
