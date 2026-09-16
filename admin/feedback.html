@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feedback | Admin Lavelle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400..600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2E2532; --paper:#FBF6F2; --rose:#B76E79; --gold:#C9A66B;
+    --sage:#6B8F71; --mute:#8C8389; --line:#E4D9D3; --card:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'Inter',sans-serif;min-height:100vh;}
+  h1,h2,h3{font-family:'Fraunces',serif;margin:0;}
+  .container{max-width:900px;margin:0 auto;padding:24px;}
+
+  .card{
+    background:var(--card); border:1px solid var(--line);
+    border-radius:12px; padding:24px; margin-bottom:20px;
+    box-shadow:0 4px 24px rgba(46,37,50,.06);
+  }
+  .topbar{
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:12px;
+  }
+  .topbar h1{font-size:24px;font-style:italic;font-weight:500;}
+  .topbar .sub{color:var(--mute);font-size:13px;margin-top:2px;}
+  .topbar .actions{display:flex;gap:8px;align-items:center;}
+
+  .btn{
+    padding:8px 16px; border:none; border-radius:8px; font-size:13px;
+    cursor:pointer; font-family:inherit; font-weight:500; transition:all .2s;
+    text-decoration:none; display:inline-block;
+  }
+  .btn-secondary{background:none;color:var(--mute);border:1px solid var(--line);}
+  .btn-secondary:hover{color:var(--ink);border-color:var(--ink);}
+
+  .stats{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:12px; margin-bottom:20px;
+  }
+  .stat{
+    background:var(--card); border:1px solid var(--line);
+    border-radius:8px; padding:16px; text-align:center;
+  }
+  .stat .num{font-size:26px;font-weight:700;font-family:'Fraunces',serif;}
+  .stat .lbl{font-size:11px;color:var(--mute);margin-top:4px;}
+
+  .feedback-item{
+    border:1px solid var(--line); border-radius:8px;
+    padding:16px; margin-bottom:12px; background:var(--card);
+    transition:box-shadow .2s;
+  }
+  .feedback-item:hover{box-shadow:0 4px 12px rgba(46,37,50,.08);}
+
+  .fb-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px;flex-wrap:wrap;}
+  .fb-client{font-weight:600;font-size:15px;}
+  .fb-meta{font-size:11px;color:var(--mute);margin-top:2px;}
+  .fb-stars{font-size:20px;color:var(--gold);white-space:nowrap;}
+  .fb-pesan{
+    font-size:14px;color:var(--ink);line-height:1.6;margin-top:8px;
+    padding-top:8px;border-top:1px dashed var(--line);
+    white-space:pre-wrap;
+  }
+  .fb-tanggal{font-size:11px;color:var(--mute);margin-top:8px;}
+
+  .empty-state{text-align:center;padding:40px;color:var(--mute);}
+
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;padding:12px 24px;
+    border-radius:8px;font-size:14px;z-index:100;animation:slideUp .3s;
+  }
+  @keyframes slideUp{from{transform:translate(-50%,20px);opacity:0;}to{transform:translate(-50%,0);opacity:1;}}
+
+  .loading-spinner{
+    display:inline-block;width:16px;height:16px;
+    border:2px solid var(--line);border-top:2px solid var(--rose);
+    border-radius:50%;animation:spin .8s linear infinite;
+    vertical-align:middle;margin-right:8px;
+  }
+  @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="card topbar">
+    <div>
+      <h1>💬 Feedback Client</h1>
+      <div class="sub">Semua feedback dari client yang sudah selesai</div>
+    </div>
+    <div class="actions">
+      <a href="./index.html" class="btn btn-secondary">← Admin Panel</a>
+      <button class="btn btn-secondary" onclick="loadFeedback()">🔄 Refresh</button>
+    </div>
+  </div>
+
+  <div class="stats" id="statsContainer" style="display:none;">
+    <div class="stat">
+      <div class="num" id="statTotal">0</div>
+      <div class="lbl">Total Feedback</div>
+    </div>
+    <div class="stat">
+      <div class="num" id="statAvg" style="color:var(--gold);">0</div>
+      <div class="lbl">Rata-rata Rating</div>
+    </div>
+    <div class="stat">
+      <div class="num" id="statPositif" style="color:var(--sage);">0</div>
+      <div class="lbl">Positif (4-5★)</div>
+    </div>
+    <div class="stat">
+      <div class="num" id="statNegatif" style="color:#B3413E;">0</div>
+      <div class="lbl">Negatif (1-2★)</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div id="feedbackList">
+      <div class="empty-state"><span class="loading-spinner"></span> Memuat feedback...</div>
+    </div>
+  </div>
+
+</div>
+
+<script src="../config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function () {
+  'use strict';
+
+  var supabase = window.supabase.createClient(
+    window.LAVELLE_CONFIG.SUPABASE_URL,
+    window.LAVELLE_CONFIG.SUPABASE_KEY
+  );
+
+  var ADMIN_TOKEN = sessionStorage.getItem('lavelle_admin_token');
+
+  function showToast(msg, dur) {
+    dur = dur || 3000;
+    var e = document.querySelector('.toast'); if (e) e.remove();
+    var t = document.createElement('div');
+    t.className = 'toast'; t.innerText = msg;
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, dur);
+  }
+
+  function init() {
+    if (!ADMIN_TOKEN) {
+      document.getElementById('feedbackList').innerHTML =
+        '<div class="empty-state">🔒 Belum login. <a href="./index.html">Login dulu di Admin Panel</a></div>';
+      return;
+    }
+    loadFeedback();
+  }
+
+  function loadFeedback() {
+    var container = document.getElementById('feedbackList');
+    container.innerHTML = '<div class="empty-state"><span class="loading-spinner"></span> Memuat feedback...</div>';
+
+    supabase.rpc('admin_get_feedback', { p_token: ADMIN_TOKEN })
+      .then(function (res) {
+        if (res.error) {
+          container.innerHTML = '<div class="empty-state">❌ ' + res.error.message + '</div>';
+          return;
+        }
+        var d = res.data;
+        if (d.error) {
+          container.innerHTML = '<div class="empty-state">❌ ' + d.error + ' <a href="./index.html">Login ulang</a></div>';
+          return;
+        }
+        renderFeedback(d.data || []);
+      })
+      .catch(function (e) {
+        container.innerHTML = '<div class="empty-state">❌ Gagal memuat: ' + e.message + '</div>';
+        console.error(e);
+      });
+  }
+
+  function renderFeedback(list) {
+    var container = document.getElementById('feedbackList');
+
+    // Stats
+    if (list.length > 0) {
+      document.getElementById('statsContainer').style.display = 'grid';
+
+      var total = list.length;
+      var sumRating = 0;
+      var positif = 0;
+      var negatif = 0;
+      list.forEach(function (f) {
+        sumRating += (f.rating || 0);
+        if (f.rating >= 4) positif++;
+        if (f.rating <= 2) negatif++;
+      });
+
+      document.getElementById('statTotal').innerText = total;
+      document.getElementById('statAvg').innerText = (sumRating / total).toFixed(1);
+      document.getElementById('statPositif').innerText = positif;
+      document.getElementById('statNegatif').innerText = negatif;
+    }
+
+    if (list.length === 0) {
+      container.innerHTML = '<div class="empty-state">📭 Belum ada feedback</div>';
+      return;
+    }
+
+    var html = '';
+    list.forEach(function (f) {
+      var stars = '';
+      for (var i = 1; i <= 5; i++) {
+        stars += i <= f.rating ? '★' : '☆';
+      }
+
+      var tanggal = f.created_at
+        ? new Date(f.created_at).toLocaleString('id-ID', {
+            day: 'numeric', month: 'short', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+          })
+        : '-';
+
+      html += '<div class="feedback-item">';
+      html += '<div class="fb-header">';
+      html += '<div>';
+      html += '<div class="fb-client">' + (f.nama_client || '-') + '</div>';
+      html += '<div class="fb-meta">' + (f.kampus || '-') + ' · ' + (f.kota || '-') + ' · ' + (f.booking_id || '-') + '</div>';
+      html += '</div>';
+      html += '<div class="fb-stars">' + stars + '</div>';
+      html += '</div>';
+
+      if (f.pesan && f.pesan.trim() !== '') {
+        html += '<div class="fb-pesan">' + escapeHtml(f.pesan) + '</div>';
+      } else {
+        html += '<div class="fb-pesan" style="color:var(--mute);font-style:italic;">Tidak ada pesan</div>';
+      }
+
+      html += '<div class="fb-tanggal">🕐 ' + tanggal + '</div>';
+      html += '</div>';
+    });
+
+    container.innerHTML = html;
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  window.loadFeedback = loadFeedback;
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
