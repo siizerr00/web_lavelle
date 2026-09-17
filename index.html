@@ -158,6 +158,46 @@
   .status-badge.pending { background:#FEF3C7; color:#92400E; }
   .status-badge.paid { background:#D1FAE5; color:#065F46; }
   .status-badge.expired { background:#FEE2E2; color:#991B1B; }
+
+  /* ---------- MODAL PILIHAN ---------- */
+  .pilihan-overlay{
+    display:none; position:fixed; inset:0;
+    background:rgba(46,37,50,.55); z-index:60;
+    align-items:center; justify-content:center; padding:20px;
+    animation:fadeIn .2s;
+  }
+  .pilihan-overlay.active{ display:flex; }
+
+  .pilihan-box{
+    background:var(--paper); border-radius:12px;
+    padding:28px 32px; max-width:420px; width:100%;
+    box-shadow:0 20px 60px rgba(0,0,0,.3);
+    text-align:center;
+    animation:slideUp .3s;
+  }
+  .pilihan-box h3{
+    font-family:'Fraunces',serif; font-size:22px; font-style:italic;
+    font-weight:500; margin-bottom:6px;
+  }
+  .pilihan-box p.sub{
+    color:var(--mute); font-size:13px; margin:0 0 20px; line-height:1.5;
+  }
+  .pilihan-actions{
+    display:flex; gap:10px; margin-top:16px;
+  }
+  .pilihan-actions button{
+    flex:1; padding:14px 12px; border-radius:8px;
+    font-family:'Inter',sans-serif; font-size:13px; font-weight:500;
+    cursor:pointer; transition:all .2s; border:none;
+  }
+  .btn-tanya{
+    background:var(--card); color:var(--ink); border:1px solid var(--line);
+  }
+  .btn-tanya:hover{ background:var(--paper); border-color:var(--rose); color:var(--rose); }
+  .btn-pricelist{
+    background:var(--ink); color:#fff;
+  }
+  .btn-pricelist:hover{ background:var(--rose); }
 </style>
 </head>
 <body>
@@ -187,7 +227,7 @@
         <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
           <span>Apakah bisa booking jika tanggal belum pasti?</span><span class="faq-icon">+</span>
         </div>
-        <div class="faq-answer"><p>Bisa di-reschedule, maksimal 2 minggu sebelum sesi. Namun tetap diperlukan tanggal awal untuk melakukan booking.</p></div>
+        <div class="faq-answer"><p>Bisa reschedule maksimal H-14. Tanggal awal tetap diperlukan saat booking. Reschedule mengikuti ketersediaan FG. Jika tanggal baru tidak tersedia, booking tetap pada jadwal awal.</p></div>
       </div>
 
       <div class="faq-item">
@@ -203,7 +243,14 @@
         </div>
         <div class="faq-answer"><p>Saat ini kami hanya tersedia untuk 3 wilayah di atas.</p></div>
       </div>
-      
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+          <span>DP minimal berapa?</span><span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer"><p>DP 50% dari Total Pembayaran (Termasuk jika ada biaya transport)</p></div>
+      </div>
+
       <div class="faq-item">
         <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
           <span>Apakah bisa untuk foto birthday/preweed/lamaran?</span><span class="faq-icon">+</span>
@@ -268,6 +315,19 @@
     </div>
     <div id="slotArea"></div>
   </section>
+</div>
+
+<!-- MODAL PILIHAN SETELAH PILIH WILAYAH -->
+<div class="pilihan-overlay" id="pilihanOverlay">
+  <div class="pilihan-box">
+    <h3>Ada hal yang mau ditanyakan?</h3>
+    <p class="sub">Atau langsung lihat pricelist & jadwal di wilayah ini.</p>
+
+    <div class="pilihan-actions">
+      <button class="btn-tanya" onclick="pilihTanya()">💬 Mau tanya min</button>
+      <button class="btn-pricelist" onclick="pilihPricelist()">📄 Mau cek pricelist</button>
+    </div>
+  </div>
 </div>
 
 <div class="loading-overlay" id="loadingOverlay">
@@ -398,6 +458,9 @@
     slotTerpilih:null, paketList:[], allData:null, isLoading:false
   };
 
+  // Kota yang sedang menunggu konfirmasi dari popup
+  var kotaMenunggu = null;
+
   function isCacheValid(ts){ return new Date().toDateString() === new Date(ts).toDateString(); }
   function formatDate(d){
     return d.getFullYear() + '-' +
@@ -428,12 +491,54 @@
     }).join('');
   }
 
-  // ---------- PILIH KOTA ----------
+  // ---------- PILIH KOTA (TAHAP 1: TAMPILKAN POPUP) ----------
   function pilihKota(kota){
     if(state.isLoading) return;
     if(!supabaseReady){ showToast('⚠️ Sistem booking belum siap.',4000); return; }
-    state.isLoading = true;
+
     trackEvent('pilih_wilayah',{kota:kota});
+
+    // Simpan kota dulu, tampilkan popup
+    kotaMenunggu = kota;
+    document.getElementById('pilihanOverlay').classList.add('active');
+  }
+
+  // ---------- PILIH "MAU TANYA MIN" ----------
+  function pilihTanya(){
+    document.getElementById('pilihanOverlay').classList.remove('active');
+    trackEvent('pilih_tanya_min', { kota: kotaMenunggu || '' });
+
+    setTimeout(function(){
+      var faq = document.querySelector('.faq-wrap');
+      if(faq){
+        faq.scrollIntoView({ behavior:'smooth', block:'start' });
+        var firstFaq = document.querySelector('.faq-item');
+        if(firstFaq && !firstFaq.classList.contains('open')){
+          firstFaq.classList.add('open');
+        }
+      }
+    }, 200);
+
+    kotaMenunggu = null;
+  }
+
+  // ---------- PILIH "MAU CEK PRICELIST" ----------
+  function pilihPricelist(){
+    if(!kotaMenunggu){
+      document.getElementById('pilihanOverlay').classList.remove('active');
+      return;
+    }
+    trackEvent('pilih_pricelist', { kota: kotaMenunggu });
+
+    document.getElementById('pilihanOverlay').classList.remove('active');
+    var kota = kotaMenunggu;
+    kotaMenunggu = null;
+    pilihKotaLanjut(kota);
+  }
+
+  // ---------- PILIH KOTA (TAHAP 2: LOAD DATA) ----------
+  function pilihKotaLanjut(kota){
+    state.isLoading = true;
 
     var card = document.querySelector('.region-card[data-kota="'+kota+'"]');
     if(card) card.classList.add('loading');
@@ -779,8 +884,22 @@
     }
   });
 
+  // Tutup popup pilihan kalau klik area luar
+  var pilihanOv = document.getElementById('pilihanOverlay');
+  if(pilihanOv){
+    pilihanOv.addEventListener('click', function(e){
+      if(e.target === this){
+        pilihanOv.classList.remove('active');
+        kotaMenunggu = null;
+      }
+    });
+  }
+
   // ---------- EXPOSE ----------
   window.pilihKota = pilihKota;
+  window.pilihKotaLanjut = pilihKotaLanjut;
+  window.pilihTanya = pilihTanya;
+  window.pilihPricelist = pilihPricelist;
   window.pilihTanggal = pilihTanggal;
   window.ubahBulan = ubahBulan;
   window.bukaForm = bukaForm;
