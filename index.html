@@ -190,14 +190,18 @@
     font-family:'Inter',sans-serif; font-size:13px; font-weight:500;
     cursor:pointer; transition:all .2s; border:none;
   }
+  
   .btn-tanya{
-    background:var(--card); color:var(--ink); border:1px solid var(--line);
+  background:var(--rose); color:#fff; border:1px solid var(--rose);
+  font-weight:600;
   }
-  .btn-tanya:hover{ background:var(--paper); border-color:var(--rose); color:var(--rose); }
+  .btn-tanya:hover{ background:#a35f6a; border-color:#a35f6a; }
+  
   .btn-pricelist{
-    background:var(--ink); color:#fff;
+    background:var(--gold); color:#fff; border:1px solid var(--gold);
+    font-weight:600;
   }
-  .btn-pricelist:hover{ background:var(--rose); }
+  .btn-pricelist:hover{ background:#b08f52; border-color:#b08f52; }
 </style>
 </head>
 <body>
@@ -321,7 +325,6 @@
 <div class="pilihan-overlay" id="pilihanOverlay">
   <div class="pilihan-box">
     <h3>Ada hal yang mau ditanyakan?</h3>
-    <p class="sub">Atau langsung lihat pricelist & jadwal di wilayah ini.</p>
 
     <div class="pilihan-actions">
       <button class="btn-tanya" onclick="pilihTanya()">💬 Mau tanya min</button>
