@@ -52,19 +52,6 @@
     margin-top:4px;
   }
 
-  /* Indikator kekuatan password */
-  .strength-bar{
-    height:4px; background:var(--line); border-radius:2px;
-    margin-top:6px; overflow:hidden;
-  }
-  .strength-bar > div{
-    height:100%; width:0; background:#B3413E;
-    transition:width .3s, background .3s;
-  }
-  .strength-text{
-    font-size:11px; margin-top:4px; color:var(--mute);
-  }
-
   .btn-primary{
     width:100%; padding:14px; background:var(--ink); color:#fff;
     border:none; border-radius:6px; font-size:14px; cursor:pointer;
@@ -180,7 +167,6 @@
 
   .no-data{ text-align:center; color:var(--mute); padding:16px; font-size:13px; }
 
-  /* Tombol mata untuk show/hide password */
   .input-wrap{ position:relative; }
   .input-wrap input{ padding-right:44px; }
   .toggle-eye{
@@ -209,64 +195,56 @@
     <div class="field">
       <label>🔑 PIN</label>
       <div class="input-wrap">
-        <input type="password" id="loginPin" placeholder="Masukkan PIN" maxlength="4" inputmode="numeric" autocomplete="off">
+        <input type="password" id="loginPin" placeholder="Masukkan PIN 4 digit" maxlength="4" inputmode="numeric" autocomplete="off">
         <button type="button" class="toggle-eye" onclick="toggleVisibility('loginPin', this)">👁️</button>
       </div>
-      <small>PIN awal 4 digit dari admin.</small>
+      <small>PIN berisi 4 digit angka.</small>
     </div>
 
     <button class="btn-primary" id="btnLogin" onclick="handleLogin()">Login</button>
     <div class="error-box" id="loginError"></div>
   </div>
 
-  <!-- UBAH PASSWORD CARD -->
-  <div class="card" id="passwordCard" style="display:none; max-width:480px;">
+  <!-- UBAH PIN CARD -->
+  <div class="card" id="pinCard" style="display:none; max-width:480px;">
     <div class="logo">
-      <h1 id="passwordTitle">Ubah Password</h1>
-      <p id="passwordSubtitle">Silakan buat password baru</p>
+      <h1 id="pinTitle">Ubah PIN</h1>
+      <p id="pinSubtitle">Silakan masukkan PIN lama dan PIN baru</p>
     </div>
 
-    <div class="info-fotografer" id="firstLoginInfo" style="display:none;">
-      <div class="label">🔐 Login Pertama</div>
-      <div class="value" style="font-size:13px; font-weight:400;">
-        Demi keamanan, kamu wajib mengubah password sebelum melanjutkan.
+    <div class="field">
+      <label>🔒 PIN Lama</label>
+      <div class="input-wrap">
+        <input type="password" id="oldPin" placeholder="PIN lama" maxlength="4" inputmode="numeric" autocomplete="off">
+        <button type="button" class="toggle-eye" onclick="toggleVisibility('oldPin', this)">👁️</button>
       </div>
     </div>
 
     <div class="field">
-      <label>🔒 Password Lama</label>
+      <label>🔑 PIN Baru</label>
       <div class="input-wrap">
-        <input type="password" id="oldPassword" placeholder="Password / PIN lama" autocomplete="off">
-        <button type="button" class="toggle-eye" onclick="toggleVisibility('oldPassword', this)">👁️</button>
+        <input type="password" id="newPin" placeholder="PIN baru 4 digit" maxlength="4" inputmode="numeric" autocomplete="off">
+        <button type="button" class="toggle-eye" onclick="toggleVisibility('newPin', this)">👁️</button>
       </div>
+      <small>PIN harus 4 digit angka.</small>
     </div>
 
     <div class="field">
-      <label>🔑 Password Baru</label>
+      <label>🔑 Konfirmasi PIN Baru</label>
       <div class="input-wrap">
-        <input type="password" id="newPassword" placeholder="Minimal 6 karakter" autocomplete="off" oninput="updateStrength()">
-        <button type="button" class="toggle-eye" onclick="toggleVisibility('newPassword', this)">👁️</button>
-      </div>
-      <div class="strength-bar"><div id="strengthFill"></div></div>
-      <div class="strength-text" id="strengthText">Minimal 6 karakter, huruf & angka lebih kuat.</div>
-    </div>
-
-    <div class="field">
-      <label>🔑 Konfirmasi Password Baru</label>
-      <div class="input-wrap">
-        <input type="password" id="confirmPassword" placeholder="Ulangi password baru" autocomplete="off">
-        <button type="button" class="toggle-eye" onclick="toggleVisibility('confirmPassword', this)">👁️</button>
+        <input type="password" id="confirmPin" placeholder="Ulangi PIN baru" maxlength="4" inputmode="numeric" autocomplete="off">
+        <button type="button" class="toggle-eye" onclick="toggleVisibility('confirmPin', this)">👁️</button>
       </div>
     </div>
 
-    <button class="btn-primary" id="btnSavePassword" onclick="handleSavePassword()">
-      💾 Simpan Password
+    <button class="btn-primary" id="btnSavePin" onclick="handleSavePin()">
+      💾 Simpan PIN
     </button>
-    <button class="btn-secondary" id="btnCancelPassword" onclick="handleCancelPassword()" style="display:none;">
+    <button class="btn-secondary" id="btnCancelPin" onclick="handleCancelPin()" style="display:none;">
       ← Batal
     </button>
-    <div class="error-box" id="passwordError"></div>
-    <div class="success-box" id="passwordSuccess"></div>
+    <div class="error-box" id="pinError"></div>
+    <div class="success-box" id="pinSuccess"></div>
   </div>
 
   <!-- JADWAL CARD -->
@@ -334,8 +312,8 @@
 
     <hr class="divider">
 
-    <button class="btn-secondary" onclick="openPasswordSettings()">
-      ⚙️ Pengaturan — Ubah Password
+    <button class="btn-secondary" onclick="openPinSettings()">
+      ⚙️ Pengaturan — Ubah PIN
     </button>
     <button class="btn-secondary" onclick="handleLogout()">🚪 Logout</button>
   </div>
@@ -351,7 +329,6 @@
   var supabase = null;
   var supabaseReady = false;
   var currentFotografer = null;
-  var isFirstLoginMode = false;
   var lastJadwalLavelle = [];
 
   try {
@@ -377,7 +354,7 @@
     setTimeout(function () { toast.remove(); }, duration);
   }
 
-  // ---------- SHOW/HIDE PASSWORD ----------
+  // ---------- SHOW/HIDE PIN ----------
   function toggleVisibility(inputId, btn) {
     var el = document.getElementById(inputId);
     if (!el) return;
@@ -390,46 +367,10 @@
     }
   }
 
-  // ---------- STRENGTH INDICATOR ----------
-  function updateStrength() {
-    var val = document.getElementById('newPassword').value || '';
-    var fill = document.getElementById('strengthFill');
-    var text = document.getElementById('strengthText');
-
-    var score = 0;
-    if (val.length >= 6) score++;
-    if (val.length >= 10) score++;
-    if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
-    if (/[0-9]/.test(val)) score++;
-    if (/[^A-Za-z0-9]/.test(val)) score++;
-
-    var pct = Math.min(score * 20, 100);
-    var color = '#B3413E';
-    var label = 'Lemah';
-    if (score >= 2) { color = '#D97706'; label = 'Sedang'; }
-    if (score >= 4) { color = '#6B8F71'; label = 'Kuat'; }
-    if (score >= 5) { color = '#065F46'; label = 'Sangat Kuat'; }
-
-    if (val.length === 0) {
-      pct = 0; color = '#E4D9D3'; label = '';
-    }
-
-    fill.style.width = pct + '%';
-    fill.style.background = color;
-
-    if (val.length === 0) {
-      text.textContent = 'Minimal 6 karakter, huruf & angka lebih kuat.';
-      text.style.color = '#8C8389';
-    } else {
-      text.textContent = label + ' — ' + val.length + ' karakter';
-      text.style.color = color;
-    }
-  }
-
   // ---------- SHOW PANEL ----------
   function showJadwalPanel(data) {
     document.getElementById('loginCard').style.display = 'none';
-    document.getElementById('passwordCard').style.display = 'none';
+    document.getElementById('pinCard').style.display = 'none';
     document.getElementById('jadwalCard').style.display = 'block';
 
     document.getElementById('namaFotografer').textContent = data.nama || '-';
@@ -452,6 +393,11 @@
 
     if (!nama || !pin) {
       errBox.textContent = 'Nama dan PIN wajib diisi.';
+      errBox.style.display = 'block';
+      return;
+    }
+    if (pin.length !== 4) {
+      errBox.textContent = 'PIN harus 4 digit.';
       errBox.style.display = 'block';
       return;
     }
@@ -487,21 +433,6 @@
 
         currentFotografer = res.data;
         localStorage.setItem('fotografer', JSON.stringify(res.data));
-
-        if (res.data.must_change_password === true) {
-          isFirstLoginMode = true;
-          document.getElementById('loginCard').style.display = 'none';
-          document.getElementById('passwordCard').style.display = 'block';
-          document.getElementById('passwordTitle').textContent = 'Selamat Datang!';
-          document.getElementById('passwordSubtitle').textContent =
-            'Halo ' + res.data.nama + ', buat password baru kamu.';
-          document.getElementById('firstLoginInfo').style.display = 'block';
-          document.getElementById('btnCancelPassword').style.display = 'none';
-          document.getElementById('oldPassword').value = pin;
-          updateStrength();
-          return;
-        }
-
         showJadwalPanel(res.data);
       })
       .catch(function (err) {
@@ -512,35 +443,40 @@
       });
   }
 
-  // ---------- SIMPAN PASSWORD ----------
-  function handleSavePassword() {
-    var oldPwd = document.getElementById('oldPassword').value.trim();
-    var newPwd = document.getElementById('newPassword').value.trim();
-    var confirmPwd = document.getElementById('confirmPassword').value.trim();
-    var errBox = document.getElementById('passwordError');
-    var okBox = document.getElementById('passwordSuccess');
-    var btn = document.getElementById('btnSavePassword');
+  // ---------- SIMPAN PIN ----------
+  function handleSavePin() {
+    var oldPin = document.getElementById('oldPin').value.trim();
+    var newPin = document.getElementById('newPin').value.trim();
+    var confirmPin = document.getElementById('confirmPin').value.trim();
+    var errBox = document.getElementById('pinError');
+    var okBox = document.getElementById('pinSuccess');
+    var btn = document.getElementById('btnSavePin');
 
     errBox.style.display = 'none';
     okBox.style.display = 'none';
 
-    if (!newPwd || !confirmPwd) {
-      errBox.textContent = 'Password baru wajib diisi.';
+    if (!oldPin || !newPin || !confirmPin) {
+      errBox.textContent = 'Semua field wajib diisi.';
       errBox.style.display = 'block';
       return;
     }
-    if (newPwd.length < 6) {
-      errBox.textContent = 'Password minimal 6 karakter. Sekarang: ' + newPwd.length;
+    if (oldPin !== currentFotografer.pin) {
+      errBox.textContent = 'PIN lama salah.';
       errBox.style.display = 'block';
       return;
     }
-    if (newPwd !== confirmPwd) {
-      errBox.textContent = 'Konfirmasi password tidak cocok.';
+    if (newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
+      errBox.textContent = 'PIN baru harus 4 digit angka.';
       errBox.style.display = 'block';
       return;
     }
-    if (!isFirstLoginMode && oldPwd !== currentFotografer.pin) {
-      errBox.textContent = 'Password lama salah.';
+    if (newPin !== confirmPin) {
+      errBox.textContent = 'Konfirmasi PIN tidak cocok.';
+      errBox.style.display = 'block';
+      return;
+    }
+    if (newPin === oldPin) {
+      errBox.textContent = 'PIN baru tidak boleh sama dengan PIN lama.';
       errBox.style.display = 'block';
       return;
     }
@@ -550,10 +486,7 @@
 
     supabase
       .from('fotografer')
-      .update({
-        pin: newPwd,
-        must_change_password: false
-      })
+      .update({ pin: newPin })
       .eq('fotografer_id', currentFotografer.fotografer_id)
       .then(function (res) {
         btn.classList.remove('btn-loading');
@@ -565,52 +498,42 @@
           return;
         }
 
-        currentFotografer.pin = newPwd;
-        currentFotografer.must_change_password = false;
+        currentFotografer.pin = newPin;
         localStorage.setItem('fotografer', JSON.stringify(currentFotografer));
 
-        okBox.textContent = '✅ Password berhasil diubah!';
+        okBox.textContent = '✅ PIN berhasil diubah!';
         okBox.style.display = 'block';
 
-        document.getElementById('oldPassword').value = '';
-        document.getElementById('newPassword').value = '';
-        document.getElementById('confirmPassword').value = '';
-        updateStrength();
+        document.getElementById('oldPin').value = '';
+        document.getElementById('newPin').value = '';
+        document.getElementById('confirmPin').value = '';
 
         setTimeout(function () {
-          if (isFirstLoginMode) {
-            isFirstLoginMode = false;
-            showJadwalPanel(currentFotografer);
-          } else {
-            document.getElementById('passwordCard').style.display = 'none';
-            document.getElementById('jadwalCard').style.display = 'block';
-          }
+          document.getElementById('pinCard').style.display = 'none';
+          document.getElementById('jadwalCard').style.display = 'block';
         }, 1000);
       });
   }
 
-  // ---------- OPEN PASSWORD SETTINGS ----------
-  function openPasswordSettings() {
+  // ---------- OPEN PIN SETTINGS ----------
+  function openPinSettings() {
     if (!currentFotografer) return;
-    isFirstLoginMode = false;
-    document.getElementById('passwordTitle').textContent = 'Ubah Password';
-    document.getElementById('passwordSubtitle').textContent =
-      'Masukkan password lama dan password baru.';
-    document.getElementById('firstLoginInfo').style.display = 'none';
-    document.getElementById('btnCancelPassword').style.display = 'block';
-    document.getElementById('oldPassword').value = '';
-    document.getElementById('newPassword').value = '';
-    document.getElementById('confirmPassword').value = '';
-    document.getElementById('passwordError').style.display = 'none';
-    document.getElementById('passwordSuccess').style.display = 'none';
-    updateStrength();
+    document.getElementById('pinTitle').textContent = 'Ubah PIN';
+    document.getElementById('pinSubtitle').textContent =
+      'Masukkan PIN lama dan PIN baru (4 digit).';
+    document.getElementById('btnCancelPin').style.display = 'block';
+    document.getElementById('oldPin').value = '';
+    document.getElementById('newPin').value = '';
+    document.getElementById('confirmPin').value = '';
+    document.getElementById('pinError').style.display = 'none';
+    document.getElementById('pinSuccess').style.display = 'none';
 
     document.getElementById('jadwalCard').style.display = 'none';
-    document.getElementById('passwordCard').style.display = 'block';
+    document.getElementById('pinCard').style.display = 'block';
   }
 
-  function handleCancelPassword() {
-    document.getElementById('passwordCard').style.display = 'none';
+  function handleCancelPin() {
+    document.getElementById('pinCard').style.display = 'none';
     document.getElementById('jadwalCard').style.display = 'block';
   }
 
@@ -619,7 +542,6 @@
     if (!confirm('Yakin mau logout?')) return;
     localStorage.removeItem('fotografer');
     currentFotografer = null;
-    isFirstLoginMode = false;
     location.reload();
   }
 
@@ -924,37 +846,37 @@
   // ---------- EXPOSE KE WINDOW ----------
   window.handleLogin = handleLogin;
   window.handleLogout = handleLogout;
-  window.handleSavePassword = handleSavePassword;
-  window.openPasswordSettings = openPasswordSettings;
-  window.handleCancelPassword = handleCancelPassword;
+  window.handleSavePin = handleSavePin;
+  window.openPinSettings = openPinSettings;
+  window.handleCancelPin = handleCancelPin;
   window.simpanJadwal = simpanJadwal;
   window.loadJadwal = loadJadwal;
   window.gantiTabJadwal = gantiTabJadwal;
   window.copyJadwalLavelle = copyJadwalLavelle;
   window.copySemuaJadwalLavelle = copySemuaJadwalLavelle;
   window.toggleVisibility = toggleVisibility;
-  window.updateStrength = updateStrength;
 
   // ---------- ENTER KEY ----------
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Enter') {
       var lc = document.getElementById('loginCard');
-      var pc = document.getElementById('passwordCard');
+      var pc = document.getElementById('pinCard');
       if (lc && lc.style.display !== 'none') {
         handleLogin();
       } else if (pc && pc.style.display !== 'none') {
-        handleSavePassword();
+        handleSavePin();
       }
     }
   });
 
-  // ---------- PIN LOGIN: HANYA ANGKA, MAKS 4 ----------
-  var pinEl = document.getElementById('loginPin');
-  if (pinEl) {
-    pinEl.addEventListener('input', function () {
+  // ---------- INPUT: PIN HANYA 4 DIGIT ANGKA ----------
+  ['loginPin', 'oldPin', 'newPin', 'confirmPin'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', function () {
       this.value = this.value.replace(/\D/g, '').slice(0, 4);
     });
-  }
+  });
 
   // ---------- RESTORE SESSION ----------
   (function restoreSession() {
@@ -979,21 +901,7 @@
             return;
           }
           currentFotografer = res.data;
-
-          if (res.data.must_change_password === true) {
-            isFirstLoginMode = true;
-            document.getElementById('loginCard').style.display = 'none';
-            document.getElementById('passwordCard').style.display = 'block';
-            document.getElementById('passwordTitle').textContent = 'Selamat Datang!';
-            document.getElementById('passwordSubtitle').textContent =
-              'Halo ' + res.data.nama + ', buat password baru kamu.';
-            document.getElementById('firstLoginInfo').style.display = 'block';
-            document.getElementById('btnCancelPassword').style.display = 'none';
-            document.getElementById('oldPassword').value = res.data.pin || '';
-            updateStrength();
-          } else {
-            showJadwalPanel(res.data);
-          }
+          showJadwalPanel(res.data);
         })
         .catch(function (err) {
           console.error('Restore session error:', err);
