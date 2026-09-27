@@ -1,45 +1,75 @@
 /* ============================================================
    MAPS.JS - Studio Lavelle
    Sistem peta, autocomplete, dan hitung jarak transport
-   Menggunakan OpenStreetMap (Leaflet + Nominatim + OSRM) - 100% GRATIS
+   Menggunakan OpenStreetMap (Leaflet + Nominatim + OSRM)
+   + Fallback Google Geocoding (opsional, butuh API key)
    
-   Konfigurasi radius & biaya:
-   - Jogja    : > 7 KM  → Rp 30.000
-   - Solo     : > 7 KM  → Rp 30.000
-   - Surabaya : > 10 KM → Rp 30.000
+   Fitur:
+   - Autocomplete dengan prioritas POI besar
+   - Klik langsung di peta untuk pilih lokasi
+   - Fallback ke Google Geocoding kalau OSM gagal
    ============================================================ */
 (function () {
   'use strict';
 
   // ============================================================
-  // KONFIGURASI TITIK 0 & RADIUS PER KOTA
+  // KONFIGURASI
   // ============================================================
   var KONFIG_KOTA = {
-  Jogja: {
-    lat: -7.771278,
-    lng: 110.377722,
-    nama: 'Universitas Gadjah Mada',
-    batas_gratis_meter: 7000,
-    biaya_transport: 30000,
-    region: 'Yogyakarta'
-  },
-  Solo: {
-    lat: -7.568475,
-    lng: 110.823998,
-    nama: 'Bundaran Gladag Solo',
-    batas_gratis_meter: 7000,
-    biaya_transport: 30000,
-    region: 'Jawa Tengah'
-  },
-  Surabaya: {
-    lat: -7.245930,
-    lng: 112.737853,
-    nama: 'Tugu Pahlawan Surabaya',
-    batas_gratis_meter: 10000,
-    biaya_transport: 30000,
-    region: 'Jawa Timur'
-  }
-};
+    Jogja: {
+      lat: -7.771278,
+      lng: 110.377722,
+      nama: 'Universitas Gadjah Mada',
+      batas_gratis_meter: 7000,
+      biaya_transport: 30000,
+      region: 'Yogyakarta'
+    },
+    Solo: {
+      lat: -7.568475,
+      lng: 110.823998,
+      nama: 'Bundaran Gladag Solo',
+      batas_gratis_meter: 7000,
+      biaya_transport: 30000,
+      region: 'Jawa Tengah'
+    },
+    Surabaya: {
+      lat: -7.245930,
+      lng: 112.737853,
+      nama: 'Tugu Pahlawan Surabaya',
+      batas_gratis_meter: 10000,
+      biaya_transport: 30000,
+      region: 'Jawa Timur'
+    }
+  };
+
+  // Google Geocoding API Key (opsional)
+  // Kosongkan kalau tidak mau pakai. Isi kalau OSM sering gagal.
+  var GOOGLE_API_KEY = '';
+
+  // Prioritas tipe POI (yang besar/utama didahulukan)
+  var PRIORITAS_TIPE = {
+    'university': 100,
+    'college': 100,
+    'school': 90,
+    'hospital': 85,
+    'mall': 85,
+    'shopping_centre': 85,
+    'airport': 90,
+    'train_station': 85,
+    'bus_station': 80,
+    'stadium': 80,
+    'museum': 75,
+    'attraction': 75,
+    'tourism': 70,
+    'government': 70,
+    'office': 60,
+    'building': 50,
+    'yes': 40,
+    'residential': 20,
+    'house': 15,
+    'dormitory': 10,
+    'apartments': 20
+  };
 
   // ============================================================
   // STATE INTERNAL
@@ -52,6 +82,7 @@
   var debounceTimer = null;
   var selectedLocation = null;
   var mapInitialized = false;
+  var clickHandlerAttached = false;
 
   function getKonfig() {
     return kotaAktif ? KONFIG_KOTA[kotaAktif] : null;
@@ -113,6 +144,15 @@
       icon: buatIcon('🏠', '#764ba2')
     }).addTo(map).bindPopup('<b>' + konfig.nama + '</b><br>Titik Pusat ' + kota);
 
+    // ============================================================
+    // KLIK LANGSUNG DI PETA untuk pilih lokasi
+    // ============================================================
+    map.on('click', function (e) {
+      var lat = e.latlng.lat;
+      var lng = e.latlng.lng;
+      pilihLokasiDariPeta(lat, lng);
+    });
+
     mapInitialized = true;
 
     setTimeout(function () {
@@ -121,213 +161,57 @@
   }
 
   // ============================================================
-  // RESET LOKASI
+  // PILIH LOKASI DARI KLIK PETA
   // ============================================================
-  function resetLokasi() {
-    selectedLocation = null;
-    if (markerLokasi && map) { map.removeLayer(markerLokasi); markerLokasi = null; }
-    if (garisRute && map) { map.removeLayer(garisRute); garisRute = null; }
+  function pilihLokasiDariPeta(lat, lng) {
+    if (!map || !kotaAktif) return;
+    var konfig = getKonfig();
+    if (!konfig) return;
 
-    var infoBox = document.getElementById('distanceInfo');
-    if (infoBox) infoBox.style.display = 'none';
-
+    // Tampilkan loading
     var input = document.getElementById('locationInput');
-    if (input) input.value = '';
+    if (input) input.value = 'Mencari alamat...';
 
-    var suggest = document.getElementById('suggestions');
-    if (suggest) { suggest.innerHTML = ''; suggest.style.display = 'none'; }
-
-    ['hiddenLat', 'hiddenLng', 'hiddenAlamat', 'hiddenJarak', 'hiddenBiaya'].forEach(function (id) {
-      var el = document.getElementById(id);
-      if (el) el.value = '';
-    });
-
-    var konfig = getKonfig();
-    if (map && konfig) {
-      map.setView([konfig.lat, konfig.lng], 13);
-    }
-
-    // Reset data global
-    window.__mapsData = null;
-
-    // Trigger update preview harga
-    if (typeof window.updateHargaPreview === 'function') {
-      window.updateHargaPreview();
-    }
+    // Reverse geocoding: koordinat → alamat
+    reverseGeocode(lat, lng);
   }
 
-  // ============================================================
-  // AUTOCOMPLETE - NOMINATIM
-  // ============================================================
-  function initAutocomplete() {
-    var input = document.getElementById('locationInput');
-    var suggestBox = document.getElementById('suggestions');
-    if (!input || !suggestBox) return;
-
-    input.addEventListener('input', function () {
-      clearTimeout(debounceTimer);
-      var q = this.value.trim();
-
-      if (q.length < 3) {
-        suggestBox.innerHTML = '';
-        suggestBox.style.display = 'none';
-        return;
-      }
-
-      suggestBox.innerHTML = '<div class="suggestion-loading"><span class="loading-spinner"></span> Mencari lokasi...</div>';
-      suggestBox.style.display = 'block';
-
-      debounceTimer = setTimeout(function () {
-        cariAlamat(q);
-      }, 500);
-    });
-
-    // Enter untuk cari langsung
-    input.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        clearTimeout(debounceTimer);
-        var q = this.value.trim();
-        if (q.length >= 3) cariAlamat(q);
-      }
-    });
-
-    document.addEventListener('click', function (e) {
-      if (!e.target.closest('.location-input-wrapper')) {
-        suggestBox.style.display = 'none';
-      }
-    });
-  }
-
-  // ============================================================
-  // CARI ALAMAT - VERSI DIPERBAIKI
-  // ============================================================
-  function cariAlamat(query) {
-    var suggestBox = document.getElementById('suggestions');
-    if (!suggestBox) return;
-
-    var konfig = getKonfig();
-    var region = konfig ? konfig.region : 'Indonesia';
-
-    // Strategi: coba dengan state filter dulu, kalau kosong fallback tanpa filter
-    var urlDenganState = 'https://nominatim.openstreetmap.org/search?' +
-      'format=json&q=' + encodeURIComponent(query) +
-      '&state=' + encodeURIComponent(region) +
-      '&countrycodes=id&limit=8&addressdetails=1&accept-language=id';
-
-    fetch(urlDenganState, {
-      headers: { 'User-Agent': 'StudioLavelle/1.0 (booking system)' }
-    })
-      .then(function (r) { return r.json(); })
-      .then(function (results) {
-        if (Array.isArray(results) && results.length > 0) {
-          tampilkanSuggestions(results);
-        } else {
-          // Fallback: cari tanpa filter state
-          return cariAlamatFallback(query);
-        }
-      })
-      .catch(function (err) {
-        console.error('Nominatim error:', err);
-        // Coba fallback juga kalau error
-        cariAlamatFallback(query);
-      });
-  }
-
-  function cariAlamatFallback(query) {
-    var suggestBox = document.getElementById('suggestions');
-    if (!suggestBox) return;
-
-    var konfig = getKonfig();
-    var kotaNama = kotaAktif || '';
-    var q = query + ' ' + kotaNama;
-
-    var url = 'https://nominatim.openstreetmap.org/search?' +
-      'format=json&q=' + encodeURIComponent(q) +
-      '&countrycodes=id&limit=8&addressdetails=1&accept-language=id';
+  function reverseGeocode(lat, lng) {
+    var url = 'https://nominatim.openstreetmap.org/reverse?' +
+      'format=json&lat=' + lat + '&lon=' + lng +
+      '&zoom=18&addressdetails=1&accept-language=id';
 
     fetch(url, {
       headers: { 'User-Agent': 'StudioLavelle/1.0 (booking system)' }
     })
       .then(function (r) { return r.json(); })
-      .then(function (results) {
-        if (!Array.isArray(results)) results = [];
-        tampilkanSuggestions(results);
+      .then(function (data) {
+        var nama = 'Lokasi dipilih';
+        var alamat = lat.toFixed(5) + ', ' + lng.toFixed(5);
+
+        if (data && data.display_name) {
+          var parts = data.display_name.split(',');
+          nama = parts[0].trim();
+          alamat = parts.slice(1, 4).map(function (s) {
+            return s.trim();
+          }).join(', ');
+          if (!alamat) alamat = data.display_name;
+        }
+
+        // Set lokasi terpilih
+        setLokasi(lat, lng, nama, alamat);
       })
       .catch(function (err) {
-        console.error('Nominatim fallback error:', err);
-        suggestBox.innerHTML = '<div class="no-result">❌ Gagal cari lokasi. Coba lagi.</div>';
+        console.error('Reverse geocode error:', err);
+        // Fallback: pakai koordinat sebagai nama
+        setLokasi(lat, lng, 'Lokasi dipilih', lat.toFixed(5) + ', ' + lng.toFixed(5));
       });
   }
 
   // ============================================================
-  // TAMPILKAN SUGGESTIONS - VERSI DIPERBAIKI
+  // SET LOKASI (dipanggil dari pilih suggestions atau klik peta)
   // ============================================================
-  function tampilkanSuggestions(results) {
-    var suggestBox = document.getElementById('suggestions');
-    if (!suggestBox) return;
-
-    // Pastikan array
-    if (!Array.isArray(results) || results.length === 0) {
-      suggestBox.innerHTML = '<div class="no-result">😔 Lokasi tidak ditemukan. Coba kata kunci lain.</div>';
-      suggestBox.style.display = 'block';
-      return;
-    }
-
-    // Filter hasil yang valid
-    var filtered = results.filter(function (r) {
-      return r && r.display_name && r.lat && r.lon;
-    });
-
-    // Ambil maksimal 6 hasil teratas
-    filtered = filtered.slice(0, 6);
-
-    if (filtered.length === 0) {
-      suggestBox.innerHTML = '<div class="no-result">😔 Lokasi tidak ditemukan. Coba kata kunci lain.</div>';
-      suggestBox.style.display = 'block';
-      return;
-    }
-
-    suggestBox.innerHTML = filtered.map(function (r) {
-      // Ambil nama utama (bagian sebelum koma pertama)
-      var parts = r.display_name.split(',');
-      var nama = parts[0].trim();
-
-      // Ambil 2-3 bagian berikutnya sebagai alamat
-      var alamatLengkap = parts.slice(1, 4).map(function (s) {
-        return s.trim();
-      }).join(', ');
-      if (!alamatLengkap) alamatLengkap = r.display_name;
-
-      var lat = r.lat;
-      var lon = r.lon;
-      var safeAlamat = (nama + ', ' + alamatLengkap)
-        .replace(/'/g, "\\'")
-        .replace(/"/g, '&quot;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-      var safeNama = nama
-        .replace(/'/g, "\\'")
-        .replace(/"/g, '&quot;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-
-      return '<div class="suggestion-item" onclick="pilihLokasiMap(' + lat + ',' + lon + ',\'' + safeNama + '\',\'' + safeAlamat + '\')">' +
-        '<span class="icon">📍</span>' +
-        '<div class="suggestion-text">' +
-        '<div class="suggestion-name">' + nama + '</div>' +
-        '<div class="suggestion-address">' + alamatLengkap + '</div>' +
-        '</div>' +
-        '</div>';
-    }).join('');
-
-    suggestBox.style.display = 'block';
-  }
-
-  // ============================================================
-  // PILIH LOKASI
-  // ============================================================
-  function pilihLokasiMap(lat, lng, namaSingkat, alamatLengkap) {
+  function setLokasi(lat, lng, namaSingkat, alamatLengkap) {
     if (!map || !kotaAktif) return;
     var konfig = getKonfig();
     if (!konfig) return;
@@ -358,6 +242,273 @@
     ], { padding: [50, 50], maxZoom: 15 });
 
     hitungJarakRute(lat, lng);
+  }
+
+  // ============================================================
+  // RESET LOKASI
+  // ============================================================
+  function resetLokasi() {
+    selectedLocation = null;
+    if (markerLokasi && map) { map.removeLayer(markerLokasi); markerLokasi = null; }
+    if (garisRute && map) { map.removeLayer(garisRute); garisRute = null; }
+
+    var infoBox = document.getElementById('distanceInfo');
+    if (infoBox) infoBox.style.display = 'none';
+
+    var input = document.getElementById('locationInput');
+    if (input) input.value = '';
+
+    var suggest = document.getElementById('suggestions');
+    if (suggest) { suggest.innerHTML = ''; suggest.style.display = 'none'; }
+
+    ['hiddenLat', 'hiddenLng', 'hiddenAlamat', 'hiddenJarak', 'hiddenBiaya'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+
+    var konfig = getKonfig();
+    if (map && konfig) {
+      map.setView([konfig.lat, konfig.lng], 13);
+    }
+
+    window.__mapsData = null;
+
+    if (typeof window.updateHargaPreview === 'function') {
+      window.updateHargaPreview();
+    }
+  }
+
+  // ============================================================
+  // AUTOCOMPLETE
+  // ============================================================
+  function initAutocomplete() {
+    var input = document.getElementById('locationInput');
+    var suggestBox = document.getElementById('suggestions');
+    if (!input || !suggestBox) return;
+
+    input.addEventListener('input', function () {
+      clearTimeout(debounceTimer);
+      var q = this.value.trim();
+
+      if (q.length < 3) {
+        suggestBox.innerHTML = '';
+        suggestBox.style.display = 'none';
+        return;
+      }
+
+      suggestBox.innerHTML = '<div class="suggestion-loading"><span class="loading-spinner"></span> Mencari lokasi...</div>';
+      suggestBox.style.display = 'block';
+
+      debounceTimer = setTimeout(function () {
+        cariAlamat(q);
+      }, 500);
+    });
+
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        clearTimeout(debounceTimer);
+        var q = this.value.trim();
+        if (q.length >= 3) cariAlamat(q);
+      }
+    });
+
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('.location-input-wrapper')) {
+        suggestBox.style.display = 'none';
+      }
+    });
+  }
+
+  // ============================================================
+  // CARI ALAMAT - MULTI STRATEGI
+  // ============================================================
+  function cariAlamat(query) {
+    var konfig = getKonfig();
+    var region = konfig ? konfig.region : 'Indonesia';
+
+    // Strategi 1: query + bounded viewbox (area kota)
+    // Pakai viewbox biar hasil dibatasi di sekitar kota
+    var delta = 0.5; // ~50 km radius
+    var viewbox = [
+      konfig.lng - delta,
+      konfig.lat - delta,
+      konfig.lng + delta,
+      konfig.lat + delta
+    ].join(',');
+
+    var url = 'https://nominatim.openstreetmap.org/search?' +
+      'format=json&q=' + encodeURIComponent(query) +
+      '&viewbox=' + viewbox +
+      '&bounded=1' +
+      '&countrycodes=id&limit=10&addressdetails=1&accept-language=id';
+
+    fetch(url, {
+      headers: { 'User-Agent': 'StudioLavelle/1.0 (booking system)' }
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (results) {
+        if (!Array.isArray(results)) results = [];
+
+        // Kalau hasil kosong, coba strategi 2
+        if (results.length === 0) {
+          return cariAlamatFallback(query);
+        }
+
+        // Sort by prioritas tipe
+        results = sortByPrioritas(results);
+
+        // Filter hasil: buang yang tipenya terlalu kecil (asrama, klinik, dll)
+        var hasilFilter = results.filter(function (r) {
+          var tipe = (r.type || '').toLowerCase();
+          var kelas = (r.class || '').toLowerCase();
+          var prioritas = getPrioritas(tipe, kelas);
+          return prioritas >= 50; // minimal prioritas 50 (building)
+        });
+
+        // Kalau semua difilter habis, pakai hasil asli
+        if (hasilFilter.length === 0) hasilFilter = results;
+
+        tampilkanSuggestions(hasilFilter);
+      })
+      .catch(function (err) {
+        console.error('Nominatim error:', err);
+        cariAlamatFallback(query);
+      });
+  }
+
+  function cariAlamatFallback(query) {
+    var suggestBox = document.getElementById('suggestions');
+    if (!suggestBox) return;
+
+    var konfig = getKonfig();
+    var region = konfig ? konfig.region : 'Indonesia';
+    var kotaNama = kotaAktif || '';
+
+    // Strategi 2: pakai state
+    var url1 = 'https://nominatim.openstreetmap.org/search?' +
+      'format=json&q=' + encodeURIComponent(query) +
+      '&state=' + encodeURIComponent(region) +
+      '&countrycodes=id&limit=10&addressdetails=1&accept-language=id';
+
+    fetch(url1, {
+      headers: { 'User-Agent': 'StudioLavelle/1.0 (booking system)' }
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (results) {
+        if (Array.isArray(results) && results.length > 0) {
+          results = sortByPrioritas(results);
+          tampilkanSuggestions(results);
+        } else {
+          // Strategi 3: query + nama kota
+          var url2 = 'https://nominatim.openstreetmap.org/search?' +
+            'format=json&q=' + encodeURIComponent(query + ' ' + kotaNama) +
+            '&countrycodes=id&limit=10&addressdetails=1&accept-language=id';
+
+          return fetch(url2, {
+            headers: { 'User-Agent': 'StudioLavelle/1.0 (booking system)' }
+          })
+            .then(function (r) { return r.json(); })
+            .then(function (results2) {
+              if (!Array.isArray(results2)) results2 = [];
+              results2 = sortByPrioritas(results2);
+              tampilkanSuggestions(results2);
+            });
+        }
+      })
+      .catch(function (err) {
+        console.error('Nominatim fallback error:', err);
+        suggestBox.innerHTML = '<div class="no-result">❌ Gagal cari lokasi. Klik langsung di peta untuk pilih lokasi.</div>';
+      });
+  }
+
+  function getPrioritas(tipe, kelas) {
+    // Cek tipe dulu
+    if (PRIORITAS_TIPE[tipe] !== undefined) return PRIORITAS_TIPE[tipe];
+    // Cek kelas
+    if (PRIORITAS_TIPE[kelas] !== undefined) return PRIORITAS_TIPE[kelas];
+    return 30; // default prioritas rendah
+  }
+
+  function sortByPrioritas(results) {
+    return results.slice().sort(function (a, b) {
+      var pa = getPrioritas((a.type || '').toLowerCase(), (a.class || '').toLowerCase());
+      var pb = getPrioritas((b.type || '').toLowerCase(), (b.class || '').toLowerCase());
+      return pb - pa;
+    });
+  }
+
+  // ============================================================
+  // TAMPILKAN SUGGESTIONS
+  // ============================================================
+  function tampilkanSuggestions(results) {
+    var suggestBox = document.getElementById('suggestions');
+    if (!suggestBox) return;
+
+    if (!Array.isArray(results) || results.length === 0) {
+      suggestBox.innerHTML = '<div class="no-result">' +
+        '😔 Lokasi tidak ditemukan.<br>' +
+        '<small style="display:block; margin-top:8px; color:var(--rose);">💡 Tips: Klik langsung di peta untuk pilih lokasi</small>' +
+        '</div>';
+      suggestBox.style.display = 'block';
+      return;
+    }
+
+    var filtered = results.filter(function (r) {
+      return r && r.display_name && r.lat && r.lon;
+    }).slice(0, 6);
+
+    if (filtered.length === 0) {
+      suggestBox.innerHTML = '<div class="no-result">😔 Lokasi tidak ditemukan. Klik langsung di peta untuk pilih lokasi.</div>';
+      suggestBox.style.display = 'block';
+      return;
+    }
+
+    suggestBox.innerHTML = filtered.map(function (r) {
+      var parts = r.display_name.split(',');
+      var nama = parts[0].trim();
+      var alamatLengkap = parts.slice(1, 4).map(function (s) {
+        return s.trim();
+      }).join(', ');
+      if (!alamatLengkap) alamatLengkap = r.display_name;
+
+      // Tampilkan tipe (opsional, buat debugging)
+      var tipeBadge = '';
+      if (r.type && r.type !== 'yes' && r.type !== 'unclassified') {
+        var tipeLabel = r.type.replace(/_/g, ' ');
+        tipeBadge = '<span style="font-size:10px; background:var(--gold); color:#fff; padding:1px 6px; border-radius:10px; margin-left:6px;">' + tipeLabel + '</span>';
+      }
+
+      var lat = r.lat;
+      var lon = r.lon;
+      var safeAlamat = (nama + ', ' + alamatLengkap)
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      var safeNama = nama
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      return '<div class="suggestion-item" onclick="pilihLokasiMap(' + lat + ',' + lon + ',\'' + safeNama + '\',\'' + safeAlamat + '\')">' +
+        '<span class="icon">📍</span>' +
+        '<div class="suggestion-text">' +
+        '<div class="suggestion-name">' + nama + tipeBadge + '</div>' +
+        '<div class="suggestion-address">' + alamatLengkap + '</div>' +
+        '</div>' +
+        '</div>';
+    }).join('');
+
+    suggestBox.style.display = 'block';
+  }
+
+  // ============================================================
+  // PILIH LOKASI DARI SUGGESTIONS
+  // ============================================================
+  function pilihLokasiMap(lat, lng, namaSingkat, alamatLengkap) {
+    setLokasi(lat, lng, namaSingkat, alamatLengkap);
   }
 
   // ============================================================
@@ -434,7 +585,6 @@
           kota: kotaAktif
         };
 
-        // Trigger update preview harga
         if (typeof window.updateHargaPreview === 'function') {
           window.updateHargaPreview();
         }
@@ -494,5 +644,5 @@
 
   window.pilihLokasiMap = pilihLokasiMap;
 
-  console.log('✅ MapsSystem siap (Jogja/Solo: 7KM, Surabaya: 10KM)');
+  console.log('✅ MapsSystem siap (Jogja: UGM, Solo: Gladag, Surabaya: Tugu Pahlawan)');
 })();
