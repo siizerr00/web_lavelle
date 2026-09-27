@@ -205,11 +205,18 @@
     <div class="error-box" id="loginError"></div>
   </div>
 
-  <!-- UBAH PIN CARD -->
+  <!-- UBAH PIN CARD (first login / settings) -->
   <div class="card" id="pinCard" style="display:none; max-width:480px;">
     <div class="logo">
       <h1 id="pinTitle">Ubah PIN</h1>
       <p id="pinSubtitle">Silakan masukkan PIN lama dan PIN baru</p>
+    </div>
+
+    <div class="info-fotografer" id="firstLoginInfo" style="display:none;">
+      <div class="label">🔐 Login Pertama</div>
+      <div class="value" style="font-size:13px; font-weight:400;">
+        Demi keamanan, kamu wajib mengubah PIN sebelum melanjutkan.
+      </div>
     </div>
 
     <div class="field">
@@ -329,6 +336,7 @@
   var supabase = null;
   var supabaseReady = false;
   var currentFotografer = null;
+  var isFirstLoginMode = false;
   var lastJadwalLavelle = [];
 
   try {
@@ -382,6 +390,21 @@
     loadJadwal();
   }
 
+  // ---------- OPEN UBAH PIN (first login) ----------
+  function showFirstLoginPinChange(pin) {
+    isFirstLoginMode = true;
+    document.getElementById('loginCard').style.display = 'none';
+    document.getElementById('pinCard').style.display = 'block';
+    document.getElementById('pinTitle').textContent = 'Selamat Datang!';
+    document.getElementById('pinSubtitle').textContent =
+      'Halo ' + currentFotografer.nama + ', buat PIN baru kamu.';
+    document.getElementById('firstLoginInfo').style.display = 'block';
+    document.getElementById('btnCancelPin').style.display = 'none';
+    document.getElementById('oldPin').value = pin || '';
+    document.getElementById('newPin').value = '';
+    document.getElementById('confirmPin').value = '';
+  }
+
   // ---------- LOGIN ----------
   function handleLogin() {
     var nama = document.getElementById('loginNama').value.trim();
@@ -433,6 +456,14 @@
 
         currentFotografer = res.data;
         localStorage.setItem('fotografer', JSON.stringify(res.data));
+
+        // Login pertama → wajib ubah PIN
+        if (res.data.must_change_password === true) {
+          showFirstLoginPinChange(pin);
+          return;
+        }
+
+        // Login normal
         showJadwalPanel(res.data);
       })
       .catch(function (err) {
@@ -455,17 +486,12 @@
     errBox.style.display = 'none';
     okBox.style.display = 'none';
 
-    if (!oldPin || !newPin || !confirmPin) {
-      errBox.textContent = 'Semua field wajib diisi.';
+    if (!newPin || !confirmPin) {
+      errBox.textContent = 'PIN baru wajib diisi.';
       errBox.style.display = 'block';
       return;
     }
-    if (oldPin !== currentFotografer.pin) {
-      errBox.textContent = 'PIN lama salah.';
-      errBox.style.display = 'block';
-      return;
-    }
-    if (newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
+    if (!/^\d{4}$/.test(newPin)) {
       errBox.textContent = 'PIN baru harus 4 digit angka.';
       errBox.style.display = 'block';
       return;
@@ -475,7 +501,12 @@
       errBox.style.display = 'block';
       return;
     }
-    if (newPin === oldPin) {
+    if (!isFirstLoginMode && oldPin !== currentFotografer.pin) {
+      errBox.textContent = 'PIN lama salah.';
+      errBox.style.display = 'block';
+      return;
+    }
+    if (newPin === currentFotografer.pin) {
       errBox.textContent = 'PIN baru tidak boleh sama dengan PIN lama.';
       errBox.style.display = 'block';
       return;
@@ -486,7 +517,10 @@
 
     supabase
       .from('fotografer')
-      .update({ pin: newPin })
+      .update({
+        pin: newPin,
+        must_change_password: false
+      })
       .eq('fotografer_id', currentFotografer.fotografer_id)
       .then(function (res) {
         btn.classList.remove('btn-loading');
@@ -499,6 +533,7 @@
         }
 
         currentFotografer.pin = newPin;
+        currentFotografer.must_change_password = false;
         localStorage.setItem('fotografer', JSON.stringify(currentFotografer));
 
         okBox.textContent = '✅ PIN berhasil diubah!';
@@ -509,18 +544,25 @@
         document.getElementById('confirmPin').value = '';
 
         setTimeout(function () {
-          document.getElementById('pinCard').style.display = 'none';
-          document.getElementById('jadwalCard').style.display = 'block';
+          if (isFirstLoginMode) {
+            isFirstLoginMode = false;
+            showJadwalPanel(currentFotografer);
+          } else {
+            document.getElementById('pinCard').style.display = 'none';
+            document.getElementById('jadwalCard').style.display = 'block';
+          }
         }, 1000);
       });
   }
 
-  // ---------- OPEN PIN SETTINGS ----------
+  // ---------- OPEN PIN SETTINGS (dari panel) ----------
   function openPinSettings() {
     if (!currentFotografer) return;
+    isFirstLoginMode = false;
     document.getElementById('pinTitle').textContent = 'Ubah PIN';
     document.getElementById('pinSubtitle').textContent =
       'Masukkan PIN lama dan PIN baru (4 digit).';
+    document.getElementById('firstLoginInfo').style.display = 'none';
     document.getElementById('btnCancelPin').style.display = 'block';
     document.getElementById('oldPin').value = '';
     document.getElementById('newPin').value = '';
@@ -542,6 +584,7 @@
     if (!confirm('Yakin mau logout?')) return;
     localStorage.removeItem('fotografer');
     currentFotografer = null;
+    isFirstLoginMode = false;
     location.reload();
   }
 
@@ -901,7 +944,13 @@
             return;
           }
           currentFotografer = res.data;
-          showJadwalPanel(res.data);
+
+          // Kalau ternyata masih wajib ganti PIN, tampilkan form
+          if (res.data.must_change_password === true) {
+            showFirstLoginPinChange(res.data.pin || '');
+          } else {
+            showJadwalPanel(res.data);
+          }
         })
         .catch(function (err) {
           console.error('Restore session error:', err);
