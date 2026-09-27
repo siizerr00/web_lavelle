@@ -189,6 +189,43 @@
     <div class="error-box" id="loginError"></div>
   </div>
 
+  <!-- UBAH PASSWORD CARD (first login / settings) -->
+  <div class="card" id="passwordCard" style="display:none; max-width:480px;">
+    <div class="logo">
+      <h1 id="passwordTitle">Ubah Password</h1>
+      <p id="passwordSubtitle">Silakan buat password baru</p>
+    </div>
+
+    <div class="info-fotografer" id="firstLoginInfo" style="display:none;">
+      <div class="label">🔐 Login Pertama</div>
+      <div class="value" style="font-size:13px; font-weight:400;">
+        Demi keamanan, kamu wajib mengubah password sebelum melanjutkan.
+      </div>
+    </div>
+
+    <div class="field">
+      <label>🔒 Password Lama</label>
+      <input type="password" id="oldPassword" placeholder="Password lama" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>🔑 Password Baru</label>
+      <input type="password" id="newPassword" placeholder="Minimal 6 karakter" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>🔑 Konfirmasi Password Baru</label>
+      <input type="password" id="confirmPassword" placeholder="Ulangi password baru" autocomplete="off">
+    </div>
+
+    <button class="btn-primary" id="btnSavePassword" onclick="handleSavePassword()">
+      💾 Simpan Password
+    </button>
+    <button class="btn-secondary" id="btnCancelPassword" onclick="handleCancelPassword()" style="display:none;">
+      ← Batal
+    </button>
+    <div class="error-box" id="passwordError"></div>
+    <div class="success-box" id="passwordSuccess"></div>
+  </div>
+
   <!-- JADWAL CARD -->
   <div class="card" id="jadwalCard" style="display:none; max-width:700px;">
     <div class="logo">
@@ -254,6 +291,9 @@
 
     <hr class="divider">
 
+    <button class="btn-secondary" onclick="openPasswordSettings()">
+      ⚙️ Pengaturan — Ubah Password
+    </button>
     <button class="btn-secondary" onclick="handleLogout()">🚪 Logout</button>
   </div>
 
@@ -267,6 +307,10 @@
 
   var supabase = null;
   var supabaseReady = false;
+  var currentFotografer = null;
+  var isFirstLoginMode = false;
+  var lastJadwalLavelle = [];
+
   try {
     supabase = window.supabase.createClient(
       window.LAVELLE_CONFIG.SUPABASE_URL,
@@ -277,9 +321,6 @@
   } catch (err) {
     console.error('❌ Supabase gagal:', err);
   }
-
-  var fotografer = null;
-  var lastJadwalLavelle = [];
 
   // ---------- TOAST ----------
   function showToast(message, duration) {
@@ -293,80 +334,203 @@
     setTimeout(function () { toast.remove(); }, duration);
   }
 
-  // ---------- LOGIN ----------
-  function handleLogin() {
-    var nama = document.getElementById('loginNama').value.trim();
-    var pin = document.getElementById('loginPin').value.trim();
-    var errorBox = document.getElementById('loginError');
-
-    if (!nama || !pin) {
-      errorBox.innerText = '⚠️ Nama dan PIN wajib diisi.';
-      errorBox.style.display = 'block';
-      return;
-    }
-
-    if (!supabaseReady) {
-      errorBox.innerText = '❌ Sistem login belum siap. Refresh halaman.';
-      errorBox.style.display = 'block';
-      return;
-    }
-
-    var btn = document.getElementById('btnLogin');
-    btn.disabled = true;
-    btn.classList.add('btn-loading');
-    errorBox.style.display = 'none';
-
-    supabase.rpc('fotografer_login', { p_nama: nama, p_pin: pin })
-      .then(function (res) {
-        btn.disabled = false;
-        btn.classList.remove('btn-loading');
-
-        if (res.error) {
-          errorBox.innerText = '❌ ' + res.error.message;
-          errorBox.style.display = 'block';
-          return;
-        }
-
-        var d = res.data;
-        if (d.error) {
-          errorBox.innerText = '❌ ' + d.error;
-          errorBox.style.display = 'block';
-          return;
-        }
-
-        fotografer = d;
-        showToast('✅ Selamat datang, ' + fotografer.nama + '!');
-        showJadwalCard();
-      })
-      .catch(function (err) {
-        btn.disabled = false;
-        btn.classList.remove('btn-loading');
-        errorBox.innerText = '❌ Gagal login. Cek koneksi.';
-        errorBox.style.display = 'block';
-        console.error(err);
-      });
-  }
-
-  function showJadwalCard() {
+  // ---------- SHOW PANEL ----------
+  function showJadwalPanel(data) {
     document.getElementById('loginCard').style.display = 'none';
+    document.getElementById('passwordCard').style.display = 'none';
     document.getElementById('jadwalCard').style.display = 'block';
-    document.getElementById('namaFotografer').innerText = fotografer.nama;
-    document.getElementById('kotaFotografer').innerText = fotografer.kota;
 
+    document.getElementById('namaFotografer').textContent = data.nama || '-';
+    document.getElementById('kotaFotografer').textContent = data.kota || '-';
+
+    // Set tanggal hari ini
     var today = new Date().toISOString().split('T')[0];
     document.getElementById('inputTanggal').value = today;
 
     loadJadwal();
   }
 
-  function handleLogout() {
-    fotografer = null;
-    lastJadwalLavelle = [];
+  // ---------- LOGIN ----------
+  function handleLogin() {
+    var nama = document.getElementById('loginNama').value.trim();
+    var pin  = document.getElementById('loginPin').value.trim();
+    var errBox = document.getElementById('loginError');
+    var btn = document.getElementById('btnLogin');
+
+    errBox.style.display = 'none';
+
+    if (!nama || !pin) {
+      errBox.textContent = 'Nama dan PIN wajib diisi.';
+      errBox.style.display = 'block';
+      return;
+    }
+    if (!supabaseReady) {
+      errBox.textContent = 'Sistem belum siap. Refresh halaman.';
+      errBox.style.display = 'block';
+      return;
+    }
+
+    btn.classList.add('btn-loading');
+    btn.disabled = true;
+
+    supabase
+      .from('fotografer')
+      .select('*')
+      .eq('nama', nama)
+      .eq('pin', pin)
+      .maybeSingle()
+      .then(function (res) {
+        btn.classList.remove('btn-loading');
+        btn.disabled = false;
+
+        if (res.error) {
+          errBox.textContent = 'Error: ' + res.error.message;
+          errBox.style.display = 'block';
+          return;
+        }
+        if (!res.data) {
+          errBox.textContent = 'Nama atau PIN salah.';
+          errBox.style.display = 'block';
+          return;
+        }
+
+        currentFotografer = res.data;
+        localStorage.setItem('fotografer', JSON.stringify(res.data));
+
+        // Cek apakah wajib ganti password
+        if (res.data.must_change_password === true) {
+          isFirstLoginMode = true;
+          document.getElementById('loginCard').style.display = 'none';
+          document.getElementById('passwordCard').style.display = 'block';
+          document.getElementById('passwordTitle').textContent = 'Selamat Datang!';
+          document.getElementById('passwordSubtitle').textContent =
+            'Halo ' + res.data.nama + ', buat password baru kamu.';
+          document.getElementById('firstLoginInfo').style.display = 'block';
+          document.getElementById('btnCancelPassword').style.display = 'none';
+          document.getElementById('oldPassword').value = pin; // prefill PIN lama
+          return;
+        }
+
+        // Login normal
+        showJadwalPanel(res.data);
+      })
+      .catch(function (err) {
+        btn.classList.remove('btn-loading');
+        btn.disabled = false;
+        errBox.textContent = 'Gagal terhubung: ' + err.message;
+        errBox.style.display = 'block';
+      });
+  }
+
+  // ---------- SIMPAN PASSWORD ----------
+  function handleSavePassword() {
+    var oldPwd = document.getElementById('oldPassword').value.trim();
+    var newPwd = document.getElementById('newPassword').value.trim();
+    var confirmPwd = document.getElementById('confirmPassword').value.trim();
+    var errBox = document.getElementById('passwordError');
+    var okBox = document.getElementById('passwordSuccess');
+    var btn = document.getElementById('btnSavePassword');
+
+    errBox.style.display = 'none';
+    okBox.style.display = 'none';
+
+    if (!newPwd || !confirmPwd) {
+      errBox.textContent = 'Password baru wajib diisi.';
+      errBox.style.display = 'block';
+      return;
+    }
+    if (newPwd.length < 6) {
+      errBox.textContent = 'Password minimal 6 karakter.';
+      errBox.style.display = 'block';
+      return;
+    }
+    if (newPwd !== confirmPwd) {
+      errBox.textContent = 'Konfirmasi password tidak cocok.';
+      errBox.style.display = 'block';
+      return;
+    }
+    if (!isFirstLoginMode && oldPwd !== currentFotografer.pin) {
+      errBox.textContent = 'Password lama salah.';
+      errBox.style.display = 'block';
+      return;
+    }
+
+    btn.classList.add('btn-loading');
+    btn.disabled = true;
+
+    supabase
+      .from('fotografer')
+      .update({
+        pin: newPwd,
+        must_change_password: false
+      })
+      .eq('id', currentFotografer.id)
+      .then(function (res) {
+        btn.classList.remove('btn-loading');
+        btn.disabled = false;
+
+        if (res.error) {
+          errBox.textContent = 'Gagal simpan: ' + res.error.message;
+          errBox.style.display = 'block';
+          return;
+        }
+
+        // Update state lokal
+        currentFotografer.pin = newPwd;
+        currentFotografer.must_change_password = false;
+        localStorage.setItem('fotografer', JSON.stringify(currentFotografer));
+
+        okBox.textContent = '✅ Password berhasil diubah!';
+        okBox.style.display = 'block';
+
+        // Reset form
+        document.getElementById('oldPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+
+        setTimeout(function () {
+          if (isFirstLoginMode) {
+            isFirstLoginMode = false;
+            showJadwalPanel(currentFotografer);
+          } else {
+            document.getElementById('passwordCard').style.display = 'none';
+            document.getElementById('jadwalCard').style.display = 'block';
+          }
+        }, 1000);
+      });
+  }
+
+  // ---------- OPEN PASSWORD SETTINGS ----------
+  function openPasswordSettings() {
+    if (!currentFotografer) return;
+    isFirstLoginMode = false;
+    document.getElementById('passwordTitle').textContent = 'Ubah Password';
+    document.getElementById('passwordSubtitle').textContent =
+      'Masukkan password lama dan password baru.';
+    document.getElementById('firstLoginInfo').style.display = 'none';
+    document.getElementById('btnCancelPassword').style.display = 'block';
+    document.getElementById('oldPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+    document.getElementById('passwordError').style.display = 'none';
+    document.getElementById('passwordSuccess').style.display = 'none';
+
     document.getElementById('jadwalCard').style.display = 'none';
-    document.getElementById('loginCard').style.display = 'block';
-    document.getElementById('loginNama').value = '';
-    document.getElementById('loginPin').value = '';
-    showToast('👋 Logout berhasil');
+    document.getElementById('passwordCard').style.display = 'block';
+  }
+
+  function handleCancelPassword() {
+    document.getElementById('passwordCard').style.display = 'none';
+    document.getElementById('jadwalCard').style.display = 'block';
+  }
+
+  // ---------- LOGOUT ----------
+  function handleLogout() {
+    if (!confirm('Yakin mau logout?')) return;
+    localStorage.removeItem('fotografer');
+    currentFotografer = null;
+    isFirstLoginMode = false;
+    location.reload();
   }
 
   // ---------- SIMPAN JADWAL VENDOR LAIN ----------
@@ -390,7 +554,7 @@
       errorBox.style.display = 'block';
       return;
     }
-    if (!supabaseReady) {
+    if (!supabaseReady || !currentFotografer) {
       errorBox.innerText = '❌ Sistem belum siap. Refresh halaman.';
       errorBox.style.display = 'block';
       return;
@@ -401,8 +565,8 @@
     btn.classList.add('btn-loading');
 
     supabase.rpc('fotografer_simpan_jadwal', {
-      p_fotografer_id: fotografer.fotografer_id,
-      p_kota: fotografer.kota,
+      p_fotografer_id: currentFotografer.fotografer_id,
+      p_kota: currentFotografer.kota,
       p_tanggal: tanggal,
       p_jam_mulai: jamMulai,
       p_jam_selesai: jamSelesai,
@@ -419,7 +583,7 @@
         }
 
         var d = res.data;
-        if (d.error) {
+        if (d && d.error) {
           errorBox.innerText = '❌ ' + d.error;
           errorBox.style.display = 'block';
           return;
@@ -476,7 +640,6 @@
 
   // ---------- GOOGLE CALENDAR LINK ----------
   function buatLinkKalender(row, sumber) {
-    // Judul event
     var judul;
     if (sumber === 'lavelle') {
       judul = 'Job Lavelle - ' + (row.nama_client || 'Client');
@@ -484,17 +647,13 @@
       judul = 'Job Vendor Lain - Lavelle';
     }
 
-    // Format tanggal: YYYYMMDD
     var tanggalClean = String(row.tanggal || '').replace(/-/g, '');
-
-    // Format jam: HHMMSS (ambil 5 karakter pertama untuk handle "HH:MM:SS")
     var jamMulaiClean = String(row.jam_mulai || '00:00').substring(0, 5).replace(':', '') + '00';
     var jamSelesaiClean = String(row.jam_selesai || '00:00').substring(0, 5).replace(':', '') + '00';
 
     var startDT = tanggalClean + 'T' + jamMulaiClean;
     var endDT = tanggalClean + 'T' + jamSelesaiClean;
 
-    // Detail
     var details;
     if (sumber === 'lavelle') {
       details = 'Nama Client: ' + (row.nama_client || '-') + '\n' +
@@ -581,7 +740,6 @@
       var waCell = linkWa ? '<a class="wa-link" href="' + linkWa + '" target="_blank">💬 Chat</a>' : '-';
       var gdriveCell = row.link_gdrive ? '<a href="' + row.link_gdrive + '" target="_blank">📁 Buka</a>' : '-';
 
-      // Tombol kalender
       var linkKalender = buatLinkKalender(row, 'lavelle');
       var kalenderCell = '<a class="calendar-btn" href="' + linkKalender + '" target="_blank">📅 Tambah</a>';
 
@@ -636,7 +794,7 @@
     containerLavelle.innerHTML = '<div class="no-data">⏳ Memuat...</div>';
     containerVendor.innerHTML = '<div class="no-data">⏳ Memuat...</div>';
 
-    if (!fotografer) return;
+    if (!currentFotografer) return;
 
     if (!supabaseReady) {
       var pesan = '<div class="no-data">❌ Sistem belum siap. Refresh halaman.</div>';
@@ -645,7 +803,7 @@
       return;
     }
 
-    supabase.rpc('fotografer_get_jadwal', { p_fotografer_id: fotografer.fotografer_id })
+    supabase.rpc('fotografer_get_jadwal', { p_fotografer_id: currentFotografer.fotografer_id })
       .then(function (res) {
         if (res.error) {
           var p = '<div class="no-data">❌ ' + res.error.message + '</div>';
@@ -676,6 +834,9 @@
   // ---------- EXPOSE KE WINDOW ----------
   window.handleLogin = handleLogin;
   window.handleLogout = handleLogout;
+  window.handleSavePassword = handleSavePassword;
+  window.openPasswordSettings = openPasswordSettings;
+  window.handleCancelPassword = handleCancelPassword;
   window.simpanJadwal = simpanJadwal;
   window.loadJadwal = loadJadwal;
   window.gantiTabJadwal = gantiTabJadwal;
@@ -686,7 +847,12 @@
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Enter') {
       var lc = document.getElementById('loginCard');
-      if (lc && lc.style.display !== 'none') handleLogin();
+      var pc = document.getElementById('passwordCard');
+      if (lc && lc.style.display !== 'none') {
+        handleLogin();
+      } else if (pc && pc.style.display !== 'none') {
+        handleSavePassword();
+      }
     }
   });
 
@@ -697,6 +863,52 @@
       this.value = this.value.replace(/\D/g, '');
     });
   }
+
+  // ---------- RESTORE SESSION ----------
+  (function restoreSession() {
+    if (!supabaseReady) return;
+    var saved = localStorage.getItem('fotografer');
+    if (!saved) return;
+    try {
+      var data = JSON.parse(saved);
+      if (!data || !data.id) {
+        localStorage.removeItem('fotografer');
+        return;
+      }
+
+      supabase
+        .from('fotografer')
+        .select('*')
+        .eq('id', data.id)
+        .maybeSingle()
+        .then(function (res) {
+          if (!res.data) {
+            localStorage.removeItem('fotografer');
+            return;
+          }
+          currentFotografer = res.data;
+
+          if (res.data.must_change_password === true) {
+            isFirstLoginMode = true;
+            document.getElementById('loginCard').style.display = 'none';
+            document.getElementById('passwordCard').style.display = 'block';
+            document.getElementById('passwordTitle').textContent = 'Selamat Datang!';
+            document.getElementById('passwordSubtitle').textContent =
+              'Halo ' + res.data.nama + ', buat password baru kamu.';
+            document.getElementById('firstLoginInfo').style.display = 'block';
+            document.getElementById('btnCancelPassword').style.display = 'none';
+            document.getElementById('oldPassword').value = res.data.pin || '';
+          } else {
+            showJadwalPanel(res.data);
+          }
+        })
+        .catch(function (err) {
+          console.error('Restore session error:', err);
+        });
+    } catch (e) {
+      localStorage.removeItem('fotografer');
+    }
+  })();
 
   console.log('✅ Fotografer panel siap.');
 })();
