@@ -343,7 +343,6 @@
     document.getElementById('namaFotografer').textContent = data.nama || '-';
     document.getElementById('kotaFotografer').textContent = data.kota || '-';
 
-    // Set tanggal hari ini
     var today = new Date().toISOString().split('T')[0];
     document.getElementById('inputTanggal').value = today;
 
@@ -407,11 +406,10 @@
             'Halo ' + res.data.nama + ', buat password baru kamu.';
           document.getElementById('firstLoginInfo').style.display = 'block';
           document.getElementById('btnCancelPassword').style.display = 'none';
-          document.getElementById('oldPassword').value = pin; // prefill PIN lama
+          document.getElementById('oldPassword').value = pin;
           return;
         }
 
-        // Login normal
         showJadwalPanel(res.data);
       })
       .catch(function (err) {
@@ -464,7 +462,7 @@
         pin: newPwd,
         must_change_password: false
       })
-      .eq('id', currentFotografer.id)
+      .eq('fotografer_id', currentFotografer.fotografer_id)
       .then(function (res) {
         btn.classList.remove('btn-loading');
         btn.disabled = false;
@@ -475,7 +473,6 @@
           return;
         }
 
-        // Update state lokal
         currentFotografer.pin = newPwd;
         currentFotografer.must_change_password = false;
         localStorage.setItem('fotografer', JSON.stringify(currentFotografer));
@@ -483,7 +480,6 @@
         okBox.textContent = '✅ Password berhasil diubah!';
         okBox.style.display = 'block';
 
-        // Reset form
         document.getElementById('oldPassword').value = '';
         document.getElementById('newPassword').value = '';
         document.getElementById('confirmPassword').value = '';
@@ -871,7 +867,7 @@
     if (!saved) return;
     try {
       var data = JSON.parse(saved);
-      if (!data || !data.id) {
+      if (!data || !data.fotografer_id) {
         localStorage.removeItem('fotografer');
         return;
       }
@@ -879,7 +875,7 @@
       supabase
         .from('fotografer')
         .select('*')
-        .eq('id', data.id)
+        .eq('fotografer_id', data.fotografer_id)
         .maybeSingle()
         .then(function (res) {
           if (!res.data) {
