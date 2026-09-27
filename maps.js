@@ -15,28 +15,31 @@
   // KONFIGURASI TITIK 0 & RADIUS PER KOTA
   // ============================================================
   var KONFIG_KOTA = {
-    Jogja: {
-      lat: -7.782912,
-      lng: 110.367085,
-      nama: 'Tugu Yogyakarta',
-      batas_gratis_meter: 7000,
-      biaya_transport: 30000
-    },
-    Solo: {
-      lat: -7.568475,
-      lng: 110.823998,
-      nama: 'Bundaran Gladag Solo',
-      batas_gratis_meter: 7000,
-      biaya_transport: 30000
-    },
-    Surabaya: {
-      lat: -7.245930,
-      lng: 112.737853,
-      nama: 'Tugu Pahlawan Surabaya',
-      batas_gratis_meter: 10000,
-      biaya_transport: 30000
-    }
-  };
+  Jogja: {
+    lat: -7.771278,
+    lng: 110.377722,
+    nama: 'Universitas Gadjah Mada',
+    batas_gratis_meter: 7000,
+    biaya_transport: 30000,
+    region: 'Yogyakarta'
+  },
+  Solo: {
+    lat: -7.568475,
+    lng: 110.823998,
+    nama: 'Bundaran Gladag Solo',
+    batas_gratis_meter: 7000,
+    biaya_transport: 30000,
+    region: 'Jawa Tengah'
+  },
+  Surabaya: {
+    lat: -7.245930,
+    lng: 112.737853,
+    nama: 'Tugu Pahlawan Surabaya',
+    batas_gratis_meter: 10000,
+    biaya_transport: 30000,
+    region: 'Jawa Timur'
+  }
+};
 
   // ============================================================
   // STATE INTERNAL
@@ -143,6 +146,14 @@
     if (map && konfig) {
       map.setView([konfig.lat, konfig.lng], 13);
     }
+
+    // Reset data global
+    window.__mapsData = null;
+
+    // Trigger update preview harga
+    if (typeof window.updateHargaPreview === 'function') {
+      window.updateHargaPreview();
+    }
   }
 
   // ============================================================
@@ -171,6 +182,16 @@
       }, 500);
     });
 
+    // Enter untuk cari langsung
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        clearTimeout(debounceTimer);
+        var q = this.value.trim();
+        if (q.length >= 3) cariAlamat(q);
+      }
+    });
+
     document.addEventListener('click', function (e) {
       if (!e.target.closest('.location-input-wrapper')) {
         suggestBox.style.display = 'none';
@@ -178,45 +199,118 @@
     });
   }
 
+  // ============================================================
+  // CARI ALAMAT - VERSI DIPERBAIKI
+  // ============================================================
   function cariAlamat(query) {
     var suggestBox = document.getElementById('suggestions');
     if (!suggestBox) return;
 
-    var kotaQuery = kotaAktif ? ', ' + kotaAktif + ', Indonesia' : ', Indonesia';
+    var konfig = getKonfig();
+    var region = konfig ? konfig.region : 'Indonesia';
+
+    // Strategi: coba dengan state filter dulu, kalau kosong fallback tanpa filter
+    var urlDenganState = 'https://nominatim.openstreetmap.org/search?' +
+      'format=json&q=' + encodeURIComponent(query) +
+      '&state=' + encodeURIComponent(region) +
+      '&countrycodes=id&limit=8&addressdetails=1&accept-language=id';
+
+    fetch(urlDenganState, {
+      headers: { 'User-Agent': 'StudioLavelle/1.0 (booking system)' }
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (results) {
+        if (Array.isArray(results) && results.length > 0) {
+          tampilkanSuggestions(results);
+        } else {
+          // Fallback: cari tanpa filter state
+          return cariAlamatFallback(query);
+        }
+      })
+      .catch(function (err) {
+        console.error('Nominatim error:', err);
+        // Coba fallback juga kalau error
+        cariAlamatFallback(query);
+      });
+  }
+
+  function cariAlamatFallback(query) {
+    var suggestBox = document.getElementById('suggestions');
+    if (!suggestBox) return;
+
+    var konfig = getKonfig();
+    var kotaNama = kotaAktif || '';
+    var q = query + ' ' + kotaNama;
+
     var url = 'https://nominatim.openstreetmap.org/search?' +
-      'format=json&q=' + encodeURIComponent(query + kotaQuery) +
-      '&countrycodes=id&limit=5&addressdetails=1&accept-language=id';
+      'format=json&q=' + encodeURIComponent(q) +
+      '&countrycodes=id&limit=8&addressdetails=1&accept-language=id';
 
     fetch(url, {
       headers: { 'User-Agent': 'StudioLavelle/1.0 (booking system)' }
     })
       .then(function (r) { return r.json(); })
       .then(function (results) {
+        if (!Array.isArray(results)) results = [];
         tampilkanSuggestions(results);
       })
       .catch(function (err) {
-        console.error('Nominatim error:', err);
+        console.error('Nominatim fallback error:', err);
         suggestBox.innerHTML = '<div class="no-result">❌ Gagal cari lokasi. Coba lagi.</div>';
       });
   }
 
+  // ============================================================
+  // TAMPILKAN SUGGESTIONS - VERSI DIPERBAIKI
+  // ============================================================
   function tampilkanSuggestions(results) {
     var suggestBox = document.getElementById('suggestions');
     if (!suggestBox) return;
 
-    if (!results || !results.length) {
+    // Pastikan array
+    if (!Array.isArray(results) || results.length === 0) {
       suggestBox.innerHTML = '<div class="no-result">😔 Lokasi tidak ditemukan. Coba kata kunci lain.</div>';
       suggestBox.style.display = 'block';
       return;
     }
 
-    suggestBox.innerHTML = results.map(function (r) {
-      var nama = r.display_name.split(',')[0];
-      var alamatLengkap = r.display_name;
+    // Filter hasil yang valid
+    var filtered = results.filter(function (r) {
+      return r && r.display_name && r.lat && r.lon;
+    });
+
+    // Ambil maksimal 6 hasil teratas
+    filtered = filtered.slice(0, 6);
+
+    if (filtered.length === 0) {
+      suggestBox.innerHTML = '<div class="no-result">😔 Lokasi tidak ditemukan. Coba kata kunci lain.</div>';
+      suggestBox.style.display = 'block';
+      return;
+    }
+
+    suggestBox.innerHTML = filtered.map(function (r) {
+      // Ambil nama utama (bagian sebelum koma pertama)
+      var parts = r.display_name.split(',');
+      var nama = parts[0].trim();
+
+      // Ambil 2-3 bagian berikutnya sebagai alamat
+      var alamatLengkap = parts.slice(1, 4).map(function (s) {
+        return s.trim();
+      }).join(', ');
+      if (!alamatLengkap) alamatLengkap = r.display_name;
+
       var lat = r.lat;
       var lon = r.lon;
-      var safeAlamat = alamatLengkap.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-      var safeNama = nama.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      var safeAlamat = (nama + ', ' + alamatLengkap)
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      var safeNama = nama
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
 
       return '<div class="suggestion-item" onclick="pilihLokasiMap(' + lat + ',' + lon + ',\'' + safeNama + '\',\'' + safeAlamat + '\')">' +
         '<span class="icon">📍</span>' +
@@ -340,11 +434,10 @@
           kota: kotaAktif
         };
 
-        // ⬇️ TRIGGER UPDATE PREVIEW HARGA ⬇️
+        // Trigger update preview harga
         if (typeof window.updateHargaPreview === 'function') {
           window.updateHargaPreview();
         }
-        // ⬆️ TRIGGER UPDATE PREVIEW HARGA ⬆️
       })
       .catch(function (err) {
         console.error('OSRM error:', err);
