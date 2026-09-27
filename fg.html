@@ -47,6 +47,23 @@
     outline:none; border-color:var(--rose);
     box-shadow:0 0 0 3px rgba(183,110,121,.15);
   }
+  .field small{
+    display:block; font-size:11px; color:var(--mute);
+    margin-top:4px;
+  }
+
+  /* Indikator kekuatan password */
+  .strength-bar{
+    height:4px; background:var(--line); border-radius:2px;
+    margin-top:6px; overflow:hidden;
+  }
+  .strength-bar > div{
+    height:100%; width:0; background:#B3413E;
+    transition:width .3s, background .3s;
+  }
+  .strength-text{
+    font-size:11px; margin-top:4px; color:var(--mute);
+  }
 
   .btn-primary{
     width:100%; padding:14px; background:var(--ink); color:#fff;
@@ -154,7 +171,6 @@
   }
   .copy-btn:hover{ background:var(--rose); color:#fff; border-color:var(--rose); }
 
-  /* 🔥 TOMBOL KALENDER */
   .calendar-btn{
     display:inline-block; padding:3px 10px; border-radius:6px;
     background:#DBEAFE; color:#1E40AF; font-size:11px;
@@ -163,6 +179,16 @@
   .calendar-btn:hover{ background:#1E40AF; color:#fff; }
 
   .no-data{ text-align:center; color:var(--mute); padding:16px; font-size:13px; }
+
+  /* Tombol mata untuk show/hide password */
+  .input-wrap{ position:relative; }
+  .input-wrap input{ padding-right:44px; }
+  .toggle-eye{
+    position:absolute; right:10px; top:50%; transform:translateY(-50%);
+    background:none; border:none; cursor:pointer; font-size:16px;
+    color:var(--mute); padding:4px 6px;
+  }
+  .toggle-eye:hover{ color:var(--ink); }
 </style>
 </head>
 <body>
@@ -182,14 +208,18 @@
     </div>
     <div class="field">
       <label>🔑 PIN</label>
-      <input type="password" id="loginPin" placeholder="Masukkan PIN" maxlength="4" inputmode="numeric" autocomplete="off">
+      <div class="input-wrap">
+        <input type="password" id="loginPin" placeholder="Masukkan PIN" maxlength="4" inputmode="numeric" autocomplete="off">
+        <button type="button" class="toggle-eye" onclick="toggleVisibility('loginPin', this)">👁️</button>
+      </div>
+      <small>PIN awal 4 digit dari admin.</small>
     </div>
 
     <button class="btn-primary" id="btnLogin" onclick="handleLogin()">Login</button>
     <div class="error-box" id="loginError"></div>
   </div>
 
-  <!-- UBAH PASSWORD CARD (first login / settings) -->
+  <!-- UBAH PASSWORD CARD -->
   <div class="card" id="passwordCard" style="display:none; max-width:480px;">
     <div class="logo">
       <h1 id="passwordTitle">Ubah Password</h1>
@@ -205,15 +235,28 @@
 
     <div class="field">
       <label>🔒 Password Lama</label>
-      <input type="password" id="oldPassword" placeholder="Password lama" autocomplete="off">
+      <div class="input-wrap">
+        <input type="password" id="oldPassword" placeholder="Password / PIN lama" autocomplete="off">
+        <button type="button" class="toggle-eye" onclick="toggleVisibility('oldPassword', this)">👁️</button>
+      </div>
     </div>
+
     <div class="field">
       <label>🔑 Password Baru</label>
-      <input type="password" id="newPassword" placeholder="Minimal 6 karakter" autocomplete="off">
+      <div class="input-wrap">
+        <input type="password" id="newPassword" placeholder="Minimal 6 karakter" autocomplete="off" oninput="updateStrength()">
+        <button type="button" class="toggle-eye" onclick="toggleVisibility('newPassword', this)">👁️</button>
+      </div>
+      <div class="strength-bar"><div id="strengthFill"></div></div>
+      <div class="strength-text" id="strengthText">Minimal 6 karakter, huruf & angka lebih kuat.</div>
     </div>
+
     <div class="field">
       <label>🔑 Konfirmasi Password Baru</label>
-      <input type="password" id="confirmPassword" placeholder="Ulangi password baru" autocomplete="off">
+      <div class="input-wrap">
+        <input type="password" id="confirmPassword" placeholder="Ulangi password baru" autocomplete="off">
+        <button type="button" class="toggle-eye" onclick="toggleVisibility('confirmPassword', this)">👁️</button>
+      </div>
     </div>
 
     <button class="btn-primary" id="btnSavePassword" onclick="handleSavePassword()">
@@ -334,6 +377,55 @@
     setTimeout(function () { toast.remove(); }, duration);
   }
 
+  // ---------- SHOW/HIDE PASSWORD ----------
+  function toggleVisibility(inputId, btn) {
+    var el = document.getElementById(inputId);
+    if (!el) return;
+    if (el.type === 'password') {
+      el.type = 'text';
+      btn.textContent = '🙈';
+    } else {
+      el.type = 'password';
+      btn.textContent = '👁️';
+    }
+  }
+
+  // ---------- STRENGTH INDICATOR ----------
+  function updateStrength() {
+    var val = document.getElementById('newPassword').value || '';
+    var fill = document.getElementById('strengthFill');
+    var text = document.getElementById('strengthText');
+
+    var score = 0;
+    if (val.length >= 6) score++;
+    if (val.length >= 10) score++;
+    if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+    var pct = Math.min(score * 20, 100);
+    var color = '#B3413E';
+    var label = 'Lemah';
+    if (score >= 2) { color = '#D97706'; label = 'Sedang'; }
+    if (score >= 4) { color = '#6B8F71'; label = 'Kuat'; }
+    if (score >= 5) { color = '#065F46'; label = 'Sangat Kuat'; }
+
+    if (val.length === 0) {
+      pct = 0; color = '#E4D9D3'; label = '';
+    }
+
+    fill.style.width = pct + '%';
+    fill.style.background = color;
+
+    if (val.length === 0) {
+      text.textContent = 'Minimal 6 karakter, huruf & angka lebih kuat.';
+      text.style.color = '#8C8389';
+    } else {
+      text.textContent = label + ' — ' + val.length + ' karakter';
+      text.style.color = color;
+    }
+  }
+
   // ---------- SHOW PANEL ----------
   function showJadwalPanel(data) {
     document.getElementById('loginCard').style.display = 'none';
@@ -396,7 +488,6 @@
         currentFotografer = res.data;
         localStorage.setItem('fotografer', JSON.stringify(res.data));
 
-        // Cek apakah wajib ganti password
         if (res.data.must_change_password === true) {
           isFirstLoginMode = true;
           document.getElementById('loginCard').style.display = 'none';
@@ -407,6 +498,7 @@
           document.getElementById('firstLoginInfo').style.display = 'block';
           document.getElementById('btnCancelPassword').style.display = 'none';
           document.getElementById('oldPassword').value = pin;
+          updateStrength();
           return;
         }
 
@@ -438,7 +530,7 @@
       return;
     }
     if (newPwd.length < 6) {
-      errBox.textContent = 'Password minimal 6 karakter.';
+      errBox.textContent = 'Password minimal 6 karakter. Sekarang: ' + newPwd.length;
       errBox.style.display = 'block';
       return;
     }
@@ -483,6 +575,7 @@
         document.getElementById('oldPassword').value = '';
         document.getElementById('newPassword').value = '';
         document.getElementById('confirmPassword').value = '';
+        updateStrength();
 
         setTimeout(function () {
           if (isFirstLoginMode) {
@@ -510,6 +603,7 @@
     document.getElementById('confirmPassword').value = '';
     document.getElementById('passwordError').style.display = 'none';
     document.getElementById('passwordSuccess').style.display = 'none';
+    updateStrength();
 
     document.getElementById('jadwalCard').style.display = 'none';
     document.getElementById('passwordCard').style.display = 'block';
@@ -838,6 +932,8 @@
   window.gantiTabJadwal = gantiTabJadwal;
   window.copyJadwalLavelle = copyJadwalLavelle;
   window.copySemuaJadwalLavelle = copySemuaJadwalLavelle;
+  window.toggleVisibility = toggleVisibility;
+  window.updateStrength = updateStrength;
 
   // ---------- ENTER KEY ----------
   document.addEventListener('keydown', function (e) {
@@ -852,11 +948,11 @@
     }
   });
 
-  // ---------- PIN ONLY NUMBERS ----------
+  // ---------- PIN LOGIN: HANYA ANGKA, MAKS 4 ----------
   var pinEl = document.getElementById('loginPin');
   if (pinEl) {
     pinEl.addEventListener('input', function () {
-      this.value = this.value.replace(/\D/g, '');
+      this.value = this.value.replace(/\D/g, '').slice(0, 4);
     });
   }
 
@@ -894,6 +990,7 @@
             document.getElementById('firstLoginInfo').style.display = 'block';
             document.getElementById('btnCancelPassword').style.display = 'none';
             document.getElementById('oldPassword').value = res.data.pin || '';
+            updateStrength();
           } else {
             showJadwalPanel(res.data);
           }
