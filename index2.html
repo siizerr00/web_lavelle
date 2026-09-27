@@ -271,6 +271,7 @@
   .distance-info {
     background: #f9f3ef; border: 1px solid var(--line);
     border-radius: 8px; padding: 12px 14px; margin-top: 12px;
+    transition: all 0.3s ease;
   }
   .distance-info .info-row {
     display: flex; justify-content: space-between; align-items: center;
@@ -364,6 +365,32 @@
   .harga-preview.free-transport .harga-row:not(.total) strong {
     color: var(--sage);
   }
+
+  /* ========== WARNING LUAR JANGKAUAN ========== */
+  .harga-preview.di-luar-jangkauan {
+    background: #FEE2E2 !important;
+    border-color: #DC2626 !important;
+    animation: shakeWarning 0.4s ease;
+  }
+  @keyframes shakeWarning {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }
+  .harga-preview.di-luar-jangkauan .harga-preview-title {
+    color: #DC2626;
+  }
+  .harga-preview.di-luar-jangkauan .harga-preview-title::before {
+    content: '⚠️ ';
+  }
+  .btn-primary:disabled {
+    background: #9CA3AF !important;
+    cursor: not-allowed !important;
+    opacity: 0.7;
+  }
+  .btn-primary:disabled:hover {
+    background: #9CA3AF !important;
+  }
 </style>
 </head>
 <body>
@@ -400,7 +427,7 @@
         <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
           <span>Apakah ada biaya transport?</span><span class="faq-icon">+</span>
         </div>
-        <div class="faq-answer"><p>Ada. Biaya transport sebesar Rp30.000, dihitung dari pusat kota (detail lengkap cek pricelist).</p></div>
+        <div class="faq-answer"><p>Ada. Biaya transport sebesar Rp30.000, dihitung dari pusat kota (detail lengkap cek pricelist). Maksimal jarak 20 KM dari titik pusat.</p></div>
       </div>
 
       <div class="faq-item">
@@ -521,7 +548,7 @@
     <div class="field">
       <label>📍 Lokasi Foto *</label>
       <div class="location-input-wrapper">
-        <input type="text" id="locationInput" placeholder="🔍 Ketik lokasi (contoh: UGM, Monas...)" autocomplete="off">
+        <input type="text" id="locationInput" placeholder="🔍 Ketik lokasi (atau klik langsung di peta)" autocomplete="off">
         <div id="suggestions" class="suggestions-box"></div>
       </div>
       <div id="mapLokasi" class="map-lokasi"></div>
@@ -713,7 +740,6 @@
     var preview = document.getElementById('hargaPreview');
     if (!preview) return;
 
-    // --- Ambil harga paket dari dropdown ---
     var sel = document.getElementById('fPaket');
     var hargaPaket = 0;
     var namaPaket = '-';
@@ -724,21 +750,18 @@
       namaPaket = opt.value || '-';
     }
 
-    // --- Ambil biaya transport dari MapsSystem ---
     var biayaTransport = 0;
     var jarakKm = null;
-    var batasGratis = null;
+    var mapsData = null;
 
     if (window.MapsSystem) {
-      var mapsData = window.MapsSystem.getData();
+      mapsData = window.MapsSystem.getData();
       if (mapsData && mapsData.alamat) {
         biayaTransport = Number(mapsData.biaya_transport) || 0;
         jarakKm = Number(mapsData.jarak_km) || null;
-        batasGratis = mapsData.batas_gratis_km || null;
       }
     }
 
-    // --- Update UI ---
     var elPaket = document.getElementById('previewPaket');
     var elTransport = document.getElementById('previewTransport');
     var elTotal = document.getElementById('previewTotal');
@@ -746,7 +769,6 @@
 
     if (elPaket) elPaket.innerText = formatRupiah(hargaPaket);
 
-    // Update baris transport
     if (elJarak) {
       if (jarakKm) {
         elJarak.innerText = '(' + jarakKm.toFixed(2) + ' KM)';
@@ -768,27 +790,23 @@
       }
     }
 
-    // Update total
     var total = hargaPaket + biayaTransport;
     if (elTotal) {
       elTotal.innerText = formatRupiah(total);
       elTotal.classList.remove('updated');
-      void elTotal.offsetWidth; // trigger reflow
+      void elTotal.offsetWidth;
       elTotal.classList.add('updated');
     }
 
-    // Efek visual pulse
     preview.classList.add('updating');
     setTimeout(function () { preview.classList.remove('updating'); }, 400);
 
-    // Warna hijau kalau transport gratis
     if (jarakKm && biayaTransport === 0) {
       preview.classList.add('free-transport');
     } else {
       preview.classList.remove('free-transport');
     }
 
-    // Simpan ke state global untuk dipakai saat submit
     window.__hargaPreview = {
       paket: namaPaket,
       harga_paket: hargaPaket,
@@ -796,6 +814,53 @@
       total: total,
       jarak_km: jarakKm
     };
+
+    // ============================================================
+    // CEK APAKAH DI LUAR JANGKAUAN
+    // ============================================================
+    var diLuarJangkauan = mapsData && mapsData.valid === false;
+
+    if (diLuarJangkauan) {
+      if (preview) preview.classList.add('di-luar-jangkauan');
+
+      if (elTotal) {
+        elTotal.innerText = '❌ Di luar jangkauan';
+        elTotal.style.color = '#DC2626';
+        elTotal.style.fontSize = '14px';
+      }
+
+      var btn = document.getElementById('btnBooking');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = '❌ Lokasi di Luar Jangkauan';
+      }
+
+      var errBox = document.getElementById('errorBox');
+      if (errBox) {
+        errBox.innerText = '❌ ' + (mapsData.alasan_invalid || 'Lokasi di luar jangkauan. Pilih lokasi lain yang lebih dekat.');
+        errBox.style.display = 'block';
+      }
+
+    } else {
+      if (preview) preview.classList.remove('di-luar-jangkauan');
+
+      if (elTotal) {
+        elTotal.style.fontSize = '';
+        elTotal.style.color = '';
+      }
+
+      var btn2 = document.getElementById('btnBooking');
+      if (btn2) {
+        btn2.disabled = false;
+        btn2.innerText = '🎯 Booking Sekarang';
+      }
+
+      var errBox2 = document.getElementById('errorBox');
+      if (errBox2 && errBox2.innerText.indexOf('jangkauan') !== -1) {
+        errBox2.style.display = 'none';
+        errBox2.innerText = '';
+      }
+    }
   }
 
   // ---------- RENDER REGION ----------
@@ -812,13 +877,10 @@
     }).join('');
   }
 
-  // ---------- PILIH KOTA ----------
   function pilihKota(kota){
     if(state.isLoading) return;
     if(!supabaseReady){ showToast('⚠️ Sistem booking belum siap.',4000); return; }
-
     trackEvent('pilih_wilayah',{kota:kota});
-
     kotaMenunggu = kota;
     document.getElementById('pilihanOverlay').classList.add('active');
   }
@@ -826,7 +888,6 @@
   function pilihTanya(){
     document.getElementById('pilihanOverlay').classList.remove('active');
     trackEvent('pilih_tanya_min', { kota: kotaMenunggu || '' });
-
     setTimeout(function(){
       var faq = document.querySelector('.faq-wrap');
       if(faq){
@@ -837,7 +898,6 @@
         }
       }
     }, 200);
-
     kotaMenunggu = null;
   }
 
@@ -847,7 +907,6 @@
       return;
     }
     trackEvent('pilih_pricelist', { kota: kotaMenunggu });
-
     document.getElementById('pilihanOverlay').classList.remove('active');
     var kota = kotaMenunggu;
     kotaMenunggu = null;
@@ -856,7 +915,6 @@
 
   function pilihKotaLanjut(kota){
     state.isLoading = true;
-
     var card = document.querySelector('.region-card[data-kota="'+kota+'"]');
     if(card) card.classList.add('loading');
 
@@ -896,7 +954,6 @@
     window.scrollTo(0,0);
   }
 
-  // ---------- KALENDER ----------
   function fetchKalenderBulanKota(kota,y,m){
     var bulanStr = y + '-' + String(m+1).padStart(2,'0');
     if(!supabaseReady) return Promise.resolve({});
@@ -1008,7 +1065,6 @@
     document.getElementById('regionPage').style.display='block';
   }
 
-  // ---------- PRICELIST ----------
   function tampilkanPricelist(data){
     var frame = document.getElementById('pricelistFrame');
     if(!data || !data.length){
@@ -1041,7 +1097,6 @@
     frame.innerHTML = h2;
   }
 
-  // ---------- SLOT ----------
   function pilihTanggal(tanggal){
     if(!supabaseReady){ showToast('⚠️ Sistem booking belum siap.',4000); return; }
     state.tanggalTerpilih = tanggal;
@@ -1076,11 +1131,9 @@
     }).join('') + '</div>';
   }
 
-  // ---------- FORM ----------
   function bukaForm(slot){
     state.slotTerpilih = slot;
 
-    // Buka peta sesuai kota
     if (window.MapsSystem) {
       window.MapsSystem.buka(state.kotaAktif);
     }
@@ -1099,13 +1152,11 @@
     document.getElementById('errorBox').style.display='none';
     document.getElementById('formOverlay').style.display='flex';
 
-    // Reset preview harga setelah form terbuka
     setTimeout(updateHargaPreview, 50);
   }
 
   function tutupForm(){ document.getElementById('formOverlay').style.display='none'; }
 
-  // ---------- SUBMIT BOOKING ----------
   function submitBooking(){
     trackEvent('klik_booking_sekarang',{kota:state.kotaAktif});
     if(!supabaseReady){
@@ -1120,19 +1171,22 @@
     var email = document.getElementById('fEmail').value.trim();
     var sel = document.getElementById('fPaket');
     var paket = sel.value;
-    var harga = (sel.selectedOptions[0] && sel.selectedOptions[0].dataset.harga) || 0;
     var errorBox = document.getElementById('errorBox');
 
     // VALIDASI LOKASI DARI PETA
     if (!window.MapsSystem || !window.MapsSystem.isLokasiValid()) {
-      errorBox.innerText = '⚠️ Silakan pilih lokasi foto di peta terlebih dahulu.';
+      var mapsCheck = window.MapsSystem ? window.MapsSystem.getData() : null;
+      if (mapsCheck && mapsCheck.valid === false) {
+        errorBox.innerText = '❌ ' + (mapsCheck.alasan_invalid || 'Lokasi di luar jangkauan. Silakan pilih lokasi lain.');
+      } else {
+        errorBox.innerText = '⚠️ Silakan pilih lokasi foto di peta terlebih dahulu.';
+      }
       errorBox.style.display = 'block';
       return;
     }
     var mapsData = window.MapsSystem.getData();
     var lokasi = mapsData.alamat;
 
-    // Pakai data dari preview (sudah dihitung otomatis)
     var preview = window.__hargaPreview || {};
     var biayaTransport = preview.biaya_transport !== undefined 
       ? preview.biaya_transport 
@@ -1140,6 +1194,7 @@
     var totalHarga = preview.total !== undefined 
       ? preview.total 
       : (Number(harga) + biayaTransport);
+    var harga = (sel.selectedOptions[0] && sel.selectedOptions[0].dataset.harga) || 0;
 
     if(!nama||!kampus||!lokasi||!wa||!paket){
       errorBox.innerText='⚠️ Semua wajib diisi.'; errorBox.style.display='block'; return;
@@ -1164,7 +1219,6 @@
       data.jarak_km = mapsData.jarak_km;
       tutupForm(); tampilkanInvoice(data);
 
-      // Reset peta
       if (window.MapsSystem) window.MapsSystem.reset();
       window.__hargaPreview = null;
 
@@ -1178,7 +1232,6 @@
     });
   }
 
-  // ---------- INVOICE ----------
   function tampilkanInvoice(data){
     document.getElementById('invKode').innerText = data.booking_id || 'Pending';
     document.getElementById('invStatus').innerText = '⏳ Pending';
