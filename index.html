@@ -674,10 +674,51 @@
     console.error('❌ Supabase gagal:', err);
   }
 
-  var ADMIN_WA_PER_KOTA = {
-    "Jogja":"6282132439700","Solo":"6282132439700","Surabaya":"6283112053117"
-  };
-  var ADMIN_WA_DEFAULT = "6283112053117";
+  // ============================================================
+  // NOMOR WA ADMIN - DI-FETCH DARI SUPABASE (tabel: admin_wa)
+  // ============================================================
+  var ADMIN_WA_PER_KOTA = {};
+  var ADMIN_WA_DEFAULT = '';
+  var adminWaLoaded = false;
+  var adminWaPromise = null;
+
+  function loadAdminWa() {
+    if (adminWaLoaded) return Promise.resolve(ADMIN_WA_PER_KOTA);
+    if (adminWaPromise) return adminWaPromise;
+    if (!supabaseReady) return Promise.resolve({});
+
+    adminWaPromise = supabase
+      .from('admin_wa')
+      .select('kota, wa_number')
+      .then(function (res) {
+        if (res.error) {
+          console.error('❌ Gagal load admin_wa:', res.error);
+          return {};
+        }
+        var data = {};
+        (res.data || []).forEach(function (row) {
+          data[row.kota] = row.wa_number;
+        });
+        ADMIN_WA_PER_KOTA = data;
+
+        // Default: ambil Jogja, kalau tidak ada ambil entry pertama
+        ADMIN_WA_DEFAULT = data['Jogja'] || Object.keys(data).map(function(k){ return data[k]; })[0] || '';
+
+        adminWaLoaded = true;
+        console.log('✅ Nomor WA admin dimuat:', data);
+        return data;
+      })
+      .catch(function (err) {
+        console.error('❌ Error load admin_wa:', err);
+        return {};
+      });
+
+    return adminWaPromise;
+  }
+
+  // Panggil saat init
+  loadAdminWa();
+
   var REGIONS = [
     { kota:"Jogja", kode:"JGY" },
     { kota:"Solo", kode:"SLO" },
@@ -915,6 +956,10 @@
 
   function pilihKotaLanjut(kota){
     state.isLoading = true;
+
+    // Pastikan nomor WA sudah di-load
+    loadAdminWa();
+
     var card = document.querySelector('.region-card[data-kota="'+kota+'"]');
     if(card) card.classList.add('loading');
 
@@ -1171,6 +1216,7 @@
     var email = document.getElementById('fEmail').value.trim();
     var sel = document.getElementById('fPaket');
     var paket = sel.value;
+    var harga = (sel.selectedOptions[0] && sel.selectedOptions[0].dataset.harga) || 0;
     var errorBox = document.getElementById('errorBox');
 
     // VALIDASI LOKASI DARI PETA
@@ -1194,7 +1240,6 @@
     var totalHarga = preview.total !== undefined 
       ? preview.total 
       : (Number(harga) + biayaTransport);
-    var harga = (sel.selectedOptions[0] && sel.selectedOptions[0].dataset.harga) || 0;
 
     if(!nama||!kampus||!lokasi||!wa||!paket){
       errorBox.innerText='⚠️ Semua wajib diisi.'; errorBox.style.display='block'; return;
@@ -1271,10 +1316,34 @@
       '💰 Total      : Rp'+total.toLocaleString('id-ID')+'\n\n'+
       'Saya mau konfirmasi booking. Terima kasih! 🙏';
 
+    // Ambil nomor WA admin dari Supabase (variabel global yang sudah di-load)
     var adminWa = ADMIN_WA_PER_KOTA[data.kota] || ADMIN_WA_DEFAULT;
-    var waUrl = 'https://api.whatsapp.com/send/?phone='+adminWa+'&text='+encodeURIComponent(pesan)+'&type=phone_number&app_absent=0';
     var btnWa = document.getElementById('btnWa');
-    btnWa.href = waUrl; btnWa.dataset.bookingId = data.booking_id; btnWa.dataset.kota = data.kota;
+
+    if (!adminWa) {
+      // Fallback: coba fetch ulang, kalau tetap kosong kasih pesan error
+      loadAdminWa().then(function () {
+        var waBaru = ADMIN_WA_PER_KOTA[data.kota] || ADMIN_WA_DEFAULT;
+        if (waBaru) {
+          var urlBaru = 'https://api.whatsapp.com/send/?phone=' + waBaru +
+            '&text=' + encodeURIComponent(pesan) +
+            '&type=phone_number&app_absent=0';
+          btnWa.href = urlBaru;
+        } else {
+          btnWa.href = '#';
+          btnWa.innerText = '⚠️ Nomor WA Admin belum diatur';
+          btnWa.style.background = '#9CA3AF';
+        }
+      });
+    } else {
+      var waUrl = 'https://api.whatsapp.com/send/?phone=' + adminWa +
+        '&text=' + encodeURIComponent(pesan) +
+        '&type=phone_number&app_absent=0';
+      btnWa.href = waUrl;
+    }
+
+    btnWa.dataset.bookingId = data.booking_id;
+    btnWa.dataset.kota = data.kota;
     document.getElementById('invoiceOverlay').style.display='flex';
   }
 
@@ -1288,6 +1357,10 @@
     if(!b) return;
     if(e.target===b || b.contains(e.target)){
       e.preventDefault();
+      if (!b.href || b.href === '#' || b.href.indexOf('api.whatsapp.com') === -1) {
+        showToast('⚠️ Nomor WA Admin belum diatur. Hubungi developer.', 3000);
+        return;
+      }
       trackEvent('klik_wa_booking',{kota:b.dataset.kota||'', booking_id:b.dataset.bookingId||''});
       b.disabled = true; showLoading('Mengarahkan ke WhatsApp...');
       window.open(b.href,'_blank');
