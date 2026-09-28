@@ -33,15 +33,15 @@
       biaya_transport: 30000,
       region: 'Jawa Tengah'
     },
-    Surabaya: {
-      lat: -7.245930,
-      lng: 112.737853,
-      nama: 'Tugu Pahlawan Surabaya',
-      batas_gratis_meter: 10000,
-      batas_maksimal_meter: 20000,
-      biaya_transport: 30000,
-      region: 'Jawa Timur'
-    }
+   Surabaya: {
+     lat: -7.257472,      // ← Pemkot Surabaya
+     lng: 112.737853,     // ← Pemkot Surabaya
+     nama: 'Balai Kota Surabaya',
+     batas_gratis_meter: 10000,
+     batas_maksimal_meter: 20000,
+     biaya_transport: 30000,
+     region: 'Jawa Timur'
+   }
   };
 
   // Prioritas tipe POI (yang besar/utama didahulukan)
