@@ -184,21 +184,104 @@
   @keyframes flashHarga { 0% { transform: scale(1); color: var(--rose); } 50% { transform: scale(1.15); color: var(--gold); } 100% { transform: scale(1); color: var(--rose); } }
   .harga-note { font-size: 11px; color: var(--mute); text-align: center; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); font-style: italic; }
 
-  /* ========== ADD-ON ========== */
+  /* ========== ADD-ON STEPPER ========== */
   .addon-section { margin-top: 20px; margin-bottom: 8px; }
   .addon-section-title { font-size: 12px; color: var(--mute); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
-  .addon-list { display: flex; flex-direction: column; gap: 8px; }
-  .addon-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: #fff; border: 1px solid var(--line); border-radius: 6px; cursor: pointer; transition: all 0.15s; }
-  .addon-item:hover { border-color: var(--rose); background: #fdf6f7; }
-  .addon-item.selected { border-color: var(--rose); background: #fdf6f7; box-shadow: 0 0 0 2px rgba(183,110,121,0.15); }
-  .addon-item.disabled { opacity: 0.5; cursor: not-allowed; background: #f5f5f5; }
-  .addon-item.disabled:hover { border-color: var(--line); background: #f5f5f5; }
-  .addon-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--rose); cursor: pointer; flex-shrink: 0; }
-  .addon-item.disabled input[type="checkbox"] { cursor: not-allowed; }
-  .addon-info { flex: 1; }
-  .addon-nama { font-size: 13px; font-weight: 600; color: var(--ink); }
-  .addon-harga { font-size: 12px; color: var(--mute); margin-top: 2px; }
-  .addon-warning { font-size: 11px; color: #B3413E; margin-top: 6px; padding: 6px 10px; background: #FDE8E8; border-radius: 4px; display: none; }
+  .addon-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .addon-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    transition: all 0.15s;
+  }
+  .addon-item.selected {
+    border-color: var(--rose);
+    background: #fdf6f7;
+    box-shadow: 0 0 0 2px rgba(183,110,121,0.15);
+  }
+
+  .addon-info { flex: 1; min-width: 0; }
+  .addon-nama {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .addon-desc {
+    font-size: 11px;
+    color: var(--mute);
+    line-height: 1.4;
+  }
+  .addon-harga {
+    font-size: 12px;
+    color: var(--rose);
+    font-weight: 600;
+    margin-top: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .addon-stepper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .btn-step {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid var(--rose);
+    background: #fff;
+    color: var(--rose);
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    font-family: inherit;
+    line-height: 1;
+    padding: 0;
+  }
+  .btn-step:hover:not(:disabled) {
+    background: var(--rose);
+    color: #fff;
+    transform: scale(1.1);
+  }
+  .btn-step:disabled {
+    border-color: #ccc;
+    color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  .addon-qty {
+    min-width: 24px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .addon-qty.zero {
+    color: var(--mute);
+    font-weight: 400;
+  }
+
+  .addon-warning {
+    font-size: 11px;
+    color: #B3413E;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #FDE8E8;
+    border-radius: 6px;
+    display: none;
+  }
   .addon-warning.show { display: block; }
 </style>
 </head>
@@ -447,7 +530,7 @@
   }
 
   // ============================================================
-  // NOMOR WA ADMIN - DARI SUPABASE (tabel: admin_wa)
+  // NOMOR WA ADMIN
   // ============================================================
   var ADMIN_WA_PER_KOTA = {};
   var ADMIN_WA_DEFAULT = '';
@@ -501,6 +584,7 @@
   var state = {
     kotaAktif:null, bulanAktif:new Date(), tanggalTerpilih:null,
     slotTerpilih:null, paketList:[], addonList:[], allData:null, isLoading:false,
+    addonQty: {},
     addonTerpilih: [],
     durasiTotal: 60
   };
@@ -571,7 +655,7 @@
   }
 
   // ============================================================
-  // RENDER ADD-ON DI FORM
+  // RENDER ADD-ON DI FORM (STEPPER)
   // ============================================================
   function renderAddon() {
     var section = document.getElementById('addonSection');
@@ -586,98 +670,102 @@
     section.style.display = 'block';
 
     list.innerHTML = state.addonList.map(function(a){
-      var selected = state.addonTerpilih.indexOf(a.kode) !== -1;
-      return '<label class="addon-item ' + (selected ? 'selected' : '') + '" data-kode="'+a.kode+'">' +
-        '<input type="checkbox" ' + (selected ? 'checked' : '') + ' onchange="toggleAddon(\''+a.kode+'\', this.checked)">' +
+      var qty = state.addonQty[a.kode] || 0;
+      var isSelected = qty > 0;
+      var maxQty = a.max_qty || 3;
+      var desc = a.deskripsi || (a.durasi_tambahan_menit > 0 
+        ? 'Tambah durasi sesi ' + a.durasi_tambahan_menit + ' menit'
+        : 'Tambah foto editan');
+      
+      return '<div class="addon-item ' + (isSelected ? 'selected' : '') + '" data-kode="'+a.kode+'">' +
         '<div class="addon-info">' +
           '<div class="addon-nama">'+a.nama+'</div>' +
+          '<div class="addon-desc">'+desc+'</div>' +
           '<div class="addon-harga">+ '+formatRupiah(a.harga)+'</div>' +
         '</div>' +
-      '</label>';
+        '<div class="addon-stepper">' +
+          '<button type="button" class="btn-step" onclick="changeAddonQty(\''+a.kode+'\', -1)" ' + (qty <= 0 ? 'disabled' : '') + '>−</button>' +
+          '<span class="addon-qty ' + (qty === 0 ? 'zero' : '') + '">'+qty+'</span>' +
+          '<button type="button" class="btn-step" onclick="changeAddonQty(\''+a.kode+'\', 1)" ' + (qty >= maxQty ? 'disabled' : '') + '>+</button>' +
+        '</div>' +
+      '</div>';
     }).join('');
   }
 
   // ============================================================
-  // TOGGLE ADD-ON
+  // CHANGE ADD-ON QTY
   // ============================================================
-  function toggleAddon(kode, checked) {
+  function changeAddonQty(kode, delta) {
     var addon = state.addonList.find(function(a){ return a.kode === kode; });
     if (!addon) return;
 
-    var warning = document.getElementById('addonWarning');
+    var currentQty = state.addonQty[kode] || 0;
+    var maxQty = addon.max_qty || 3;
+    var newQty = currentQty + delta;
 
-    if (checked) {
-      // Cek dulu apakah add-on durasi bisa ditambahkan (cek slot berikutnya)
-      if (addon.durasi_tambahan_menit > 0) {
-        cekAddonDurasi(addon, function(ok, alasan) {
-          if (!ok) {
-            // Gagal - uncheck, show warning
-            var cb = document.querySelector('.addon-item[data-kode="'+kode+'"] input');
-            if (cb) cb.checked = false;
-            var label = document.querySelector('.addon-item[data-kode="'+kode+'"]');
-            if (label) label.classList.remove('selected');
+    if (newQty < 0) newQty = 0;
+    if (newQty > maxQty) newQty = maxQty;
 
-            if (warning) {
-              warning.innerText = '⚠️ ' + alasan;
-              warning.classList.add('show');
-              setTimeout(function(){ warning.classList.remove('show'); }, 5000);
-            }
-            return;
+    if (newQty === currentQty) return;
+
+    // Kalau nambah qty add-on durasi, cek dulu
+    if (delta > 0 && addon.durasi_tambahan_menit > 0) {
+      var totalTambahanBaru = 0;
+      state.addonList.forEach(function(a){
+        var q = (a.kode === kode) ? newQty : (state.addonQty[a.kode] || 0);
+        if (a.durasi_tambahan_menit > 0) totalTambahanBaru += a.durasi_tambahan_menit * q;
+      });
+
+      cekAddonDurasiTotal(totalTambahanBaru, function(ok, alasan) {
+        if (!ok) {
+          var warning = document.getElementById('addonWarning');
+          if (warning) {
+            warning.innerText = '⚠️ ' + alasan;
+            warning.classList.add('show');
+            setTimeout(function(){ warning.classList.remove('show'); }, 5000);
           }
-          // OK - tambahkan
-          if (state.addonTerpilih.indexOf(kode) === -1) {
-            state.addonTerpilih.push(kode);
-          }
-          var label = document.querySelector('.addon-item[data-kode="'+kode+'"]');
-          if (label) label.classList.add('selected');
-          if (warning) warning.classList.remove('show');
-          hitungDurasiTotal();
-          updateHargaPreview();
-        });
-      } else {
-        // Add-on non-durasi (foto), langsung tambah
-        if (state.addonTerpilih.indexOf(kode) === -1) {
-          state.addonTerpilih.push(kode);
+          return;
         }
-        var label = document.querySelector('.addon-item[data-kode="'+kode+'"]');
-        if (label) label.classList.add('selected');
-        hitungDurasiTotal();
-        updateHargaPreview();
-      }
+        applyAddonQty(kode, newQty);
+      });
     } else {
-      // Uncheck
-      state.addonTerpilih = state.addonTerpilih.filter(function(k){ return k !== kode; });
-      var label = document.querySelector('.addon-item[data-kode="'+kode+'"]');
-      if (label) label.classList.remove('selected');
-      if (warning) warning.classList.remove('show');
-      hitungDurasiTotal();
-      updateHargaPreview();
+      applyAddonQty(kode, newQty);
     }
   }
 
+  function applyAddonQty(kode, newQty) {
+    state.addonQty[kode] = newQty;
+    if (newQty === 0) {
+      delete state.addonQty[kode];
+    }
+    state.addonTerpilih = Object.keys(state.addonQty).filter(function(k){
+      return state.addonQty[k] > 0;
+    });
+    renderAddon();
+    hitungDurasiTotal();
+    updateHargaPreview();
+  }
+
   // ============================================================
-  // CEK ADD-ON DURASI (30 menit) APAKAH BISA
+  // CEK ADD-ON DURASI TOTAL (multi)
   // ============================================================
-  function cekAddonDurasi(addon, callback) {
+  function cekAddonDurasiTotal(totalTambahanMenit, callback) {
     if (!state.slotTerpilih || !state.tanggalTerpilih || !state.kotaAktif) {
       callback(false, 'Slot belum dipilih');
       return;
     }
 
-    // Hitung total durasi tambahan dari SEMUA addon yang dipilih + yang baru
-    var totalTambahan = 0;
-    state.addonTerpilih.forEach(function(k) {
-      var a = state.addonList.find(function(x){ return x.kode === k; });
-      if (a && a.durasi_tambahan_menit > 0) totalTambahan += a.durasi_tambahan_menit;
-    });
-    totalTambahan += addon.durasi_tambahan_menit;
+    if (totalTambahanMenit === 0) {
+      callback(true);
+      return;
+    }
 
     supabase.rpc('cek_slot_addon', {
       p_kota: state.kotaAktif,
       p_tanggal: state.tanggalTerpilih,
       p_jam_mulai: state.slotTerpilih.jam_mulai,
       p_jam_selesai_slot: state.slotTerpilih.jam_selesai,
-      p_durasi_tambahan_menit: totalTambahan
+      p_durasi_tambahan_menit: totalTambahanMenit
     }).then(function(res){
       if (res.error) {
         console.error('Error cek addon:', res.error);
@@ -697,13 +785,15 @@
   }
 
   // ============================================================
-  // HITUNG DURASI TOTAL
+  // HITUNG DURASI TOTAL (multi)
   // ============================================================
   function hitungDurasiTotal() {
-    var total = 60; // default 1 jam
-    state.addonTerpilih.forEach(function(k){
-      var a = state.addonList.find(function(x){ return x.kode === k; });
-      if (a && a.durasi_tambahan_menit > 0) total += a.durasi_tambahan_menit;
+    var total = 60;
+    state.addonList.forEach(function(a){
+      if (a.durasi_tambahan_menit > 0) {
+        var qty = state.addonQty[a.kode] || 0;
+        total += a.durasi_tambahan_menit * qty;
+      }
     });
     state.durasiTotal = total;
     return total;
@@ -726,11 +816,10 @@
       namaPaket = opt.value || '-';
     }
 
-    // Hitung total add-on
     var totalAddon = 0;
-    state.addonTerpilih.forEach(function(k){
-      var a = state.addonList.find(function(x){ return x.kode === k; });
-      if (a) totalAddon += Number(a.harga) || 0;
+    state.addonList.forEach(function(a){
+      var qty = state.addonQty[a.kode] || 0;
+      totalAddon += (Number(a.harga) || 0) * qty;
     });
 
     var elPaket = document.getElementById('previewPaket');
@@ -756,7 +845,6 @@
       elTotal.classList.add('updated');
     }
 
-    // Update durasi info
     if (elDurasi) {
       var durasi = hitungDurasiTotal();
       var jamMulai = state.slotTerpilih ? state.slotTerpilih.jam_mulai : '-';
@@ -851,6 +939,7 @@
     state.tanggalTerpilih = null;
     state.slotTerpilih = null;
     state.bulanAktif = new Date();
+    state.addonQty = {};
     state.addonTerpilih = [];
     state.allData = { pricelist:[], pricelistMedia:[], kalender:{}, slot:{} };
     state.paketList = [];
@@ -1063,6 +1152,7 @@
 
   function bukaForm(slot){
     state.slotTerpilih = slot;
+    state.addonQty = {};
     state.addonTerpilih = [];
     state.durasiTotal = 60;
 
@@ -1080,7 +1170,6 @@
     document.getElementById('errorBox').style.display='none';
     document.getElementById('formOverlay').style.display='flex';
 
-    // Render add-on kalau sudah ke-load
     loadAddon(state.kotaAktif).then(function(){
       renderAddon();
     });
@@ -1112,18 +1201,21 @@
       errorBox.innerText='⚠️ Semua wajib diisi.'; errorBox.style.display='block'; return;
     }
 
-    // Hitung total & add-on list
+    // Hitung total & add-on list (multi qty)
     var totalAddon = 0;
     var addonListArr = [];
-    state.addonTerpilih.forEach(function(k){
-      var a = state.addonList.find(function(x){ return x.kode === k; });
-      if (a) {
-        totalAddon += Number(a.harga) || 0;
+    state.addonList.forEach(function(a){
+      var qty = state.addonQty[a.kode] || 0;
+      if (qty > 0) {
+        totalAddon += Number(a.harga) * qty;
         addonListArr.push({
           kode: a.kode,
           nama: a.nama,
           harga: a.harga,
-          durasi_tambahan_menit: a.durasi_tambahan_menit
+          qty: qty,
+          subtotal: Number(a.harga) * qty,
+          durasi_tambahan_menit: a.durasi_tambahan_menit,
+          total_durasi_tambahan: a.durasi_tambahan_menit * qty
         });
       }
     });
@@ -1189,14 +1281,15 @@
     document.getElementById('invTotal').innerText = formatRupiah(data.total_harga);
 
     var total = Number(data.total_harga||0);
-    var totalAddon = Number(data.total_addon||0);
     var addonList = data.addon_list || [];
 
     var addonText = '';
     if (addonList.length > 0) {
       addonText = '\n🎁 *Tambahan:*\n';
       addonList.forEach(function(a){
-        addonText += '  • ' + a.nama + ' — Rp' + Number(a.harga).toLocaleString('id-ID') + '\n';
+        var qty = a.qty || 1;
+        var subtotal = a.subtotal || a.harga;
+        addonText += '  • ' + a.nama + ' ×' + qty + ' — Rp' + Number(subtotal).toLocaleString('id-ID') + '\n';
       });
     }
 
@@ -1290,7 +1383,7 @@
   window.tutupInvoice = tutupInvoice;
   window.kembaliKeHome = kembaliKeHome;
   window.updateHargaPreview = updateHargaPreview;
-  window.toggleAddon = toggleAddon;
+  window.changeAddonQty = changeAddonQty;
 
   function init(){ renderRegions(); showToast('📷 Studio Lavelle - Pilih wilayah',2000); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init,{once:true});
