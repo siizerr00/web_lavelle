@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-3BC7EP10G7"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -66,7 +65,6 @@
 
   .pricelist-frame{border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--card);min-height:120px;}
   .pricelist-empty{padding:24px;color:var(--mute);font-size:14px;text-align:center;}
-
   .pricelist-scroll {display:flex;flex-direction:column;gap:20px;padding:16px;max-height:650px;overflow-y:auto;}
   .pricelist-scroll::-webkit-scrollbar { width:6px; }
   .pricelist-scroll::-webkit-scrollbar-track { background:var(--line); border-radius:4px; }
@@ -159,126 +157,132 @@
   .status-badge.paid { background:#D1FAE5; color:#065F46; }
   .status-badge.expired { background:#FEE2E2; color:#991B1B; }
 
-  /* ---------- MODAL PILIHAN ---------- */
-  .pilihan-overlay{
-    display:none; position:fixed; inset:0;
-    background:rgba(46,37,50,.55); z-index:60;
-    align-items:center; justify-content:center; padding:20px;
-    animation:fadeIn .2s;
-  }
+  .pilihan-overlay{ display:none; position:fixed; inset:0; background:rgba(46,37,50,.55); z-index:60; align-items:center; justify-content:center; padding:20px; animation:fadeIn .2s; }
   .pilihan-overlay.active{ display:flex; }
-
-  .pilihan-box{
-    background:var(--paper); border-radius:12px;
-    padding:28px 32px; max-width:420px; width:100%;
-    box-shadow:0 20px 60px rgba(0,0,0,.3);
-    text-align:center;
-    animation:slideUp .3s;
-  }
-  .pilihan-box h3{
-    font-family:'Fraunces',serif; font-size:22px; font-style:italic;
-    font-weight:500; margin-bottom:6px;
-  }
-  .pilihan-box p.sub{
-    color:var(--mute); font-size:13px; margin:0 0 20px; line-height:1.5;
-  }
-  .pilihan-actions{
-    display:flex; gap:10px; margin-top:16px;
-  }
-  .pilihan-actions button{
-    flex:1; padding:14px 12px; border-radius:8px;
-    font-family:'Inter',sans-serif; font-size:13px; font-weight:500;
-    cursor:pointer; transition:all .2s; border:none;
-  }
-  
-  .btn-tanya{
-  background:var(--rose); color:#fff; border:1px solid var(--rose);
-  font-weight:600;
-  }
+  .pilihan-box{ background:var(--paper); border-radius:12px; padding:28px 32px; max-width:420px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,.3); text-align:center; animation:slideUp .3s; }
+  .pilihan-box h3{ font-family:'Fraunces',serif; font-size:22px; font-style:italic; font-weight:500; margin-bottom:6px; }
+  .pilihan-actions{ display:flex; gap:10px; margin-top:16px; }
+  .pilihan-actions button{ flex:1; padding:14px 12px; border-radius:8px; font-family:'Inter',sans-serif; font-size:13px; font-weight:500; cursor:pointer; transition:all .2s; border:none; }
+  .btn-tanya{ background:var(--rose); color:#fff; border:1px solid var(--rose); font-weight:600; }
   .btn-tanya:hover{ background:#a35f6a; border-color:#a35f6a; }
-  
-  .btn-pricelist{
-    background:var(--gold); color:#fff; border:1px solid var(--gold);
-    font-weight:600;
-  }
+  .btn-pricelist{ background:var(--gold); color:#fff; border:1px solid var(--gold); font-weight:600; }
   .btn-pricelist:hover{ background:#b08f52; border-color:#b08f52; }
 
-  /* ========== PREVIEW HARGA REAL-TIME ========== */
-  .harga-preview {
-    background: linear-gradient(135deg, #fdf8f5 0%, #f9f3ef 100%);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 16px 18px;
-    margin: 20px 0 12px;
-    transition: all 0.3s ease;
-  }
-  .harga-preview.updating {
-    animation: pulseHarga 0.4s ease;
-  }
-  @keyframes pulseHarga {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.015); box-shadow: 0 0 0 4px rgba(183,110,121,0.15); }
-    100% { transform: scale(1); }
-  }
-  .harga-preview-title {
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-size: 16px;
-    color: var(--ink);
-    margin-bottom: 12px;
-    font-weight: 500;
-  }
-  .harga-row {
+  /* ========== PREVIEW HARGA ========== */
+  .harga-preview { background: linear-gradient(135deg, #fdf8f5 0%, #f9f3ef 100%); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 20px 0 12px; transition: all 0.3s ease; }
+  .harga-preview.updating { animation: pulseHarga 0.4s ease; }
+  @keyframes pulseHarga { 0% { transform: scale(1); } 50% { transform: scale(1.015); box-shadow: 0 0 0 4px rgba(183,110,121,0.15); } 100% { transform: scale(1); } }
+  .harga-preview-title { font-family: 'Fraunces', serif; font-style: italic; font-size: 16px; color: var(--ink); margin-bottom: 12px; font-weight: 500; }
+  .harga-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 13px; color: var(--mute); }
+  .harga-row strong { color: var(--ink); font-weight: 600; font-family: 'IBM Plex Mono', monospace; font-size: 13px; transition: color 0.3s; }
+  .harga-row small { font-size: 11px; color: var(--mute); font-weight: 400; font-style: italic; }
+  .harga-divider { border-top: 1px dashed var(--line); margin: 10px 0; }
+  .harga-row.total { padding-top: 4px; }
+  .harga-row.total span { font-size: 14px; font-weight: 600; color: var(--ink); text-transform: uppercase; letter-spacing: 0.04em; }
+  .harga-row.total strong { font-size: 22px; color: var(--rose); font-weight: 700; }
+  .harga-row.total strong.updated { animation: flashHarga 0.5s ease; }
+  @keyframes flashHarga { 0% { transform: scale(1); color: var(--rose); } 50% { transform: scale(1.15); color: var(--gold); } 100% { transform: scale(1); color: var(--rose); } }
+  .harga-note { font-size: 11px; color: var(--mute); text-align: center; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); font-style: italic; }
+
+  /* ========== ADD-ON STEPPER ========== */
+  .addon-section { margin-top: 20px; margin-bottom: 8px; }
+  .addon-section-title { font-size: 12px; color: var(--mute); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+  .addon-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .addon-item {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 6px 0;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    transition: all 0.15s;
+  }
+  .addon-item.selected {
+    border-color: var(--rose);
+    background: #fdf6f7;
+    box-shadow: 0 0 0 2px rgba(183,110,121,0.15);
+  }
+
+  .addon-info { flex: 1; min-width: 0; }
+  .addon-nama {
     font-size: 13px;
-    color: var(--mute);
-  }
-  .harga-row strong {
-    color: var(--ink);
-    font-weight: 600;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
-    transition: color 0.3s;
-  }
-  .harga-divider {
-    border-top: 1px dashed var(--line);
-    margin: 10px 0;
-  }
-  .harga-row.total {
-    padding-top: 4px;
-  }
-  .harga-row.total span {
-    font-size: 14px;
     font-weight: 600;
     color: var(--ink);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+    margin-bottom: 2px;
   }
-  .harga-row.total strong {
-    font-size: 22px;
-    color: var(--rose);
-    font-weight: 700;
-  }
-  .harga-row.total strong.updated {
-    animation: flashHarga 0.5s ease;
-  }
-  @keyframes flashHarga {
-    0% { transform: scale(1); color: var(--rose); }
-    50% { transform: scale(1.15); color: var(--gold); }
-    100% { transform: scale(1); color: var(--rose); }
-  }
-  .harga-note {
+  .addon-desc {
     font-size: 11px;
     color: var(--mute);
-    text-align: center;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px dashed var(--line);
-    font-style: italic;
+    line-height: 1.4;
   }
+  .addon-harga {
+    font-size: 12px;
+    color: var(--rose);
+    font-weight: 600;
+    margin-top: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .addon-stepper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .btn-step {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid var(--rose);
+    background: #fff;
+    color: var(--rose);
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    font-family: inherit;
+    line-height: 1;
+    padding: 0;
+  }
+  .btn-step:hover:not(:disabled) {
+    background: var(--rose);
+    color: #fff;
+    transform: scale(1.1);
+  }
+  .btn-step:disabled {
+    border-color: #ccc;
+    color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  .addon-qty {
+    min-width: 24px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .addon-qty.zero {
+    color: var(--mute);
+    font-weight: 400;
+  }
+
+  .addon-warning {
+    font-size: 11px;
+    color: #B3413E;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #FDE8E8;
+    border-radius: 6px;
+    display: none;
+  }
+  .addon-warning.show { display: block; }
 </style>
 </head>
 <body>
@@ -296,77 +300,66 @@
   <div class="faq-wrap">
     <div class="region-label">Pertanyaan yang Sering Ditanyakan</div>
     <div class="faq-list">
-
       <div class="faq-item">
         <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
           <span>Apakah tersedia studio?</span><span class="faq-icon">+</span>
         </div>
         <div class="faq-answer"><p>Tidak. Kami hanya menyediakan outdoor photoshoot.</p></div>
       </div>
-
       <div class="faq-item">
         <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
           <span>Apakah bisa booking jika tanggal belum pasti?</span><span class="faq-icon">+</span>
         </div>
         <div class="faq-answer"><p>Bisa reschedule maksimal H-14. Tanggal awal tetap diperlukan saat booking. Reschedule mengikuti ketersediaan FG. Jika tanggal baru tidak tersedia, booking tetap pada jadwal awal.</p></div>
       </div>
-
       <div class="faq-item">
         <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
           <span>Apakah ada biaya transport?</span><span class="faq-icon">+</span>
         </div>
         <div class="faq-answer"><p>Ada. Biaya transport sebesar Rp30.000, dihitung dari pusat kota (detail lengkap cek pricelist). Maksimal jarak 20 KM dari titik pusat.</p></div>
       </div>
-
       <div class="faq-item">
         <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
           <span>Apakah tidak buka di wilayah lain?</span><span class="faq-icon">+</span>
         </div>
         <div class="faq-answer"><p>Saat ini kami hanya tersedia untuk 3 wilayah di atas.</p></div>
       </div>
-
       <div class="faq-item">
         <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
           <span>DP minimal berapa?</span><span class="faq-icon">+</span>
         </div>
         <div class="faq-answer"><p>DP 50% dari Total Pembayaran (Termasuk jika ada biaya transport)</p></div>
       </div>
-
       <div class="faq-item">
         <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
           <span>Apakah bisa untuk foto birthday/preweed/lamaran?</span><span class="faq-icon">+</span>
         </div>
         <div class="faq-answer"><p>TIDAK. Hanya menyediakan untuk wisuda/graduation</p></div>
       </div>
-
       <div class="faq-item">
         <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
           <span>Apakah fotografernya cewek?</span><span class="faq-icon">+</span>
         </div>
         <div class="faq-answer"><p>Ya. Fotografer kami semua cewek yaaa.</p></div>
       </div>
-
       <div class="faq-item">
         <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
           <span>Apakah sudah termasuk foto dengan keluarga?</span><span class="faq-icon">+</span>
         </div>
         <div class="faq-answer"><p>Paket Personal dan Couple sudah termasuk foto dengan keluarga.</p></div>
       </div>
-
       <div class="faq-item">
         <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
           <span>Berapa lama hasil foto didapatkan?</span><span class="faq-icon">+</span>
         </div>
         <div class="faq-answer"><p>Foto RAW maksimal H+1 setelah photoshoot. Foto editan maksimal H+10 setelah pemilihan foto.</p></div>
       </div>
-
       <div class="faq-item">
         <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
           <span>Bagaimana jika mau foto couple? Atau 2 wisudawan?</span><span class="faq-icon">+</span>
         </div>
         <div class="faq-answer"><p>Pricelist Personal hanya untuk SATU wisudawan. Paket Couple untuk DUA wisudawan. Paket Group untuk foto 3 - 5 orang.</p></div>
       </div>
-
     </div>
   </div>
 </div>
@@ -398,11 +391,9 @@
   </section>
 </div>
 
-<!-- MODAL PILIHAN SETELAH PILIH WILAYAH -->
 <div class="pilihan-overlay" id="pilihanOverlay">
   <div class="pilihan-box">
     <h3>Ada hal yang mau ditanyakan?</h3>
-
     <div class="pilihan-actions">
       <button class="btn-tanya" onclick="pilihTanya()">💬 Mau tanya min</button>
       <button class="btn-pricelist" onclick="pilihPricelist()">📄 Mau cek pricelist</button>
@@ -417,7 +408,6 @@
   </div>
 </div>
 
-<!-- MODAL FORM BOOKING -->
 <div class="overlay" id="formOverlay">
   <div class="modal">
     <h3>📝 Isi Data Booking</h3>
@@ -454,19 +444,28 @@
       <select id="fPaket" onchange="updateHargaPreview()"></select>
     </div>
 
-    <!-- PANEL PREVIEW HARGA -->
+    <div class="addon-section" id="addonSection" style="display:none;">
+      <div class="addon-section-title">✨ Tambahan (Opsional)</div>
+      <div class="addon-list" id="addonList"></div>
+      <div class="addon-warning" id="addonWarning"></div>
+    </div>
+
     <div class="harga-preview" id="hargaPreview">
       <div class="harga-preview-title">💰 Rincian Harga</div>
       <div class="harga-row">
         <span>Paket</span>
         <strong id="previewPaket">-</strong>
       </div>
+      <div class="harga-row" id="previewAddonRow" style="display:none;">
+        <span>Tambahan</span>
+        <strong id="previewAddon">Rp 0</strong>
+      </div>
       <div class="harga-divider"></div>
       <div class="harga-row total">
         <span>Total</span>
         <strong id="previewTotal">Rp 0</strong>
       </div>
-      <div class="harga-note">⚡ Total otomatis update saat Anda ubah paket</div>
+      <div class="harga-note" id="previewDurasi"></div>
     </div>
 
     <button class="btn-primary" id="btnBooking" onclick="submitBooking()">🎯 Booking Sekarang</button>
@@ -475,7 +474,6 @@
   </div>
 </div>
 
-<!-- MODAL INVOICE / TIKET -->
 <div class="overlay" id="invoiceOverlay">
   <div class="modal">
     <div class="ticket">
@@ -511,9 +509,6 @@
   </div>
 </div>
 
-<!-- ============================================================
-     LIBRARIES
-     ============================================================ -->
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -535,7 +530,7 @@
   }
 
   // ============================================================
-  // NOMOR WA ADMIN - DI-FETCH DARI SUPABASE (tabel: admin_wa)
+  // NOMOR WA ADMIN
   // ============================================================
   var ADMIN_WA_PER_KOTA = {};
   var ADMIN_WA_DEFAULT = '';
@@ -560,9 +555,7 @@
           data[row.kota] = row.wa_number;
         });
         ADMIN_WA_PER_KOTA = data;
-
         ADMIN_WA_DEFAULT = data['Jogja'] || Object.keys(data).map(function(k){ return data[k]; })[0] || '';
-
         adminWaLoaded = true;
         console.log('✅ Nomor WA admin dimuat:', data);
         return data;
@@ -587,17 +580,17 @@
   var NAMA_BULAN = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
   var NAMA_HARI = ["Min","Sen","Sel","Rab","Kam","Jum","Sab"];
 
-  var CACHE = { allData:{}, kalenderBulan:{}, slot:{} };
+  var CACHE = { allData:{}, kalenderBulan:{}, slot:{}, addon:{} };
   var state = {
     kotaAktif:null, bulanAktif:new Date(), tanggalTerpilih:null,
-    slotTerpilih:null, paketList:[], allData:null, isLoading:false
+    slotTerpilih:null, paketList:[], addonList:[], allData:null, isLoading:false,
+    addonQty: {},
+    addonTerpilih: [],
+    durasiTotal: 60
   };
 
   var kotaMenunggu = null;
 
-  // ============================================================
-  // FORMAT TANGGAL: YYYY-MM-DD → DD-MM-YYYY
-  // ============================================================
   function formatTanggalDDMMYYYY(tanggal) {
     if (!tanggal) return '-';
     var str = String(tanggal).trim();
@@ -633,7 +626,181 @@
   function trackEvent(n,p){ if(typeof gtag==='function') gtag('event',n,p||{}); }
 
   // ============================================================
-  // PREVIEW HARGA REAL-TIME (TANPA TRANSPORT)
+  // LOAD ADD-ON
+  // ============================================================
+  function loadAddon(kota) {
+    if (CACHE.addon[kota]) {
+      state.addonList = CACHE.addon[kota];
+      return Promise.resolve(CACHE.addon[kota]);
+    }
+    return supabase
+      .from('addon')
+      .select('*')
+      .eq('kota', kota)
+      .eq('aktif', true)
+      .order('urutan')
+      .then(function(res){
+        if (res.error) {
+          console.error('❌ Gagal load addon:', res.error);
+          return [];
+        }
+        CACHE.addon[kota] = res.data || [];
+        state.addonList = res.data || [];
+        return res.data || [];
+      })
+      .catch(function(err){
+        console.error('❌ Error load addon:', err);
+        return [];
+      });
+  }
+
+  // ============================================================
+  // RENDER ADD-ON DI FORM (STEPPER)
+  // ============================================================
+  function renderAddon() {
+    var section = document.getElementById('addonSection');
+    var list = document.getElementById('addonList');
+    if (!section || !list) return;
+
+    if (!state.addonList || state.addonList.length === 0) {
+      section.style.display = 'none';
+      return;
+    }
+
+    section.style.display = 'block';
+
+    list.innerHTML = state.addonList.map(function(a){
+      var qty = state.addonQty[a.kode] || 0;
+      var isSelected = qty > 0;
+      var maxQty = a.max_qty || 3;
+      var desc = a.deskripsi || (a.durasi_tambahan_menit > 0 
+        ? 'Tambah durasi sesi ' + a.durasi_tambahan_menit + ' menit'
+        : 'Tambah foto editan');
+      
+      return '<div class="addon-item ' + (isSelected ? 'selected' : '') + '" data-kode="'+a.kode+'">' +
+        '<div class="addon-info">' +
+          '<div class="addon-nama">'+a.nama+'</div>' +
+          '<div class="addon-desc">'+desc+'</div>' +
+          '<div class="addon-harga">+ '+formatRupiah(a.harga)+'</div>' +
+        '</div>' +
+        '<div class="addon-stepper">' +
+          '<button type="button" class="btn-step" onclick="changeAddonQty(\''+a.kode+'\', -1)" ' + (qty <= 0 ? 'disabled' : '') + '>−</button>' +
+          '<span class="addon-qty ' + (qty === 0 ? 'zero' : '') + '">'+qty+'</span>' +
+          '<button type="button" class="btn-step" onclick="changeAddonQty(\''+a.kode+'\', 1)" ' + (qty >= maxQty ? 'disabled' : '') + '>+</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // ============================================================
+  // CHANGE ADD-ON QTY
+  // ============================================================
+  function changeAddonQty(kode, delta) {
+    var addon = state.addonList.find(function(a){ return a.kode === kode; });
+    if (!addon) return;
+
+    var currentQty = state.addonQty[kode] || 0;
+    var maxQty = addon.max_qty || 3;
+    var newQty = currentQty + delta;
+
+    if (newQty < 0) newQty = 0;
+    if (newQty > maxQty) newQty = maxQty;
+
+    if (newQty === currentQty) return;
+
+    // Kalau nambah qty add-on durasi, cek dulu
+    if (delta > 0 && addon.durasi_tambahan_menit > 0) {
+      var totalTambahanBaru = 0;
+      state.addonList.forEach(function(a){
+        var q = (a.kode === kode) ? newQty : (state.addonQty[a.kode] || 0);
+        if (a.durasi_tambahan_menit > 0) totalTambahanBaru += a.durasi_tambahan_menit * q;
+      });
+
+      cekAddonDurasiTotal(totalTambahanBaru, function(ok, alasan) {
+        if (!ok) {
+          var warning = document.getElementById('addonWarning');
+          if (warning) {
+            warning.innerText = '⚠️ ' + alasan;
+            warning.classList.add('show');
+            setTimeout(function(){ warning.classList.remove('show'); }, 5000);
+          }
+          return;
+        }
+        applyAddonQty(kode, newQty);
+      });
+    } else {
+      applyAddonQty(kode, newQty);
+    }
+  }
+
+  function applyAddonQty(kode, newQty) {
+    state.addonQty[kode] = newQty;
+    if (newQty === 0) {
+      delete state.addonQty[kode];
+    }
+    state.addonTerpilih = Object.keys(state.addonQty).filter(function(k){
+      return state.addonQty[k] > 0;
+    });
+    renderAddon();
+    hitungDurasiTotal();
+    updateHargaPreview();
+  }
+
+  // ============================================================
+  // CEK ADD-ON DURASI TOTAL (multi)
+  // ============================================================
+  function cekAddonDurasiTotal(totalTambahanMenit, callback) {
+    if (!state.slotTerpilih || !state.tanggalTerpilih || !state.kotaAktif) {
+      callback(false, 'Slot belum dipilih');
+      return;
+    }
+
+    if (totalTambahanMenit === 0) {
+      callback(true);
+      return;
+    }
+
+    supabase.rpc('cek_slot_addon', {
+      p_kota: state.kotaAktif,
+      p_tanggal: state.tanggalTerpilih,
+      p_jam_mulai: state.slotTerpilih.jam_mulai,
+      p_jam_selesai_slot: state.slotTerpilih.jam_selesai,
+      p_durasi_tambahan_menit: totalTambahanMenit
+    }).then(function(res){
+      if (res.error) {
+        console.error('Error cek addon:', res.error);
+        callback(false, 'Gagal cek ketersediaan add-on');
+        return;
+      }
+      var data = res.data;
+      if (data && data.tersedia) {
+        callback(true);
+      } else {
+        callback(false, (data && data.alasan) || 'Slot berikutnya sudah terisi');
+      }
+    }).catch(function(err){
+      console.error('Error cek addon:', err);
+      callback(false, 'Gagal cek ketersediaan add-on');
+    });
+  }
+
+  // ============================================================
+  // HITUNG DURASI TOTAL (multi)
+  // ============================================================
+  function hitungDurasiTotal() {
+    var total = 60;
+    state.addonList.forEach(function(a){
+      if (a.durasi_tambahan_menit > 0) {
+        var qty = state.addonQty[a.kode] || 0;
+        total += a.durasi_tambahan_menit * qty;
+      }
+    });
+    state.durasiTotal = total;
+    return total;
+  }
+
+  // ============================================================
+  // UPDATE PREVIEW HARGA
   // ============================================================
   function updateHargaPreview() {
     var preview = document.getElementById('hargaPreview');
@@ -649,16 +816,41 @@
       namaPaket = opt.value || '-';
     }
 
+    var totalAddon = 0;
+    state.addonList.forEach(function(a){
+      var qty = state.addonQty[a.kode] || 0;
+      totalAddon += (Number(a.harga) || 0) * qty;
+    });
+
     var elPaket = document.getElementById('previewPaket');
+    var elAddon = document.getElementById('previewAddon');
+    var elAddonRow = document.getElementById('previewAddonRow');
     var elTotal = document.getElementById('previewTotal');
+    var elDurasi = document.getElementById('previewDurasi');
 
     if (elPaket) elPaket.innerText = formatRupiah(hargaPaket);
 
+    if (totalAddon > 0 && elAddonRow) {
+      elAddonRow.style.display = 'flex';
+      if (elAddon) elAddon.innerText = formatRupiah(totalAddon);
+    } else if (elAddonRow) {
+      elAddonRow.style.display = 'none';
+    }
+
+    var total = hargaPaket + totalAddon;
     if (elTotal) {
-      elTotal.innerText = formatRupiah(hargaPaket);
+      elTotal.innerText = formatRupiah(total);
       elTotal.classList.remove('updated');
       void elTotal.offsetWidth;
       elTotal.classList.add('updated');
+    }
+
+    if (elDurasi) {
+      var durasi = hitungDurasiTotal();
+      var jamMulai = state.slotTerpilih ? state.slotTerpilih.jam_mulai : '-';
+      var jamSelesai = hitungJamSelesai(jamMulai, durasi);
+      elDurasi.innerText = '⏱️ Durasi sesi: ' + durasi + ' menit (' + jamMulai + ' - ' + jamSelesai + ')';
+      elDurasi.style.display = 'block';
     }
 
     preview.classList.add('updating');
@@ -667,8 +859,21 @@
     window.__hargaPreview = {
       paket: namaPaket,
       harga_paket: hargaPaket,
-      total: hargaPaket
+      total_addon: totalAddon,
+      total: total,
+      durasi_total_menit: hitungDurasiTotal()
     };
+  }
+
+  function hitungJamSelesai(jamMulai, durasiMenit) {
+    if (!jamMulai || jamMulai === '-') return '-';
+    var parts = jamMulai.split(':');
+    var h = parseInt(parts[0], 10);
+    var m = parseInt(parts[1], 10);
+    var totalMenit = h * 60 + m + durasiMenit;
+    var hBaru = Math.floor(totalMenit / 60) % 24;
+    var mBaru = totalMenit % 60;
+    return String(hBaru).padStart(2, '0') + ':' + String(mBaru).padStart(2, '0');
   }
 
   // ---------- RENDER REGION ----------
@@ -725,6 +930,7 @@
     state.isLoading = true;
 
     loadAdminWa();
+    loadAddon(kota);
 
     var card = document.querySelector('.region-card[data-kota="'+kota+'"]');
     if(card) card.classList.add('loading');
@@ -733,6 +939,8 @@
     state.tanggalTerpilih = null;
     state.slotTerpilih = null;
     state.bulanAktif = new Date();
+    state.addonQty = {};
+    state.addonTerpilih = [];
     state.allData = { pricelist:[], pricelistMedia:[], kalender:{}, slot:{} };
     state.paketList = [];
 
@@ -944,6 +1152,9 @@
 
   function bukaForm(slot){
     state.slotTerpilih = slot;
+    state.addonQty = {};
+    state.addonTerpilih = [];
+    state.durasiTotal = 60;
 
     document.getElementById('infoSlot').innerHTML =
       '📍 <strong>'+state.kotaAktif+'</strong> &middot; 📅 '+formatTanggalDDMMYYYY(state.tanggalTerpilih)+' &middot; ⏰ '+slot.jam_mulai+' - '+slot.jam_selesai;
@@ -959,7 +1170,11 @@
     document.getElementById('errorBox').style.display='none';
     document.getElementById('formOverlay').style.display='flex';
 
-    setTimeout(updateHargaPreview, 50);
+    loadAddon(state.kotaAktif).then(function(){
+      renderAddon();
+    });
+
+    setTimeout(updateHargaPreview, 100);
   }
 
   function tutupForm(){ document.getElementById('formOverlay').style.display='none'; }
@@ -986,21 +1201,56 @@
       errorBox.innerText='⚠️ Semua wajib diisi.'; errorBox.style.display='block'; return;
     }
 
+    // Hitung total & add-on list (multi qty)
+    var totalAddon = 0;
+    var addonListArr = [];
+    state.addonList.forEach(function(a){
+      var qty = state.addonQty[a.kode] || 0;
+      if (qty > 0) {
+        totalAddon += Number(a.harga) * qty;
+        addonListArr.push({
+          kode: a.kode,
+          nama: a.nama,
+          harga: a.harga,
+          qty: qty,
+          subtotal: Number(a.harga) * qty,
+          durasi_tambahan_menit: a.durasi_tambahan_menit,
+          total_durasi_tambahan: a.durasi_tambahan_menit * qty
+        });
+      }
+    });
+
+    var totalHarga = Number(harga) + totalAddon;
+    var durasiTotal = hitungDurasiTotal();
+
     btn.disabled = true; btn.classList.add('btn-loading');
     showLoading('Membuat Booking...'); errorBox.style.display='none';
 
     supabase.rpc('buat_booking',{
-      p_kota:state.kotaAktif, p_tanggal:state.tanggalTerpilih,
-      p_jam_mulai:state.slotTerpilih.jam_mulai, p_jam_selesai:state.slotTerpilih.jam_selesai,
-      p_nama_client:nama, p_kampus:kampus, p_lokasi:lokasi,
-      p_paket:paket, p_total_harga:Number(harga),
-      p_wa:wa, p_instagram:ig, p_email:email
+      p_kota: state.kotaAktif,
+      p_tanggal: state.tanggalTerpilih,
+      p_jam_mulai: state.slotTerpilih.jam_mulai,
+      p_jam_selesai: state.slotTerpilih.jam_selesai,
+      p_nama_client: nama,
+      p_kampus: kampus,
+      p_lokasi: lokasi,
+      p_paket: paket,
+      p_total_harga: totalHarga,
+      p_wa: wa,
+      p_instagram: ig,
+      p_email: email,
+      p_addon_list: addonListArr,
+      p_total_addon: totalAddon,
+      p_durasi_total_menit: durasiTotal
     }).then(function(res){
       hideLoading(); btn.disabled=false; btn.classList.remove('btn-loading');
       if(res.error){ errorBox.innerText='❌ '+res.error.message; errorBox.style.display='block'; return; }
       var data = res.data;
       data.nama_client=nama; data.kampus=kampus; data.lokasi=lokasi;
       data.wa=wa; data.ig=ig; data.email=email;
+      data.total_addon = totalAddon;
+      data.addon_list = addonListArr;
+      data.durasi_total_menit = durasiTotal;
       tutupForm(); tampilkanInvoice(data);
 
       delete CACHE.slot[state.kotaAktif+'|'+state.tanggalTerpilih];
@@ -1031,6 +1281,17 @@
     document.getElementById('invTotal').innerText = formatRupiah(data.total_harga);
 
     var total = Number(data.total_harga||0);
+    var addonList = data.addon_list || [];
+
+    var addonText = '';
+    if (addonList.length > 0) {
+      addonText = '\n🎁 *Tambahan:*\n';
+      addonList.forEach(function(a){
+        var qty = a.qty || 1;
+        var subtotal = a.subtotal || a.harga;
+        addonText += '  • ' + a.nama + ' ×' + qty + ' — Rp' + Number(subtotal).toLocaleString('id-ID') + '\n';
+      });
+    }
 
     var pesan =
       '🎓 *Lavelle Graduation Shot*\n\n📋 *Detail Booking:*\n\n'+
@@ -1045,6 +1306,7 @@
       '⏰ Jam        : '+(data.jam_mulai||'')+' - '+(data.jam_selesai||'')+'\n'+
       '📍 Kota       : '+(data.kota||'-')+'\n'+
       '📦 Paket      : '+(data.paket||'-')+'\n'+
+      addonText+
       '💰 Total      : Rp'+total.toLocaleString('id-ID')+'\n\n'+
       'Saya mau konfirmasi booking. Terima kasih! 🙏';
 
@@ -1121,6 +1383,7 @@
   window.tutupInvoice = tutupInvoice;
   window.kembaliKeHome = kembaliKeHome;
   window.updateHargaPreview = updateHargaPreview;
+  window.changeAddonQty = changeAddonQty;
 
   function init(){ renderRegions(); showToast('📷 Studio Lavelle - Pilih wilayah',2000); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init,{once:true});
