@@ -510,24 +510,15 @@
 </div>
 
 <script src="config.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Script Supabase Client DIHAPUS karena frontend sekarang hanya berkomunikasi dengan backend Node.js -->
 
 <script>
 (function () {
   'use strict';
 
-  var supabase = null;
-  var supabaseReady = false;
-  try {
-    supabase = window.supabase.createClient(
-      window.LAVELLE_CONFIG.SUPABASE_URL,
-      window.LAVELLE_CONFIG.SUPABASE_KEY
-    );
-    supabaseReady = true;
-    console.log('✅ Supabase client siap.');
-  } catch (err) {
-    console.error('❌ Supabase gagal:', err);
-  }
+  // URL Backend Node.js (pastikan sesuai dengan alamat server backend Anda)
+  var API_URL = window.LAVELLE_CONFIG.API_URL || 'http://localhost:3000/api';
+  var supabaseReady = true; // Selalu siap karena kita pakai API sendiri
 
   // ============================================================
   // NOMOR WA ADMIN
@@ -540,25 +531,19 @@
   function loadAdminWa() {
     if (adminWaLoaded) return Promise.resolve(ADMIN_WA_PER_KOTA);
     if (adminWaPromise) return adminWaPromise;
-    if (!supabaseReady) return Promise.resolve({});
 
-    adminWaPromise = supabase
-      .from('admin_wa')
-      .select('kota, wa_number')
-      .then(function (res) {
-        if (res.error) {
-          console.error('❌ Gagal load admin_wa:', res.error);
-          return {};
-        }
-        var data = {};
-        (res.data || []).forEach(function (row) {
-          data[row.kota] = row.wa_number;
+    adminWaPromise = fetch(API_URL + '/admin-wa')
+      .then(function(res){ return res.json(); })
+      .then(function (data) {
+        var result = {};
+        (data || []).forEach(function (row) {
+          result[row.kota] = row.wa_number;
         });
-        ADMIN_WA_PER_KOTA = data;
-        ADMIN_WA_DEFAULT = data['Jogja'] || Object.keys(data).map(function(k){ return data[k]; })[0] || '';
+        ADMIN_WA_PER_KOTA = result;
+        ADMIN_WA_DEFAULT = result['Jogja'] || Object.values(result)[0] || '';
         adminWaLoaded = true;
-        console.log('✅ Nomor WA admin dimuat:', data);
-        return data;
+        console.log('✅ Nomor WA admin dimuat:', result);
+        return result;
       })
       .catch(function (err) {
         console.error('❌ Error load admin_wa:', err);
@@ -584,9 +569,7 @@
   var state = {
     kotaAktif:null, bulanAktif:new Date(), tanggalTerpilih:null,
     slotTerpilih:null, paketList:[], addonList:[], allData:null, isLoading:false,
-    addonQty: {},
-    addonTerpilih: [],
-    durasiTotal: 60
+    addonQty: {}, addonTerpilih: [], durasiTotal: 60
   };
 
   var kotaMenunggu = null;
@@ -595,34 +578,25 @@
     if (!tanggal) return '-';
     var str = String(tanggal).trim();
     var m = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (m) {
-      return m[3] + '-' + m[2] + '-' + m[1];
-    }
+    if (m) return m[3] + '-' + m[2] + '-' + m[1];
     var d = new Date(str);
     if (isNaN(d.getTime())) return str;
-    return String(d.getDate()).padStart(2,'0') + '-' +
-           String(d.getMonth()+1).padStart(2,'0') + '-' +
-           d.getFullYear();
+    return String(d.getDate()).padStart(2,'0') + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + d.getFullYear();
   }
 
-  function formatRupiah(angka) {
-    return 'Rp ' + Number(angka || 0).toLocaleString('id-ID');
-  }
-
+  function formatRupiah(angka) { return 'Rp ' + Number(angka || 0).toLocaleString('id-ID'); }
   function isCacheValid(ts){ return new Date().toDateString() === new Date(ts).toDateString(); }
-  function formatDate(d){
-    return d.getFullYear() + '-' +
-      String(d.getMonth()+1).padStart(2,'0') + '-' +
-      String(d.getDate()).padStart(2,'0');
-  }
+  function formatDate(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
   function showLoading(t){ document.getElementById('loadingText').innerText = t||'Memproses...'; document.getElementById('loadingOverlay').classList.add('active'); }
   function hideLoading(){ document.getElementById('loadingOverlay').classList.remove('active'); }
+  
   function showToast(msg,dur){
     dur=dur||3000;
     var e=document.querySelector('.toast'); if(e)e.remove();
     var t=document.createElement('div'); t.className='toast'; t.innerText=msg;
     document.body.appendChild(t); setTimeout(function(){t.remove();},dur);
   }
+  
   function trackEvent(n,p){ if(typeof gtag==='function') gtag('event',n,p||{}); }
 
   // ============================================================
@@ -633,20 +607,12 @@
       state.addonList = CACHE.addon[kota];
       return Promise.resolve(CACHE.addon[kota]);
     }
-    return supabase
-      .from('addon')
-      .select('*')
-      .eq('kota', kota)
-      .eq('aktif', true)
-      .order('urutan')
-      .then(function(res){
-        if (res.error) {
-          console.error('❌ Gagal load addon:', res.error);
-          return [];
-        }
-        CACHE.addon[kota] = res.data || [];
-        state.addonList = res.data || [];
-        return res.data || [];
+    return fetch(API_URL + '/addon?kota=' + encodeURIComponent(kota))
+      .then(function(res){ return res.json(); })
+      .then(function(data){
+        CACHE.addon[kota] = data || [];
+        state.addonList = data || [];
+        return data || [];
       })
       .catch(function(err){
         console.error('❌ Error load addon:', err);
@@ -673,9 +639,7 @@
       var qty = state.addonQty[a.kode] || 0;
       var isSelected = qty > 0;
       var maxQty = a.max_qty || 3;
-      var desc = a.deskripsi || (a.durasi_tambahan_menit > 0 
-        ? 'Tambah durasi sesi ' + a.durasi_tambahan_menit + ' menit'
-        : 'Tambah foto editan');
+      var desc = a.deskripsi || (a.durasi_tambahan_menit > 0 ? 'Tambah durasi sesi ' + a.durasi_tambahan_menit + ' menit' : 'Tambah foto editan');
       
       return '<div class="addon-item ' + (isSelected ? 'selected' : '') + '" data-kode="'+a.kode+'">' +
         '<div class="addon-info">' +
@@ -705,10 +669,8 @@
 
     if (newQty < 0) newQty = 0;
     if (newQty > maxQty) newQty = maxQty;
-
     if (newQty === currentQty) return;
 
-    // Kalau nambah qty add-on durasi, cek dulu
     if (delta > 0 && addon.durasi_tambahan_menit > 0) {
       var totalTambahanBaru = 0;
       state.addonList.forEach(function(a){
@@ -735,12 +697,8 @@
 
   function applyAddonQty(kode, newQty) {
     state.addonQty[kode] = newQty;
-    if (newQty === 0) {
-      delete state.addonQty[kode];
-    }
-    state.addonTerpilih = Object.keys(state.addonQty).filter(function(k){
-      return state.addonQty[k] > 0;
-    });
+    if (newQty === 0) delete state.addonQty[kode];
+    state.addonTerpilih = Object.keys(state.addonQty).filter(function(k){ return state.addonQty[k] > 0; });
     renderAddon();
     hitungDurasiTotal();
     updateHargaPreview();
@@ -751,42 +709,37 @@
   // ============================================================
   function cekAddonDurasiTotal(totalTambahanMenit, callback) {
     if (!state.slotTerpilih || !state.tanggalTerpilih || !state.kotaAktif) {
-      callback(false, 'Slot belum dipilih');
-      return;
+      callback(false, 'Slot belum dipilih'); return;
     }
-
     if (totalTambahanMenit === 0) {
-      callback(true);
-      return;
+      callback(true); return;
     }
 
-    supabase.rpc('cek_slot_addon', {
-      p_kota: state.kotaAktif,
-      p_tanggal: state.tanggalTerpilih,
-      p_jam_mulai: state.slotTerpilih.jam_mulai,
-      p_jam_selesai_slot: state.slotTerpilih.jam_selesai,
-      p_durasi_tambahan_menit: totalTambahanMenit
-    }).then(function(res){
-      if (res.error) {
-        console.error('Error cek addon:', res.error);
-        callback(false, 'Gagal cek ketersediaan add-on');
-        return;
-      }
-      var data = res.data;
+    fetch(API_URL + '/cek-slot-addon', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        p_kota: state.kotaAktif,
+        p_tanggal: state.tanggalTerpilih,
+        p_jam_mulai: state.slotTerpilih.jam_mulai,
+        p_jam_selesai_slot: state.slotTerpilih.jam_selesai,
+        p_durasi_tambahan_menit: totalTambahanMenit
+      })
+    })
+    .then(function(res){ return res.json(); })
+    .then(function(data){
       if (data && data.tersedia) {
         callback(true);
       } else {
         callback(false, (data && data.alasan) || 'Slot berikutnya sudah terisi');
       }
-    }).catch(function(err){
+    })
+    .catch(function(err){
       console.error('Error cek addon:', err);
       callback(false, 'Gagal cek ketersediaan add-on');
     });
   }
 
-  // ============================================================
-  // HITUNG DURASI TOTAL (multi)
-  // ============================================================
   function hitungDurasiTotal() {
     var total = 60;
     state.addonList.forEach(function(a){
@@ -799,9 +752,6 @@
     return total;
   }
 
-  // ============================================================
-  // UPDATE PREVIEW HARGA
-  // ============================================================
   function updateHargaPreview() {
     var preview = document.getElementById('hargaPreview');
     if (!preview) return;
@@ -856,13 +806,7 @@
     preview.classList.add('updating');
     setTimeout(function () { preview.classList.remove('updating'); }, 400);
 
-    window.__hargaPreview = {
-      paket: namaPaket,
-      harga_paket: hargaPaket,
-      total_addon: totalAddon,
-      total: total,
-      durasi_total_menit: hitungDurasiTotal()
-    };
+    window.__hargaPreview = { paket: namaPaket, harga_paket: hargaPaket, total_addon: totalAddon, total: total, durasi_total_menit: hitungDurasiTotal() };
   }
 
   function hitungJamSelesai(jamMulai, durasiMenit) {
@@ -876,7 +820,6 @@
     return String(hBaru).padStart(2, '0') + ':' + String(mBaru).padStart(2, '0');
   }
 
-  // ---------- RENDER REGION ----------
   function renderRegions(){
     var grid = document.getElementById('regionGrid');
     if(!grid) return;
@@ -906,9 +849,7 @@
       if(faq){
         faq.scrollIntoView({ behavior:'smooth', block:'start' });
         var firstFaq = document.querySelector('.faq-item');
-        if(firstFaq && !firstFaq.classList.contains('open')){
-          firstFaq.classList.add('open');
-        }
+        if(firstFaq && !firstFaq.classList.contains('open')) firstFaq.classList.add('open');
       }
     }, 200);
     kotaMenunggu = null;
@@ -928,7 +869,6 @@
 
   function pilihKotaLanjut(kota){
     state.isLoading = true;
-
     loadAdminWa();
     loadAddon(kota);
 
@@ -953,16 +893,19 @@
     var m = state.bulanAktif.getMonth();
     document.getElementById('bulanLabel').innerText = NAMA_BULAN[m] + ' ' + y;
 
-    var pPricelist = supabase.from('pricelist').select('*').eq('kota',kota)
-      .then(function(r){ return r.error ? [] : r.data; }).catch(function(){ return []; });
-    var pPricelistMedia = supabase.from('pricelist_media').select('*').eq('kota',kota).order('urutan')
-      .then(function(r){ return r.error ? [] : r.data; }).catch(function(){ return []; });
+    // Ambil data pricelist & media dari Backend
+    var pPricelist = fetch(API_URL + '/pricelist?kota=' + encodeURIComponent(kota))
+      .then(function(res){ return res.json(); })
+      .then(function(data){ 
+        state.paketList = data.paket || []; 
+        tampilkanPricelist(data.media || []);
+        return data;
+      })
+      .catch(function(){ return {paket:[], media:[]}; });
+
     var pKalender = fetchKalenderBulanKota(kota,y,m);
 
-    pPricelist.then(function(d){ state.paketList = Array.isArray(d)?d:[]; });
-    pPricelistMedia.then(function(d){ tampilkanPricelist(Array.isArray(d)?d:[]); });
-
-    Promise.all([pPricelist,pPricelistMedia,pKalender])
+    Promise.all([pPricelist,pKalender])
       .then(function(){ renderKalender(y,m); })
       .catch(function(err){ console.error(err); showToast('❌ Gagal muat data.',4000); })
       .finally(function(){
@@ -985,18 +928,27 @@
       Object.assign(state.allData.kalender, cached.data);
       return Promise.resolve(cached.data);
     }
-    return supabase.rpc('get_kalender_bulk',{
-      p_kota:kota, p_tanggal_mulai:bulanStr+'-01', p_jumlah_hari:totalHari
-    }).then(function(res){
-      if(res.error){ showToast('❌ '+res.error.message,3000); return {}; }
-      var hasil = {};
-      (res.data||[]).forEach(function(row){
-        hasil[row.tanggal] = { tersedia:row.tersedia, jumlah_slot:row.jumlah_slot };
-      });
-      CACHE.kalenderBulan[key] = { data:hasil, timestamp:Date.now() };
-      Object.assign(state.allData.kalender, hasil);
-      return hasil;
-    }).catch(function(err){ console.error(err); return {}; });
+
+    return fetch(API_URL + '/kalender?kota=' + encodeURIComponent(kota) + '&bulan_mulai=' + bulanStr + '&jumlah_hari=' + totalHari)
+      .then(function(res){ return res.json(); })
+      .then(function(resData){
+        var hasil = {};
+        var bookedDates = {};
+        (resData.data || []).forEach(function(row){ bookedDates[row.tanggal] = true; });
+
+        // Logika ketersediaan: Anggap tersedia jika tidak ada booking yang menutup full 1 hari.
+        // (Sesuaikan jika 1 hari bisa lebih dari 1 slot).
+        for(var i=1; i<=totalHari; i++){
+          var tgl = bulanStr + '-' + String(i).padStart(2, '0');
+          // Asumsi: Jika ada minimal 1 booking, tanggal tetap tersedia (bisa pilih jam lain). 
+          // Tersedia = true, nanti dicek di get_slots.
+          hasil[tgl] = { tersedia: true, jumlah_slot: 1 };
+        }
+        
+        CACHE.kalenderBulan[key] = { data:hasil, timestamp:Date.now() };
+        Object.assign(state.allData.kalender, hasil);
+        return hasil;
+      }).catch(function(err){ console.error(err); return {}; });
   }
 
   function tampilkanSkeleton(){
@@ -1070,8 +1022,7 @@
       else if(tersedia){ kelas += ' available'; if(isSelected) kelas += ' selected'; }
       else kelas += ' full';
 
-      var klik = (!bulanDitutup && !sudahLewat && tersedia)
-        ? 'onclick="pilihTanggal(\''+tglStr+'\')"' : '';
+      var klik = (!bulanDitutup && !sudahLewat && tersedia) ? 'onclick="pilihTanggal(\''+tglStr+'\')"' : '';
       html += '<div class="'+kelas+'" '+klik+' data-tanggal="'+tglStr+'">'+d+'</div>';
     }
     grid.innerHTML = html;
@@ -1129,11 +1080,12 @@
     if(cached && isCacheValid(cached.timestamp)){ renderSlots(cached.data,area); return; }
 
     area.innerHTML = '<div class="slot-empty"><span class="loading-spinner"></span> Memuat jam...</div>';
-    supabase.rpc('get_slot_tersedia',{ p_kota:state.kotaAktif, p_tanggal:tanggal })
-      .then(function(res){
-        if(res.error) throw res.error;
-        CACHE.slot[key] = { data:res.data, timestamp:Date.now() };
-        renderSlots(res.data||[], area);
+    
+    fetch(API_URL + '/slots?kota=' + encodeURIComponent(state.kotaAktif) + '&tanggal=' + tanggal)
+      .then(function(res){ return res.json(); })
+      .then(function(data){
+        CACHE.slot[key] = { data:data, timestamp:Date.now() };
+        renderSlots(data||[], area);
       }).catch(function(err){
         area.innerHTML = '<div class="slot-empty">❌ Gagal muat jam.</div>';
         console.error(err);
@@ -1170,10 +1122,7 @@
     document.getElementById('errorBox').style.display='none';
     document.getElementById('formOverlay').style.display='flex';
 
-    loadAddon(state.kotaAktif).then(function(){
-      renderAddon();
-    });
-
+    loadAddon(state.kotaAktif).then(function(){ renderAddon(); });
     setTimeout(updateHargaPreview, 100);
   }
 
@@ -1201,22 +1150,13 @@
       errorBox.innerText='⚠️ Semua wajib diisi.'; errorBox.style.display='block'; return;
     }
 
-    // Hitung total & add-on list (multi qty)
     var totalAddon = 0;
     var addonListArr = [];
     state.addonList.forEach(function(a){
       var qty = state.addonQty[a.kode] || 0;
       if (qty > 0) {
         totalAddon += Number(a.harga) * qty;
-        addonListArr.push({
-          kode: a.kode,
-          nama: a.nama,
-          harga: a.harga,
-          qty: qty,
-          subtotal: Number(a.harga) * qty,
-          durasi_tambahan_menit: a.durasi_tambahan_menit,
-          total_durasi_tambahan: a.durasi_tambahan_menit * qty
-        });
+        addonListArr.push({ kode: a.kode, nama: a.nama, harga: a.harga, qty: qty, subtotal: Number(a.harga) * qty, durasi_tambahan_menit: a.durasi_tambahan_menit, total_durasi_tambahan: a.durasi_tambahan_menit * qty });
       }
     });
 
@@ -1226,7 +1166,7 @@
     btn.disabled = true; btn.classList.add('btn-loading');
     showLoading('Membuat Booking...'); errorBox.style.display='none';
 
-    supabase.rpc('buat_booking',{
+    var payload = {
       p_kota: state.kotaAktif,
       p_tanggal: state.tanggalTerpilih,
       p_jam_mulai: state.slotTerpilih.jam_mulai,
@@ -1242,15 +1182,25 @@
       p_addon_list: addonListArr,
       p_total_addon: totalAddon,
       p_durasi_total_menit: durasiTotal
-    }).then(function(res){
+    };
+
+    fetch(API_URL + '/booking', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function(res){ return res.json(); })
+    .then(function(data){
       hideLoading(); btn.disabled=false; btn.classList.remove('btn-loading');
-      if(res.error){ errorBox.innerText='❌ '+res.error.message; errorBox.style.display='block'; return; }
-      var data = res.data;
+      
+      if(data.error){ errorBox.innerText='❌ '+data.error; errorBox.style.display='block'; return; }
+      
       data.nama_client=nama; data.kampus=kampus; data.lokasi=lokasi;
       data.wa=wa; data.ig=ig; data.email=email;
       data.total_addon = totalAddon;
       data.addon_list = addonListArr;
       data.durasi_total_menit = durasiTotal;
+      
       tutupForm(); tampilkanInvoice(data);
 
       delete CACHE.slot[state.kotaAktif+'|'+state.tanggalTerpilih];
@@ -1317,20 +1267,14 @@
       loadAdminWa().then(function () {
         var waBaru = ADMIN_WA_PER_KOTA[data.kota] || ADMIN_WA_DEFAULT;
         if (waBaru) {
-          var urlBaru = 'https://api.whatsapp.com/send/?phone=' + waBaru +
-            '&text=' + encodeURIComponent(pesan) +
-            '&type=phone_number&app_absent=0';
+          var urlBaru = 'https://api.whatsapp.com/send/?phone=' + waBaru + '&text=' + encodeURIComponent(pesan) + '&type=phone_number&app_absent=0';
           btnWa.href = urlBaru;
         } else {
-          btnWa.href = '#';
-          btnWa.innerText = '⚠️ Nomor WA Admin belum diatur';
-          btnWa.style.background = '#9CA3AF';
+          btnWa.href = '#'; btnWa.innerText = '⚠️ Nomor WA Admin belum diatur'; btnWa.style.background = '#9CA3AF';
         }
       });
     } else {
-      var waUrl = 'https://api.whatsapp.com/send/?phone=' + adminWa +
-        '&text=' + encodeURIComponent(pesan) +
-        '&type=phone_number&app_absent=0';
+      var waUrl = 'https://api.whatsapp.com/send/?phone=' + adminWa + '&text=' + encodeURIComponent(pesan) + '&type=phone_number&app_absent=0';
       btnWa.href = waUrl;
     }
 
@@ -1350,8 +1294,7 @@
     if(e.target===b || b.contains(e.target)){
       e.preventDefault();
       if (!b.href || b.href === '#' || b.href.indexOf('api.whatsapp.com') === -1) {
-        showToast('⚠️ Nomor WA Admin belum diatur. Hubungi developer.', 3000);
-        return;
+        showToast('⚠️ Nomor WA Admin belum diatur. Hubungi developer.', 3000); return;
       }
       trackEvent('klik_wa_booking',{kota:b.dataset.kota||'', booking_id:b.dataset.bookingId||''});
       b.disabled = true; showLoading('Mengarahkan ke WhatsApp...');
@@ -1363,14 +1306,10 @@
   var pilihanOv = document.getElementById('pilihanOverlay');
   if(pilihanOv){
     pilihanOv.addEventListener('click', function(e){
-      if(e.target === this){
-        pilihanOv.classList.remove('active');
-        kotaMenunggu = null;
-      }
+      if(e.target === this){ pilihanOv.classList.remove('active'); kotaMenunggu = null; }
     });
   }
 
-  // ---------- EXPOSE ----------
   window.pilihKota = pilihKota;
   window.pilihKotaLanjut = pilihKotaLanjut;
   window.pilihTanya = pilihTanya;
