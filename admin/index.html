@@ -43,9 +43,7 @@
   }
   .card-header h2{font-size:20px;font-weight:500;}
 
-  .logo{
-    text-align:center;padding:20px 0;
-  }
+  .logo{text-align:center;padding:20px 0;}
   .logo h1{font-size:28px;font-style:italic;font-weight:500;}
   .logo p{color:var(--mute);font-size:14px;margin-top:4px;}
 
@@ -125,6 +123,8 @@
     font-weight:500; transition:background .2s;
   }
   .btn-link:hover{background:#3367D6;}
+  .btn-token{background:#10B981;}
+  .btn-token:hover{background:#059669;}
 
   .error-box{display:none;color:#B3413E;font-size:13px;padding:10px 14px;background:#FDE8E8;border-radius:8px;margin-top:8px;}
   .success-box{display:none;color:#065F46;font-size:13px;padding:10px 14px;background:#D1FAE5;border-radius:8px;margin-top:8px;}
@@ -164,7 +164,8 @@
 
   .toast{
     position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-    background:var(--ink);color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:100;animation:slideUp .3s;
+    background:var(--ink);color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:300;animation:slideUp .3s;
+    max-width:90vw;text-align:center;
   }
   @keyframes slideUp{from{transform:translate(-50%,20px);opacity:0;}to{transform:translate(-50%,0);opacity:1;}}
   @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
@@ -178,8 +179,6 @@
 
   .text-muted{color:var(--mute);font-size:12px;}
   .text-center{text-align:center;}
-  .mt-12{margin-top:12px;}
-  .mb-8{margin-bottom:8px;}
   .flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
 
   .modal-overlay{
@@ -270,7 +269,7 @@
 
     <div class="card">
       <div class="filter-bar">
-        <select id="filterStatus" onchange="loadBookings()">
+        <select id="filterStatus" onchange="renderBookings()">
           <option value="all">📋 Semua Status</option>
           <option value="booking">📋 Booking</option>
           <option value="dp">💰 DP</option>
@@ -280,7 +279,7 @@
           <option value="done_edit">🎉 Selesai</option>
           <option value="expired">⏰ Expired</option>
         </select>
-        <select id="filterKota" onchange="loadBookings()">
+        <select id="filterKota" onchange="renderBookings()">
           <option value="all">📍 Semua Kota</option>
           <option value="Jogja">Jogja</option>
           <option value="Solo">Solo</option>
@@ -294,7 +293,7 @@
           autocomplete="off"
           readonly
           onfocus="this.removeAttribute('readonly')"
-          oninput="loadBookings()"
+          oninput="renderBookings()"
           style="flex:1;min-width:150px;"
         >
         <button class="btn-primary btn-sm" onclick="loadBookings()" style="white-space:nowrap;">🔄 Refresh</button>
@@ -339,6 +338,16 @@
 (function () {
   'use strict';
 
+  // ============================================================
+  // PENYIMPANAN SESI
+  // sessionStorage = login hilang kalau tab ditutup.
+  // Mau tetap login walau tab/browser ditutup? Ganti jadi: window.localStorage
+  // (jadwal-fg.html juga memakai sessionStorage, ganti di sana juga)
+  // ============================================================
+  var STORE = window.sessionStorage;
+  var KEY_TOKEN = 'lavelle_admin_token';
+  var KEY_NAMA  = 'lavelle_admin_nama';
+
   var supabase = null;
   var supabaseReady = false;
   try {
@@ -357,9 +366,18 @@
     isLoggedIn: false,
     adminToken: null,
     adminNama: '',
-    gdriveBookingId: null,
-    copyInterval: null
+    gdriveBookingId: null
   };
+
+  // ---------- HELPER ----------
+  function $(id){ return document.getElementById(id); }
+
+  // Data klien datang dari form publik, jadi selalu di-escape sebelum masuk innerHTML
+  function esc(s){
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
 
   function showToast(msg, dur){
     dur = dur || 3000;
@@ -368,10 +386,83 @@
     document.body.appendChild(t); setTimeout(function(){ t.remove(); }, dur);
   }
 
-  // ---------- LOGIN ----------
+  function pesanError(res){
+    return (res.error && res.error.message) || (res.data && res.data.error) || '';
+  }
+  function adaError(res){
+    return !!(res.error || (res.data && res.data.error));
+  }
+
+  // ---------- SESI ----------
+  function simpanSesi(token, nama){
+    try { STORE.setItem(KEY_TOKEN, token); STORE.setItem(KEY_NAMA, nama); }
+    catch(e){ console.error('Storage error:', e); }
+  }
+  function hapusSesiLokal(){
+    state.isLoggedIn = false; state.adminToken = null; state.adminNama = '';
+    try { STORE.removeItem(KEY_TOKEN); STORE.removeItem(KEY_NAMA); } catch(e){}
+  }
+
+  function tampilkanDashboard(){
+    $('loginSection').style.display = 'none';
+    $('dashboardSection').style.display = 'block';
+    var info = $('adminInfo');
+    if(info) info.innerText = '👤 ' + state.adminNama;
+  }
+
+  // true kalau hasil RPC menandakan token tidak valid / kedaluwarsa
+  function sesiHabis(res){
+    return /sesi|token|expired|berakhir|tidak valid|unauthor/i.test(pesanError(res));
+  }
+
+  function sesiBerakhir(){
+    hapusSesiLokal();
+    $('dashboardSection').style.display = 'none';
+    $('loginSection').style.display = 'block';
+    var err = $('loginError');
+    err.innerText = '⏰ Sesi berakhir. Silakan login lagi.';
+    err.style.display = 'block';
+  }
+
+  // Dipakai di semua callback RPC: kalau sesi habis, kembali ke login dan return true
+  function cekSesi(res){
+    if(adaError(res) && sesiHabis(res)){ sesiBerakhir(); return true; }
+    return false;
+  }
+
+  // Dipanggil saat halaman dibuka: pakai token tersimpan, tidak minta login ulang
+  function pulihkanSesi(){
+    var token = null, nama = 'Admin';
+    try {
+      token = STORE.getItem(KEY_TOKEN);
+      nama = STORE.getItem(KEY_NAMA) || 'Admin';
+    } catch(e){}
+    if(!token || !supabaseReady) return;
+
+    $('loginSection').style.display = 'none'; // cegah form login berkedip
+
+    supabase.rpc('admin_get_all_bookings', { p_token: token })
+      .then(function(res){
+        if(adaError(res)){
+          if(sesiHabis(res)) sesiBerakhir();
+          else $('loginSection').style.display = 'block'; // error lain: token tidak dihapus
+          return;
+        }
+        state.isLoggedIn = true; state.adminToken = token; state.adminNama = nama;
+        tampilkanDashboard();
+        state.bookings = res.data.data || [];
+        renderBookings();
+      })
+      .catch(function(e){
+        console.error(e);
+        $('loginSection').style.display = 'block';
+      });
+  }
+
+  // ---------- LOGIN / LOGOUT ----------
   function loginAdmin(){
-    var passEl = document.getElementById('adminPassword');
-    var err = document.getElementById('loginError');
+    var passEl = $('adminPassword');
+    var err = $('loginError');
     err.style.display = 'none';
 
     var password = passEl ? passEl.value.trim() : '';
@@ -381,14 +472,13 @@
       err.style.display = 'block';
       return;
     }
-
     if(!supabaseReady || !supabase){
       err.innerText = '❌ Sistem belum siap. Refresh halaman.';
       err.style.display = 'block';
       return;
     }
 
-    var btn = document.getElementById('btnLogin');
+    var btn = $('btnLogin');
     if(btn){ btn.disabled = true; btn.classList.add('btn-loading'); }
 
     supabase.rpc('admin_login',{ p_nama: 'admin', p_password: password })
@@ -401,17 +491,9 @@
         state.isLoggedIn = true;
         state.adminToken = d.token;
         state.adminNama = d.nama;
+        simpanSesi(d.token, d.nama);
 
-        try {
-          sessionStorage.setItem('lavelle_admin_token', d.token);
-          sessionStorage.setItem('lavelle_admin_nama', d.nama);
-        } catch(e){ console.error('sessionStorage error:', e); }
-
-        document.getElementById('loginSection').style.display = 'none';
-        document.getElementById('dashboardSection').style.display = 'block';
-        var info = document.getElementById('adminInfo');
-        if(info) info.innerText = '👤 ' + d.nama;
-
+        tampilkanDashboard();
         loadBookings();
         showToast('✅ Selamat datang, '+d.nama+'!');
       }).catch(function(e){
@@ -424,16 +506,12 @@
     if(state.adminToken && supabase){
       supabase.rpc('admin_logout',{ p_token: state.adminToken }).then(function(){});
     }
-    state.isLoggedIn=false; state.adminToken=null; state.adminNama='';
+    hapusSesiLokal();
 
-    try {
-      sessionStorage.removeItem('lavelle_admin_token');
-      sessionStorage.removeItem('lavelle_admin_nama');
-    } catch(e){}
-
-    document.getElementById('loginSection').style.display='block';
-    document.getElementById('dashboardSection').style.display='none';
-    var passEl = document.getElementById('adminPassword');
+    $('loginSection').style.display='block';
+    $('dashboardSection').style.display='none';
+    $('loginError').style.display='none';
+    var passEl = $('adminPassword');
     if(passEl) passEl.value='';
     showToast('👋 Logout');
   }
@@ -441,29 +519,33 @@
   // ---------- LOAD BOOKINGS ----------
   function loadBookings(){
     if(!state.isLoggedIn || !supabase) return;
-    var c = document.getElementById('tableContainer');
+    var c = $('tableContainer');
     c.innerHTML = '<div class="text-center" style="padding:40px;"><span class="loading-spinner"></span> Memuat...</div>';
 
     supabase.rpc('admin_get_all_bookings',{ p_token: state.adminToken })
       .then(function(res){
-        if(res.error){ c.innerHTML = '<div class="empty-state">❌ '+res.error.message+'</div>'; return; }
-        var d = res.data;
-        if(d.error){ c.innerHTML = '<div class="empty-state">❌ '+d.error+'</div>'; return; }
-        state.bookings = d.data || [];
+        if(cekSesi(res)) return;
+        if(adaError(res)){
+          c.innerHTML = '<div class="empty-state">❌ '+esc(pesanError(res))+'</div>';
+          return;
+        }
+        state.bookings = res.data.data || [];
         renderBookings();
       }).catch(function(e){
-        c.innerHTML = '<div class="empty-state">❌ Gagal muat: '+e.message+'</div>';
+        c.innerHTML = '<div class="empty-state">❌ Gagal muat: '+esc(e.message)+'</div>';
       });
   }
 
   function renderBookings(){
-    var c = document.getElementById('tableContainer');
-    var fs = document.getElementById('filterStatus').value;
-    var fk = document.getElementById('filterKota').value;
-    var q = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+    var c = $('tableContainer');
+    if(!c) return;
+    var fs = $('filterStatus').value;
+    var fk = $('filterKota').value;
+    var q = ($('searchInput').value || '').toLowerCase().trim();
 
     var list = state.bookings.slice().filter(function(b){ return b.status !== 'done_edit'; });
-    if(fs !== 'all') list = list.filter(function(b){ return b.status === fs; });
+    if(fs === 'done_edit') list = state.bookings.filter(function(b){ return b.status === 'done_edit'; });
+    else if(fs !== 'all') list = list.filter(function(b){ return b.status === fs; });
     if(fk !== 'all') list = list.filter(function(b){ return b.kota === fk; });
     if(q) list = list.filter(function(b){
       return (b.booking_id||'').toLowerCase().indexOf(q) !== -1 ||
@@ -472,7 +554,7 @@
     });
     list.sort(function(a,b){ return (b.tanggal_dibuat||'').localeCompare(a.tanggal_dibuat||''); });
 
-    document.getElementById('resultCount').innerText = list.length + ' data';
+    $('resultCount').innerText = list.length + ' data';
     updateStats();
 
     if(!list.length){ c.innerHTML = '<div class="empty-state">📭 Tidak ada booking aktif</div>'; return; }
@@ -484,11 +566,11 @@
 
     list.forEach(function(b){
       html += '<tr>'+
-        '<td><span class="mono" style="font-size:12px;">'+(b.booking_id||'-')+'</span></td>'+
-        '<td><strong>'+(b.nama_client||'-')+'</strong></td>'+
-        '<td>'+(b.kampus||'-')+'</td>'+
-        '<td>'+(b.kota||'-')+'</td>'+
-        '<td>'+(b.tanggal||'-')+'</td>'+
+        '<td><span class="mono" style="font-size:12px;">'+esc(b.booking_id||'-')+'</span></td>'+
+        '<td><strong>'+esc(b.nama_client||'-')+'</strong></td>'+
+        '<td>'+esc(b.kampus||'-')+'</td>'+
+        '<td>'+esc(b.kota||'-')+'</td>'+
+        '<td>'+esc(b.tanggal||'-')+'</td>'+
         '<td>'+getStatusBadge(b.status)+'</td>'+
         '<td><div class="status-actions">'+getStatusActions(b)+'</div></td>'+
       '</tr>';
@@ -511,58 +593,68 @@
     return '<span class="badge '+s[0]+'">'+s[1]+'</span>';
   }
 
+  // ID booking dibawa lewat data-id (sudah di-escape), bukan ditempel ke string JS
   function getStatusActions(b){
     var s = b.status;
+    var id = esc(b.booking_id);
     var a = [];
 
+    function tombol(kelas, label, handler, extra){
+      return '<button class="'+kelas+' btn-sm" data-id="'+id+'" onclick="'+handler+'"'+(extra||'')+'>'+label+'</button>';
+    }
+
     if(s==='booking'){
-      a.push('<button class="btn-success btn-sm" onclick="updateStatus(\''+b.booking_id+'\',\'dp\')">💰 DP</button>');
-      a.push('<button class="btn-primary btn-sm" onclick="updateStatus(\''+b.booking_id+'\',\'lunas\')" style="background:var(--sage);">✅ Lunas</button>');
-      a.push('<button class="btn-danger btn-sm" onclick="deleteBooking(\''+b.booking_id+'\')">🗑️</button>');
+      a.push(tombol('btn-success', '💰 DP', "updateStatus(this.dataset.id,'dp')"));
+      a.push(tombol('btn-primary', '✅ Lunas', "updateStatus(this.dataset.id,'lunas')", ' style="background:var(--sage);"'));
+      a.push(tombol('btn-danger', '🗑️', 'deleteBooking(this.dataset.id)'));
     } else if(s==='dp'){
-      a.push('<button class="btn-success btn-sm" onclick="updateStatus(\''+b.booking_id+'\',\'lunas\')">✅ Lunas</button>');
-      a.push('<button class="btn-warning btn-sm" onclick="updateStatus(\''+b.booking_id+'\',\'booking\')">↺ Reset</button>');
+      a.push(tombol('btn-success', '✅ Lunas', "updateStatus(this.dataset.id,'lunas')"));
+      a.push(tombol('btn-warning', '↺ Reset', "updateStatus(this.dataset.id,'booking')"));
     } else if(s==='lunas'){
-      a.push('<button class="btn-gdrive btn-sm" onclick="openGdriveModal(\''+b.booking_id+'\')">📁 Upload Gdrive</button>');
-      a.push('<button class="btn-warning btn-sm" onclick="updateStatus(\''+b.booking_id+'\',\'booking\')">↺ Reset</button>');
+      a.push(tombol('btn-gdrive', '📁 Upload Gdrive', 'openGdriveModal(this.dataset.id)'));
+      a.push(tombol('btn-warning', '↺ Reset', "updateStatus(this.dataset.id,'booking')"));
     } else if(s==='upload_gdrive'){
       if(b.copy_done){
-        a.push('<button class="btn-edit btn-sm" onclick="updateStatus(\''+b.booking_id+'\',\'edit_foto\')">🎨 Edit Foto</button>');
+        a.push(tombol('btn-edit', '🎨 Edit Foto', "updateStatus(this.dataset.id,'edit_foto')"));
       } else {
         var ada = false;
-        try { var fl = b.foto_list || []; ada = fl.length>0 && fl.some(function(f){ return f && f.trim(); }); } catch(e){}
+        try { var fl = b.foto_list || []; ada = fl.length>0 && fl.some(function(f){ return f && String(f).trim(); }); } catch(e){}
         if(ada){
           if(b.copy_status === 'processing'){
             var pct = b.copy_total>0 ? Math.round((b.copy_progress/b.copy_total)*100) : 0;
             a.push('<span class="text-muted" style="font-size:11px;">⏳ Copy '+pct+'%</span>');
           } else {
-            a.push('<button class="btn-copy btn-sm" onclick="startCopyProcess(\''+b.booking_id+'\')">📁 Copy Foto</button>');
+            a.push(tombol('btn-copy', '📁 Copy Foto', 'startCopyProcess(this.dataset.id, this)'));
           }
         } else {
           a.push('<span class="text-muted" style="font-size:10px;">📭 Client belum isi list</span>');
         }
       }
-      a.push('<button class="btn-link btn-sm" onclick="copyMagicLink(\''+b.booking_id+'\')">🔗 Link</button>');
-      a.push('<button class="btn-warning btn-sm" onclick="updateStatus(\''+b.booking_id+'\',\'booking\')">↺ Reset</button>');
+      a.push(tombol('btn-link', '🔗 Link', 'copyMagicLink(this.dataset.id)'));
+      a.push(tombol('btn-warning', '↺ Reset', "updateStatus(this.dataset.id,'booking')"));
     } else if(s==='edit_foto'){
-      a.push('<button class="btn-success btn-sm" onclick="updateStatus(\''+b.booking_id+'\',\'done_edit\')">🎉 Done Edit</button>');
-      a.push('<button class="btn-link btn-sm" onclick="copyMagicLink(\''+b.booking_id+'\')">🔗 Link</button>');
-      a.push('<button class="btn-warning btn-sm" onclick="updateStatus(\''+b.booking_id+'\',\'booking\')">↺ Reset</button>');
+      a.push(tombol('btn-success', '🎉 Done Edit', "updateStatus(this.dataset.id,'done_edit')"));
+      a.push(tombol('btn-link', '🔗 Link', 'copyMagicLink(this.dataset.id)'));
+      a.push(tombol('btn-warning', '↺ Reset', "updateStatus(this.dataset.id,'booking')"));
     } else if(s==='expired'){
-      a.push('<button class="btn-danger btn-sm" onclick="deleteBooking(\''+b.booking_id+'\')">🗑️</button>');
+      a.push(tombol('btn-danger', '🗑️', 'deleteBooking(this.dataset.id)'));
     } else {
       a.push('<span class="text-muted">-</span>');
     }
 
-    // ⬇️ TOMBOL TOKEN — selalu tampil di setiap booking
-    a.push('<button class="btn-link btn-sm" onclick="copyTokenText(\''+b.booking_id+'\')" style="background:#10B981;">🔑 Token</button>');
+    // Tombol token: selalu tampil di setiap booking
+    a.push(tombol('btn-link btn-token', '🔑 Token', 'copyTokenText(this.dataset.id)'));
 
     return a.join('');
   }
 
   // ---------- MAGIC LINK ----------
+  function findBooking(id){
+    return state.bookings.find(function(x){ return x.booking_id === id; });
+  }
+
   function copyMagicLink(bookingId){
-    var b = state.bookings.find(function(x){ return x.booking_id === bookingId; });
+    var b = findBooking(bookingId);
     if(!b || !b.token){ showToast('❌ Token tidak ditemukan'); return; }
     var link = window.LAVELLE_CONFIG.APP_URL + '/client.html?token=' + b.token;
     if(navigator.clipboard && navigator.clipboard.writeText){
@@ -571,17 +663,17 @@
       }).catch(function(){ fallbackCopy(link); });
     } else fallbackCopy(link);
   }
+
   // ---------- COPY TOKEN TEXT ----------
   function copyTokenText(bookingId){
-    var b = state.bookings.find(function(x){ return x.booking_id === bookingId; });
+    var b = findBooking(bookingId);
     if(!b || !b.token){ showToast('❌ Token tidak ditemukan'); return; }
-  
-    // Ambil APP_URL dari config (tanpa trailing slash)
+
+    // APP_URL dari config (tanpa trailing slash)
     var base = (window.LAVELLE_CONFIG.APP_URL || '').replace(/\/+$/, '');
     var link = base + '/client?token=' + b.token;
-  
     var teks = 'Klik link berikut untuk akses proses photoshoot:\n' + link;
-  
+
     if(navigator.clipboard && navigator.clipboard.writeText){
       navigator.clipboard.writeText(teks).then(function(){
         showToast('✅ Link token disalin!');
@@ -590,6 +682,7 @@
       fallbackCopy(teks);
     }
   }
+
   function fallbackCopy(text){
     var ta = document.createElement('textarea');
     ta.value = text; ta.style.position='fixed'; ta.style.left='-9999px';
@@ -599,38 +692,37 @@
   }
 
   // ---------- COPY FOTO (via Apps Script) ----------
-  var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbylUSYUw-CqwTohmC-iFg0A3sGmQClmmQXLmzlsciC2pYmtbexDX5C8elZa98nSVm8I6g/exec'; // ← ganti dengan URL kamu
-  
-  function startCopyProcess(bookingId){
+  var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbylUSYUw-CqwTohmC-iFg0A3sGmQClmmQXLmzlsciC2pYmtbexDX5C8elZa98nSVm8I6g/exec';
+  var COPY_POLL_MAKS = 120; // 120 x 5 detik = 10 menit, lalu berhenti
+
+  function resetTombolCopy(btn){
+    if(btn){ btn.disabled=false; btn.classList.remove('btn-loading'); btn.innerText='📁 Copy Foto'; }
+  }
+
+  function startCopyProcess(bookingId, btn){
     if(!confirm('Copy foto untuk '+bookingId+'?')) return;
-  
-    var btn = document.querySelector('[onclick*="startCopyProcess(\''+bookingId+'\')"]');
-    if(btn){ btn.disabled=true; btn.classList.add('btn-loading'); btn.innerText='⏳ Proses...'; }
-  
-    // Ambil booking + foto_list dari state
-    var b = state.bookings.find(function(x){ return x.booking_id === bookingId; });
+
+    var b = findBooking(bookingId);
     if(!b){ showToast('❌ Booking tidak ditemukan'); return; }
-  
+
     var fotoList = [];
     try {
       if(Array.isArray(b.foto_list)) fotoList = b.foto_list;
       else if(typeof b.foto_list === 'string') fotoList = JSON.parse(b.foto_list);
     } catch(e){ fotoList = []; }
-  
     fotoList = fotoList.filter(function(f){ return f && String(f).trim(); });
-  
+
     if(fotoList.length === 0){
       showToast('❌ Daftar foto kosong');
-      if(btn){ btn.disabled=false; btn.classList.remove('btn-loading'); btn.innerText='📁 Copy Foto'; }
       return;
     }
-  
+
+    if(btn){ btn.disabled=true; btn.classList.add('btn-loading'); btn.innerText='⏳ Proses...'; }
     showToast('⏳ Sedang copy ' + fotoList.length + ' foto...');
-  
-    // Panggil Apps Script
+
     fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      mode: 'no-cors',   // ← trik untuk hindari CORS di Apps Script
+      mode: 'no-cors',   // hindari CORS di Apps Script
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         action: 'copyFotos',
@@ -639,63 +731,78 @@
       })
     })
     .then(function(){
-      // Karena no-cors, tidak bisa baca response.
-      // Polling status dari Supabase copy_queue
-      setTimeout(function(){ pollingCopyStatus(bookingId, btn); }, 3000);
+      // no-cors: response tidak bisa dibaca, jadi pantau status lewat Supabase
+      setTimeout(function(){ pollingCopyStatus(bookingId, btn, 0); }, 3000);
     })
     .catch(function(e){
       showToast('❌ Gagal: ' + e.message);
-      if(btn){ btn.disabled=false; btn.classList.remove('btn-loading'); btn.innerText='📁 Copy Foto'; }
+      resetTombolCopy(btn);
     });
   }
-  
-  // ---------- POLLING STATUS COPY ----------
-  function pollingCopyStatus(bookingId, btn){
-    // Cek apakah status booking sudah berubah jadi edit_foto
+
+  function pollingCopyStatus(bookingId, btn, percobaan){
+    if(!state.isLoggedIn) return;
+    if(percobaan >= COPY_POLL_MAKS){
+      showToast('⚠️ Copy belum selesai. Klik Refresh untuk cek lagi.', 5000);
+      resetTombolCopy(btn);
+      return;
+    }
+
     supabase.rpc('admin_get_all_bookings',{ p_token: state.adminToken })
       .then(function(res){
+        if(cekSesi(res)) return;
+        if(adaError(res)){
+          showToast('❌ ' + pesanError(res));
+          resetTombolCopy(btn);
+          return;
+        }
         var list = (res.data && res.data.data) || [];
         var b = list.find(function(x){ return x.booking_id === bookingId; });
-  
+
         if(b && b.status === 'edit_foto'){
           showToast('✅ Copy selesai!');
-          if(btn){ btn.disabled=false; btn.classList.remove('btn-loading'); btn.innerText='📁 Copy Foto'; }
+          resetTombolCopy(btn);
           loadBookings();
         } else {
-          // Belum selesai, cek lagi 5 detik lagi
-          if(btn){ btn.innerText='⏳ Copy...'; }
-          setTimeout(function(){ pollingCopyStatus(bookingId, btn); }, 5000);
+          if(btn) btn.innerText='⏳ Copy...';
+          setTimeout(function(){ pollingCopyStatus(bookingId, btn, percobaan + 1); }, 5000);
         }
+      })
+      .catch(function(e){
+        console.error(e);
+        setTimeout(function(){ pollingCopyStatus(bookingId, btn, percobaan + 1); }, 5000);
       });
   }
+
   // ---------- GDRIVE MODAL ----------
   function openGdriveModal(bookingId){
     state.gdriveBookingId = bookingId;
-    document.getElementById('modalBookingId').innerText = bookingId;
-    document.getElementById('inputGdriveLink').value = '';
-    document.getElementById('gdriveError').style.display = 'none';
-    document.getElementById('modalGdrive').classList.add('active');
+    $('modalBookingId').innerText = bookingId;
+    $('inputGdriveLink').value = '';
+    $('gdriveError').style.display = 'none';
+    $('modalGdrive').classList.add('active');
   }
   function closeGdriveModal(){
-    document.getElementById('modalGdrive').classList.remove('active');
+    $('modalGdrive').classList.remove('active');
     state.gdriveBookingId = null;
   }
   function submitGdrive(){
-    var link = document.getElementById('inputGdriveLink').value.trim();
-    var err = document.getElementById('gdriveError');
+    var link = $('inputGdriveLink').value.trim();
+    var err = $('gdriveError');
     err.style.display='none';
     if(!link){ err.innerText='⚠️ Link wajib diisi.'; err.style.display='block'; return; }
     if(link.indexOf('drive.google.com')===-1){ err.innerText='⚠️ Link tidak valid.'; err.style.display='block'; return; }
 
-    var btn = document.getElementById('btnGdriveSubmit');
+    var btn = $('btnGdriveSubmit');
     btn.disabled=true; btn.classList.add('btn-loading');
 
     supabase.rpc('admin_update_gdrive',{
       p_token: state.adminToken, p_booking_id: state.gdriveBookingId, p_link: link
     }).then(function(res){
       btn.disabled=false; btn.classList.remove('btn-loading');
-      if(res.error || (res.data && res.data.error)){
-        err.innerText = '❌ '+((res.error && res.error.message) || res.data.error);
+      if(adaError(res)){
+        if(sesiHabis(res)){ closeGdriveModal(); sesiBerakhir(); return; }
+        err.innerText = '❌ '+pesanError(res);
         err.style.display='block'; return;
       }
       closeGdriveModal();
@@ -712,9 +819,8 @@
     if(!confirm('Ubah status '+bookingId+' → '+newStatus+'?')) return;
     supabase.rpc('admin_update_status',{ p_token:state.adminToken, p_booking_id:bookingId, p_status:newStatus })
       .then(function(res){
-        if(res.error || (res.data && res.data.error)){
-          showToast('❌ '+((res.error && res.error.message) || res.data.error)); return;
-        }
+        if(cekSesi(res)) return;
+        if(adaError(res)){ showToast('❌ '+pesanError(res)); return; }
         showToast('✅ Status diubah'); loadBookings();
       }).catch(function(e){ showToast('❌ '+e.message); });
   }
@@ -722,25 +828,25 @@
     if(!confirm('Hapus '+bookingId+'?')) return;
     supabase.rpc('admin_delete_booking',{ p_token:state.adminToken, p_booking_id:bookingId })
       .then(function(res){
-        if(res.error || (res.data && res.data.error)){
-          showToast('❌ '+((res.error && res.error.message) || res.data.error)); return;
-        }
+        if(cekSesi(res)) return;
+        if(adaError(res)){ showToast('❌ '+pesanError(res)); return; }
         showToast('✅ Booking dihapus'); loadBookings();
       }).catch(function(e){ showToast('❌ '+e.message); });
   }
 
   function updateStats(){
     var aktif = state.bookings.filter(function(b){ return b.status !== 'done_edit'; });
-    document.getElementById('statTotal').innerText = aktif.length;
-    document.getElementById('statBooking').innerText = aktif.filter(function(b){ return b.status==='booking'; }).length;
-    document.getElementById('statDp').innerText = aktif.filter(function(b){ return b.status==='dp'; }).length;
-    document.getElementById('statSelesai').innerText = state.bookings.filter(function(b){ return b.status==='done_edit'; }).length;
+    $('statTotal').innerText = aktif.length;
+    $('statBooking').innerText = aktif.filter(function(b){ return b.status==='booking'; }).length;
+    $('statDp').innerText = aktif.filter(function(b){ return b.status==='dp'; }).length;
+    $('statSelesai').innerText = state.bookings.filter(function(b){ return b.status==='done_edit'; }).length;
   }
 
   // ---------- EXPOSE KE WINDOW ----------
   window.loginAdmin = loginAdmin;
   window.logoutAdmin = logoutAdmin;
   window.loadBookings = loadBookings;
+  window.renderBookings = renderBookings;
   window.updateStatus = updateStatus;
   window.deleteBooking = deleteBooking;
   window.openGdriveModal = openGdriveModal;
@@ -748,12 +854,11 @@
   window.submitGdrive = submitGdrive;
   window.startCopyProcess = startCopyProcess;
   window.copyMagicLink = copyMagicLink;
-  window.copyMagicLink = copyMagicLink;
   window.copyTokenText = copyTokenText;
 
   // ---------- INIT ----------
   function init(){
-    var modalG = document.getElementById('modalGdrive');
+    var modalG = $('modalGdrive');
     if(modalG){
       modalG.addEventListener('click', function(e){
         if(e.target === this) closeGdriveModal();
@@ -761,9 +866,10 @@
     }
 
     document.addEventListener('keydown', function(e){
-      if(e.key === 'Enter' && !state.isLoggedIn) loginAdmin();
+      if(e.key === 'Enter' && !state.isLoggedIn && $('loginSection').style.display !== 'none') loginAdmin();
     });
 
+    pulihkanSesi();
     console.log('✅ Admin panel siap.');
   }
 
