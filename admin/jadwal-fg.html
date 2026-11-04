@@ -49,13 +49,11 @@
   .btn-secondary:hover{color:var(--ink);border-color:var(--ink);}
   .btn-sm{padding:6px 12px;font-size:12px;}
   .btn-save{background:var(--sage);color:#fff;}
-  .btn-save:hover{background:#597A5F;}
+  .btn-save:hover:not(:disabled){background:#597A5F;}
   .btn-save:disabled{background:#C9BFC3;cursor:not-allowed;}
+  .btn:focus-visible, select:focus-visible, input:focus-visible{outline:2px solid var(--rose);outline-offset:2px;}
 
-  /* Layar blokir (kalau belum login admin) */
-  .blocked{
-    max-width:480px;margin:80px auto;text-align:center;
-  }
+  .blocked{max-width:480px;margin:80px auto;text-align:center;}
   .blocked h1{font-size:24px;font-style:italic;font-weight:500;}
   .blocked p{color:var(--mute);font-size:14px;margin:8px 0 24px;}
 
@@ -69,54 +67,27 @@
   }
   .filter-bar input{flex:1;}
 
-  .table-wrap{
-    overflow-x:auto; border:1px solid var(--line); border-radius:8px;
-  }
+  .table-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:8px;}
   table{width:100%; border-collapse:collapse; font-size:13px;}
   th{
     background:var(--paper); padding:10px 12px; text-align:left;
     font-weight:600; color:var(--mute); font-size:11px;
-    text-transform:uppercase; letter-spacing:.04em;
+    letter-spacing:.04em;
     border-bottom:2px solid var(--line);
-    position:sticky; top:0; z-index:2;
+    position:sticky; top:0; z-index:2; white-space:nowrap;
   }
   td{padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:middle;}
+  tr:hover td{background:#FAF8F6;}
 
-  tr.row-ok:hover td{background:#FAF8F6;}
-  tr.row-bentrok td{ background:#FDE8E8 !important; }
-  tr.row-bentrok:hover td{ background:#FCDADA !important; }
-  tr.row-dirty td:first-child{ border-left:3px solid var(--gold); }
-
-  .badge{
-    display:inline-block; padding:3px 10px; border-radius:20px;
-    font-size:11px; font-weight:600;
-  }
+  .badge{display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; white-space:nowrap;}
   .badge-booking{background:#FEF3C7;color:#92400E;}
   .badge-dp{background:#DBEAFE;color:#1E40AF;}
   .badge-lunas{background:#D1FAE5;color:#065F46;}
   .badge-upload{background:#FEF3C7;color:#92400E;}
   .badge-edit{background:#FCE7F3;color:#9D174D;}
 
-  .select-fotografer{
-    padding:6px 10px; border:1px solid var(--line); border-radius:6px;
-    font-size:12px; font-family:inherit; background:#fff; min-width:150px;
-  }
-  .select-fotografer.dirty{
-    border-color:var(--gold); background:#FFFBF0;
-  }
-  .select-fotografer.bentrok{
-    border-color:var(--danger); background:#FFF1F1;
-  }
-
-  .pesan-bentrok{
-    display:none; font-size:11px; color:var(--danger);
-    margin-top:4px; line-height:1.4;
-  }
-  .pesan-bentrok.show{display:block;}
-
   .cell-nama{font-weight:500;}
   .cell-sub{font-size:11px; color:var(--mute); margin-top:2px;}
-
   .empty-state{text-align:center; padding:40px; color:var(--mute);}
 
   .loading-spinner{
@@ -130,8 +101,8 @@
   .toast{
     position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
     background:var(--ink); color:#fff; padding:12px 24px;
-    border-radius:8px; font-size:14px; z-index:100;
-    animation:slideUp .3s;
+    border-radius:8px; font-size:14px; z-index:200;
+    animation:slideUp .3s; max-width:90vw; text-align:center;
   }
   @keyframes slideUp{
     from{transform:translate(-50%,20px);opacity:0;}
@@ -142,18 +113,48 @@
     display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
     gap:12px; margin-bottom:20px;
   }
-  .stat{
-    background:var(--card); border:1px solid var(--line);
-    border-radius:8px; padding:14px; text-align:center;
-  }
+  .stat{background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px; text-align:center;}
   .stat .num{font-size:22px;font-weight:700;font-family:'Fraunces',serif;}
   .stat .lbl{font-size:11px;color:var(--mute);margin-top:2px;}
+
+  /* ===== MODAL EDIT ===== */
+  .overlay{
+    display:none; position:fixed; inset:0; background:rgba(46,37,50,.55);
+    align-items:center; justify-content:center; z-index:100; padding:20px;
+  }
+  .overlay.active{display:flex;}
+  .modal{
+    background:var(--paper); border-radius:12px; max-width:460px; width:100%;
+    padding:28px; max-height:92vh; overflow-y:auto;
+    box-shadow:0 20px 60px rgba(0,0,0,.3);
+  }
+  .modal h3{font-size:22px; font-style:italic; font-weight:500;}
+  .modal-sub{font-size:12px; color:var(--mute); margin:6px 0 20px; line-height:1.5;}
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:12px; color:var(--mute); margin-bottom:6px; font-weight:600;}
+  .field input, .field select{
+    width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:6px;
+    font-family:inherit; font-size:14px; background:#fff; color:var(--ink);
+  }
+  .field-group{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .id-note{font-size:11.5px; color:var(--mute); line-height:1.5; margin:2px 0 12px;}
+
+  .status-box{display:none; padding:10px 12px; border-radius:8px; font-size:12.5px; line-height:1.5; margin:4px 0 12px;}
+  .status-box.show{display:block;}
+  .status-box.info{background:#F3EEEB; color:var(--mute);}
+  .status-box.ok{background:#D1FAE5; color:#065F46;}
+  .status-box.bad{background:var(--danger-bg); color:var(--danger);}
+  .status-box.warn{background:#FEF3C7; color:#92400E;}
+
+  .modal-actions{display:flex; gap:10px; justify-content:flex-end; margin-top:8px;}
+  .modal-actions .btn{padding:10px 18px; font-size:13px;}
 
   @media (max-width:640px){
     .container{padding:12px;}
     .card{padding:16px;}
     td,th{padding:8px 6px; font-size:12px;}
     .filter-bar{flex-direction:column; align-items:stretch;}
+    .modal{padding:20px;}
   }
 </style>
 </head>
@@ -176,7 +177,7 @@
     <div class="card topbar">
       <div>
         <h1>📅 Atur Jadwal Fotografer</h1>
-        <div class="sub">Ganti fotografer tiap booking. Sistem cek bentrok otomatis.</div>
+        <div class="sub">Klik Edit untuk mengganti fotografer, tanggal, atau jam. Booking ID ikut diperbarui otomatis.</div>
       </div>
       <div class="actions">
         <span style="font-size:12px;color:var(--mute);" id="adminInfo">👤 Admin</span>
@@ -186,8 +187,7 @@
 
     <div class="stats">
       <div class="stat"><div class="num" id="statTotal">0</div><div class="lbl">Total Booking</div></div>
-      <div class="stat"><div class="num" id="statDirty" style="color:var(--gold);">0</div><div class="lbl">Belum Disimpan</div></div>
-      <div class="stat"><div class="num" id="statBentrok" style="color:var(--danger);">0</div><div class="lbl">Bentrok</div></div>
+      <div class="stat"><div class="num" id="statShown">0</div><div class="lbl">Ditampilkan</div></div>
     </div>
 
     <div class="card">
@@ -200,9 +200,6 @@
         </select>
         <input type="text" id="searchKlien" placeholder="🔍 Cari nama klien / booking ID" oninput="applyFilter()">
         <button class="btn btn-secondary btn-sm" onclick="loadData()">🔄 Refresh</button>
-        <button class="btn btn-save btn-sm" id="btnSimpanSemua" onclick="simpanSemuaPerubahan()" disabled>
-          💾 Simpan Semua (<span id="countDirty">0</span>)
-        </button>
       </div>
 
       <div class="table-wrap" id="tableContainer">
@@ -212,6 +209,41 @@
 
   </div>
 
+</div>
+
+<!-- MODAL EDIT BOOKING -->
+<div class="overlay" id="editOverlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+    <h3 id="editTitle">✏️ Edit Booking</h3>
+    <div class="modal-sub" id="editInfo"></div>
+
+    <div class="field">
+      <label for="eFotografer">Fotografer</label>
+      <select id="eFotografer" onchange="onEditChange()"></select>
+    </div>
+    <div class="field">
+      <label for="eTanggal">Tanggal</label>
+      <input type="date" id="eTanggal" onchange="onEditChange()">
+    </div>
+    <div class="field-group">
+      <div class="field">
+        <label for="eMulai">Jam mulai</label>
+        <input type="time" id="eMulai" onchange="onMulaiChange()">
+      </div>
+      <div class="field">
+        <label for="eSelesai">Jam selesai</label>
+        <input type="time" id="eSelesai" onchange="onEditChange()">
+      </div>
+    </div>
+
+    <div class="status-box" id="editStatus"></div>
+    <div class="id-note">Booking ID dibuat ulang otomatis dari kota, tanggal, nomor urut, dan inisial fotografer.</div>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="tutupEdit()">Batal</button>
+      <button class="btn btn-save" id="btnSimpanEdit" onclick="simpanEdit()" disabled>💾 Simpan perubahan</button>
+    </div>
+  </div>
 </div>
 
 <script src="../config.js"></script>
@@ -232,7 +264,7 @@
     console.error('❌ Supabase gagal:', err);
   }
 
-  // 🔑 Ambil token dari sessionStorage (di-set oleh admin/index.html saat login)
+  // 🔑 Token dari sessionStorage (di-set oleh admin/index.html saat login)
   var ADMIN_TOKEN = sessionStorage.getItem('lavelle_admin_token');
   var ADMIN_NAMA  = sessionStorage.getItem('lavelle_admin_nama') || 'Admin';
 
@@ -241,10 +273,28 @@
     adminNama: ADMIN_NAMA,
     bookings: [],
     fotograferList: [],
-    changes: {},
-    conflicts: {},
-    dirty: {}
+    edit: null   // { id, orig, lastMulai, seq, timer, ok, saving }
   };
+
+  // ---------- HELPER ----------
+  function $(id) { return document.getElementById(id); }
+
+  // Data klien datang dari form publik, jadi selalu di-escape sebelum masuk innerHTML
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function fmtJam(s) { return String(s || '').substring(0, 5); }
+  function fmtTanggal(s) { return String(s || '').substring(0, 10); }
+  function toMin(t) {
+    var p = String(t || '').split(':');
+    return (parseInt(p[0], 10) || 0) * 60 + (parseInt(p[1], 10) || 0);
+  }
+  function fromMin(m) {
+    m = Math.max(0, Math.min(1439, m));
+    return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+  }
 
   function showToast(msg, dur) {
     dur = dur || 3000;
@@ -255,47 +305,42 @@
     setTimeout(function () { t.remove(); }, dur);
   }
 
+  function findBooking(id) {
+    return state.bookings.find(function (x) { return x.booking_id === id; });
+  }
+  function namaFotografer(fid) {
+    var f = state.fotograferList.find(function (x) { return x.fotografer_id === fid; });
+    return f ? f.nama : (fid || '-');
+  }
+
   // ---------- INISIALISASI ----------
   function init() {
     if (!supabaseReady) {
-      document.getElementById('blockedSection').style.display = 'block';
+      $('blockedSection').style.display = 'block';
       document.querySelector('#blockedSection .blocked h1').innerText = '❌ Sistem belum siap';
       document.querySelector('#blockedSection .blocked p').innerText = 'Coba refresh halaman.';
       return;
     }
-
-    // Kalau belum login (token tidak ada) → tampilkan layar blokir
     if (!state.adminToken) {
-      document.getElementById('blockedSection').style.display = 'block';
+      $('blockedSection').style.display = 'block';
       return;
     }
 
-    // Verifikasi token masih valid dengan test call
     supabase.rpc('admin_get_jadwal_list', { p_token: state.adminToken })
       .then(function (res) {
-        if (res.error) {
-          // Token tidak valid / expired → minta login ulang
+        if (res.error || (res.data && res.data.error)) {
           sessionStorage.removeItem('lavelle_admin_token');
           sessionStorage.removeItem('lavelle_admin_nama');
-          document.getElementById('blockedSection').style.display = 'block';
+          $('blockedSection').style.display = 'block';
           var h = document.querySelector('#blockedSection .blocked h1');
           var p = document.querySelector('#blockedSection .blocked p');
           if (h) h.innerText = '🔒 Sesi Berakhir';
           if (p) p.innerText = 'Silakan login ulang di Admin Panel.';
           return;
         }
-
         var d = res.data;
-        if (d.error) {
-          sessionStorage.removeItem('lavelle_admin_token');
-          sessionStorage.removeItem('lavelle_admin_nama');
-          document.getElementById('blockedSection').style.display = 'block';
-          return;
-        }
-
-        // Token valid → tampilkan dashboard
-        document.getElementById('dashboardSection').style.display = 'block';
-        document.getElementById('adminInfo').innerText = '👤 ' + state.adminNama;
+        $('dashboardSection').style.display = 'block';
+        $('adminInfo').innerText = '👤 ' + state.adminNama;
         state.bookings = d.bookings || [];
         state.fotograferList = d.fotografer || [];
         buildFilterOptions();
@@ -303,63 +348,57 @@
       })
       .catch(function (e) {
         console.error(e);
-        document.getElementById('blockedSection').style.display = 'block';
+        $('blockedSection').style.display = 'block';
       });
   }
 
   // ---------- LOAD DATA (refresh) ----------
   function loadData() {
     if (!state.adminToken) return;
-    var c = document.getElementById('tableContainer');
+    var c = $('tableContainer');
     c.innerHTML = '<div class="empty-state"><span class="loading-spinner"></span> Memuat data...</div>';
 
     supabase.rpc('admin_get_jadwal_list', { p_token: state.adminToken })
       .then(function (res) {
-        if (res.error) { c.innerHTML = '<div class="empty-state">❌ ' + res.error.message + '</div>'; return; }
+        if (res.error) { c.innerHTML = '<div class="empty-state">❌ ' + esc(res.error.message) + '</div>'; return; }
         var d = res.data;
-        if (d.error) { c.innerHTML = '<div class="empty-state">❌ ' + d.error + '</div>'; return; }
-
+        if (d.error) { c.innerHTML = '<div class="empty-state">❌ ' + esc(d.error) + '</div>'; return; }
         state.bookings = d.bookings || [];
         state.fotograferList = d.fotografer || [];
-        state.changes = {};
-        state.conflicts = {};
-        state.dirty = {};
-
         buildFilterOptions();
         renderTable();
       })
       .catch(function (e) {
-        c.innerHTML = '<div class="empty-state">❌ Gagal memuat: ' + e.message + '</div>';
+        c.innerHTML = '<div class="empty-state">❌ Gagal memuat: ' + esc(e.message) + '</div>';
       });
   }
 
   function buildFilterOptions() {
     var kotaSet = {};
     state.bookings.forEach(function (b) { if (b.kota) kotaSet[b.kota] = true; });
-    var fk = document.getElementById('filterKota');
+    var fk = $('filterKota');
     fk.innerHTML = '<option value="all">📍 Semua Kota</option>' +
       Object.keys(kotaSet).sort().map(function (k) {
-        return '<option value="' + k + '">' + k + '</option>';
+        return '<option value="' + esc(k) + '">' + esc(k) + '</option>';
       }).join('');
 
-    var ff = document.getElementById('filterFotografer');
+    var ff = $('filterFotografer');
     ff.innerHTML = '<option value="all">👤 Semua Fotografer</option>' +
       state.fotograferList.map(function (f) {
-        return '<option value="' + f.fotografer_id + '">' + f.nama + ' (' + f.kota + ')</option>';
+        return '<option value="' + esc(f.fotografer_id) + '">' + esc(f.nama) + ' (' + esc(f.kota) + ')</option>';
       }).join('');
   }
 
   function applyFilter() { renderTable(); }
 
   function getFilteredBookings() {
-    var fk = document.getElementById('filterKota').value;
-    var ff = document.getElementById('filterFotografer').value;
-    var q = (document.getElementById('searchKlien').value || '').toLowerCase().trim();
+    var fk = $('filterKota').value;
+    var ff = $('filterFotografer').value;
+    var q = ($('searchKlien').value || '').toLowerCase().trim();
 
     return state.bookings.filter(function (b) {
       if (fk !== 'all' && b.kota !== fk) return false;
-      var fidNow = state.changes[b.booking_id] || b.fotografer_id;
-      if (ff !== 'all' && fidNow !== ff) return false;
+      if (ff !== 'all' && b.fotografer_id !== ff) return false;
       if (q) {
         var hay = ((b.nama_client || '') + ' ' + (b.booking_id || '') + ' ' + (b.kampus || '')).toLowerCase();
         if (hay.indexOf(q) === -1) return false;
@@ -368,93 +407,45 @@
     });
   }
 
+  // ---------- TABEL (semua kolom readonly) ----------
   function renderTable() {
-    var c = document.getElementById('tableContainer');
+    var c = $('tableContainer');
     var list = getFilteredBookings();
+    updateStats(list.length);
 
     if (list.length === 0) {
       c.innerHTML = '<div class="empty-state">📭 Tidak ada booking</div>';
-      updateStats();
       return;
     }
 
     var html = '<table><thead><tr>' +
       '<th>Tanggal & Jam</th>' +
+      '<th>Fotografer</th>' +
       '<th>Booking ID</th>' +
       '<th>Klien</th>' +
       '<th>Kota</th>' +
       '<th>Status</th>' +
-      '<th style="min-width:220px;">Fotografer</th>' +
+      '<th>Aksi</th>' +
       '</tr></thead><tbody>';
 
     list.forEach(function (b) {
-      var fidNow = state.changes[b.booking_id] || b.fotografer_id;
-      var isDirty = state.dirty[b.booking_id];
-      var konflik = state.conflicts[b.booking_id] || [];
-
-      var rowClass = 'row-ok';
-      if (konflik.length > 0) rowClass = 'row-bentrok';
-      else if (isDirty) rowClass = 'row-dirty';
-
-      var selectClass = 'select-fotografer';
-      if (konflik.length > 0) selectClass += ' bentrok';
-      else if (isDirty) selectClass += ' dirty';
-
-      var selectHtml = '<select class="' + selectClass + '" data-booking-id="' + b.booking_id +
-        '" onchange="onChangeFotografer(\'' + b.booking_id + '\', this.value)">';
-
-      if (!fidNow) selectHtml += '<option value="">-- Pilih Fotografer --</option>';
-
-      var perKota = {};
-      state.fotograferList.forEach(function (f) {
-        if (!perKota[f.kota]) perKota[f.kota] = [];
-        perKota[f.kota].push(f);
-      });
-
-      Object.keys(perKota).sort().forEach(function (kota) {
-        selectHtml += '<optgroup label="📍 ' + kota + '">';
-        perKota[kota].forEach(function (f) {
-          var sel = (f.fotografer_id === fidNow) ? ' selected' : '';
-          var tag = '';
-          if (f.fotografer_id === b.fotografer_id && !isDirty) tag = ' (saat ini)';
-          selectHtml += '<option value="' + f.fotografer_id + '"' + sel + '>' +
-            f.nama + tag + '</option>';
-        });
-        selectHtml += '</optgroup>';
-      });
-
-      selectHtml += '</select>';
-
-      var pesanHtml = '';
-      if (konflik.length > 0) {
-        var teks = konflik.map(function (k) {
-          return (k.nama_client || '-') + ' (' + k.jam_mulai + '-' + k.jam_selesai + ')';
-        }).join(', ');
-        pesanHtml = '<div class="pesan-bentrok show">⚠️ Bentrok dengan: ' + teks + '</div>';
-      }
-
-      var tombolSimpan = '';
-      if (isDirty || konflik.length > 0) {
-        var disabled = konflik.length > 0 ? ' disabled' : '';
-        tombolSimpan = '<button class="btn btn-save btn-sm" style="margin-top:6px;"' + disabled +
-          ' onclick="simpanSatu(\'' + b.booking_id + '\')">💾 Simpan</button>';
-      }
-
-      html += '<tr class="' + rowClass + '">' +
-        '<td><strong>' + (b.tanggal || '-') + '</strong><div class="cell-sub">' +
-          (b.jam_mulai || '') + ' - ' + (b.jam_selesai || '') + '</div></td>' +
-        '<td><span class="mono" style="font-size:11px;">' + (b.booking_id || '-') + '</span></td>' +
-        '<td><div class="cell-nama">' + (b.nama_client || '-') + '</div>' +
-          '<div class="cell-sub">' + (b.kampus || '-') + '</div></td>' +
-        '<td>' + (b.kota || '-') + '</td>' +
+      html += '<tr>' +
+        '<td><strong>' + esc(fmtTanggal(b.tanggal)) + '</strong><div class="cell-sub">' +
+          esc(fmtJam(b.jam_mulai)) + ' - ' + esc(fmtJam(b.jam_selesai)) + '</div></td>' +
+        '<td><div class="cell-nama">' + esc(namaFotografer(b.fotografer_id)) + '</div>' +
+          '<div class="cell-sub mono">' + esc(b.fotografer_id || '-') + '</div></td>' +
+        '<td><span class="mono" style="font-size:11px;">' + esc(b.booking_id || '-') + '</span></td>' +
+        '<td><div class="cell-nama">' + esc(b.nama_client || '-') + '</div>' +
+          '<div class="cell-sub">' + esc(b.kampus || '-') + '</div></td>' +
+        '<td>' + esc(b.kota || '-') + '</td>' +
         '<td>' + getStatusBadge(b.status) + '</td>' +
-        '<td>' + selectHtml + pesanHtml + tombolSimpan + '</td>' +
+        '<td><button class="btn btn-secondary btn-sm" data-id="' + esc(b.booking_id) +
+          '" onclick="bukaEdit(this.dataset.id)">✏️ Edit</button></td>' +
         '</tr>';
     });
 
     html += '</tbody></table>';
     c.innerHTML = html;
-    updateStats();
   }
 
   function getStatusBadge(status) {
@@ -465,148 +456,229 @@
       'upload_gdrive': ['badge-upload', '📁 Upload Gdrive'],
       'edit_foto': ['badge-edit', '🎨 Edit Foto']
     };
-    var s = m[status] || ['badge-booking', status || '-'];
+    var s = m[status] || ['badge-booking', esc(status || '-')];
     return '<span class="badge ' + s[0] + '">' + s[1] + '</span>';
   }
 
-  function onChangeFotografer(bookingId, fotograferIdBaru) {
-    var b = state.bookings.find(function (x) { return x.booking_id === bookingId; });
+  function updateStats(shown) {
+    $('statTotal').innerText = state.bookings.length;
+    $('statShown').innerText = shown;
+  }
+
+  // ---------- MODAL EDIT ----------
+  function setStatus(kind, html) {
+    var box = $('editStatus');
+    if (!kind) { box.className = 'status-box'; box.innerHTML = ''; return; }
+    box.className = 'status-box show ' + kind;
+    box.innerHTML = html;
+  }
+
+  function bukaEdit(bookingId) {
+    var b = findBooking(bookingId);
     if (!b) return;
 
-    if (fotograferIdBaru === b.fotografer_id) {
-      delete state.changes[bookingId];
-      delete state.dirty[bookingId];
-      delete state.conflicts[bookingId];
-      renderTable();
+    state.edit = {
+      id: b.booking_id,
+      orig: {
+        fotografer_id: b.fotografer_id || '',
+        tanggal: fmtTanggal(b.tanggal),
+        jam_mulai: fmtJam(b.jam_mulai),
+        jam_selesai: fmtJam(b.jam_selesai)
+      },
+      lastMulai: fmtJam(b.jam_mulai),
+      seq: 0, timer: null, ok: false, saving: false
+    };
+
+    $('editInfo').innerHTML =
+      '<span class="mono">' + esc(b.booking_id) + '</span><br>' +
+      esc(b.nama_client || '-') + ' &middot; ' + esc(b.kota || '-');
+
+    // Pilihan fotografer dibatasi ke kota booking (kode kota ada di Booking ID)
+    var opsi = state.fotograferList.filter(function (f) { return f.kota === b.kota; });
+    var ada = opsi.some(function (f) { return f.fotografer_id === b.fotografer_id; });
+    if (!ada && b.fotografer_id) {
+      opsi.unshift({ fotografer_id: b.fotografer_id, nama: namaFotografer(b.fotografer_id) });
+    }
+    $('eFotografer').innerHTML = opsi.map(function (f) {
+      var sel = f.fotografer_id === b.fotografer_id ? ' selected' : '';
+      return '<option value="' + esc(f.fotografer_id) + '"' + sel + '>' + esc(f.nama) + '</option>';
+    }).join('');
+
+    $('eTanggal').value = state.edit.orig.tanggal;
+    $('eMulai').value = state.edit.orig.jam_mulai;
+    $('eSelesai').value = state.edit.orig.jam_selesai;
+
+    $('btnSimpanEdit').disabled = true;
+    $('btnSimpanEdit').innerText = '💾 Simpan perubahan';
+    setStatus('info', 'Ubah fotografer, tanggal, atau jam. Jadwal dicek otomatis.');
+    $('editOverlay').classList.add('active');
+  }
+
+  function tutupEdit() {
+    if (state.edit && state.edit.saving) return;
+    if (state.edit) clearTimeout(state.edit.timer);
+    state.edit = null;
+    $('editOverlay').classList.remove('active');
+  }
+
+  function readEditValues() {
+    return {
+      fotografer_id: $('eFotografer').value,
+      tanggal: $('eTanggal').value,
+      jam_mulai: $('eMulai').value,
+      jam_selesai: $('eSelesai').value
+    };
+  }
+
+  function isChanged(v) {
+    var o = state.edit.orig;
+    return v.fotografer_id !== o.fotografer_id || v.tanggal !== o.tanggal ||
+           v.jam_mulai !== o.jam_mulai || v.jam_selesai !== o.jam_selesai;
+  }
+
+  // Geser jam mulai -> jam selesai ikut bergeser (durasi tetap)
+  function onMulaiChange() {
+    var e = state.edit; if (!e) return;
+    var baru = $('eMulai').value;
+    if (baru && e.lastMulai) {
+      var selisih = toMin(baru) - toMin(e.lastMulai);
+      var sel = $('eSelesai').value;
+      if (sel) $('eSelesai').value = fromMin(toMin(sel) + selisih);
+    }
+    e.lastMulai = baru;
+    onEditChange();
+  }
+
+  function onEditChange() {
+    var e = state.edit; if (!e) return;
+    clearTimeout(e.timer);
+    e.ok = false;
+    var btn = $('btnSimpanEdit');
+    btn.disabled = true;
+
+    var v = readEditValues();
+    if (!v.fotografer_id || !v.tanggal || !v.jam_mulai || !v.jam_selesai) {
+      setStatus('warn', 'Lengkapi fotografer, tanggal, dan jam.');
+      return;
+    }
+    if (v.jam_selesai <= v.jam_mulai) {
+      setStatus('warn', 'Jam selesai harus setelah jam mulai.');
+      return;
+    }
+    if (!isChanged(v)) {
+      setStatus('info', 'Belum ada perubahan.');
       return;
     }
 
-    state.changes[bookingId] = fotograferIdBaru;
-    state.dirty[bookingId] = true;
-
-    if (fotograferIdBaru) {
-      supabase.rpc('admin_cek_bentrok_jadwal', {
-        p_token: state.adminToken,
-        p_booking_id: bookingId,
-        p_fotografer_id: fotograferIdBaru
-      }).then(function (res) {
-        if (res.error) { console.error(res.error); return; }
-        var d = res.data;
-        if (d.error) { console.error(d.error); return; }
-        if (d.jumlah > 0) state.conflicts[bookingId] = d.bentrok || [];
-        else delete state.conflicts[bookingId];
-        renderTable();
-      });
-    } else {
-      delete state.conflicts[bookingId];
-    }
-
-    renderTable();
+    setStatus('info', '<span class="loading-spinner"></span>Mengecek jadwal...');
+    var seq = ++e.seq;
+    e.timer = setTimeout(function () { cekBentrok(v, seq); }, 350);
   }
 
-  function simpanSatu(bookingId) {
-    var fidBaru = state.changes[bookingId];
-    if (!fidBaru) { showToast('⚠️ Tidak ada perubahan.'); return; }
-    if (state.conflicts[bookingId] && state.conflicts[bookingId].length > 0) {
-      showToast('❌ Selesaikan bentrok dulu.'); return;
-    }
+  function bentrokText(list) {
+    return (list || []).map(function (k) {
+      return esc(k.nama_client || '-') + ' (' + esc(k.jam_mulai) + '-' + esc(k.jam_selesai) + ')';
+    }).join(', ');
+  }
 
-    supabase.rpc('admin_ganti_fotografer', {
+  function cekBentrok(v, seq) {
+    var e = state.edit; if (!e) return;
+    supabase.rpc('admin_cek_bentrok_edit', {
       p_token: state.adminToken,
-      p_booking_id: bookingId,
-      p_fotografer_id_baru: fidBaru
+      p_booking_id: e.id,
+      p_fotografer_id: v.fotografer_id,
+      p_tanggal: v.tanggal,
+      p_jam_mulai: v.jam_mulai,
+      p_jam_selesai: v.jam_selesai
     }).then(function (res) {
-      if (res.error) { showToast('❌ ' + res.error.message); return; }
+      if (!state.edit || state.edit.seq !== seq) return;   // hasil usang, abaikan
+      if (res.error || (res.data && res.data.error)) {
+        setStatus('warn', '❌ Gagal mengecek: ' + esc(res.error ? res.error.message : res.data.error));
+        return;
+      }
       var d = res.data;
-      if (d.error) { showToast('❌ ' + d.error); return; }
-
-      var b = state.bookings.find(function (x) { return x.booking_id === bookingId; });
-      if (b) b.fotografer_id = fidBaru;
-
-      delete state.changes[bookingId];
-      delete state.dirty[bookingId];
-      delete state.conflicts[bookingId];
-
-      showToast('✅ ' + (d.message || 'Tersimpan'));
-      renderTable();
-    }).catch(function (e) { showToast('❌ ' + e.message); });
+      if (d.jumlah > 0) {
+        setStatus('bad', '⚠️ Bentrok dengan: ' + bentrokText(d.bentrok) + '<br>Termasuk jeda 30 menit antar sesi.');
+        return;
+      }
+      state.edit.ok = true;
+      setStatus('ok', '✅ Jadwal tersedia');
+      $('btnSimpanEdit').disabled = false;
+    }).catch(function (err) {
+      if (!state.edit || state.edit.seq !== seq) return;
+      setStatus('warn', '❌ Gagal mengecek: ' + esc(err.message));
+    });
   }
 
-  function simpanSemuaPerubahan() {
-    var ids = Object.keys(state.changes);
-    if (ids.length === 0) { showToast('⚠️ Tidak ada perubahan.'); return; }
+  function simpanEdit() {
+    var e = state.edit;
+    if (!e || !e.ok || e.saving) return;
+    var v = readEditValues();
+    var btn = $('btnSimpanEdit');
 
-    var konflikCount = 0;
-    ids.forEach(function (id) {
-      if (state.conflicts[id] && state.conflicts[id].length > 0) konflikCount++;
-    });
-    if (konflikCount > 0) {
-      showToast('❌ Ada ' + konflikCount + ' baris yang masih bentrok.'); return;
-    }
-
-    if (!confirm('Simpan ' + ids.length + ' perubahan?')) return;
-
-    var btn = document.getElementById('btnSimpanSemua');
+    e.saving = true;
     btn.disabled = true;
     btn.innerText = '⏳ Menyimpan...';
 
-    var i = 0, sukses = 0, gagal = 0;
+    supabase.rpc('admin_edit_booking', {
+      p_token: state.adminToken,
+      p_booking_id: e.id,
+      p_fotografer_id: v.fotografer_id,
+      p_tanggal: v.tanggal,
+      p_jam_mulai: v.jam_mulai,
+      p_jam_selesai: v.jam_selesai
+    }).then(function (res) {
+      e.saving = false;
+      btn.innerText = '💾 Simpan perubahan';
 
-    function next() {
-      if (i >= ids.length) {
-        btn.innerText = '💾 Simpan Semua (' + ids.length + ')';
-        btn.disabled = false;
-        showToast('✅ ' + sukses + ' tersimpan' + (gagal > 0 ? ', ' + gagal + ' gagal' : ''));
-        loadData();
+      var errMsg = res.error ? res.error.message : (res.data && res.data.error);
+      if (errMsg) {
+        var extra = (res.data && res.data.bentrok && res.data.bentrok.length)
+          ? '<br>Bentrok dengan: ' + bentrokText(res.data.bentrok) : '';
+        setStatus('bad', '❌ ' + esc(errMsg) + extra);
+        e.ok = false;
         return;
       }
-      var bookingId = ids[i];
-      var fidBaru = state.changes[bookingId];
 
-      supabase.rpc('admin_ganti_fotografer', {
-        p_token: state.adminToken,
-        p_booking_id: bookingId,
-        p_fotografer_id_baru: fidBaru
-      }).then(function (res) {
-        if (res.error || (res.data && res.data.error)) gagal++;
-        else {
-          sukses++;
-          var b = state.bookings.find(function (x) { return x.booking_id === bookingId; });
-          if (b) b.fotografer_id = fidBaru;
-          delete state.changes[bookingId];
-          delete state.dirty[bookingId];
-        }
-        i++;
-        next();
-      }).catch(function () { gagal++; i++; next(); });
-    }
-
-    next();
-  }
-
-  function updateStats() {
-    document.getElementById('statTotal').innerText = state.bookings.length;
-    var dirtyCount = Object.keys(state.dirty).length;
-    document.getElementById('statDirty').innerText = dirtyCount;
-
-    var bentrokCount = 0;
-    Object.keys(state.conflicts).forEach(function (id) {
-      if (state.conflicts[id] && state.conflicts[id].length > 0) bentrokCount++;
+      var d = res.data;
+      var b = findBooking(e.id);
+      var idLama = e.id;
+      if (b) {
+        b.booking_id = d.booking_id;
+        b.fotografer_id = d.fotografer_id;
+        b.tanggal = d.tanggal;
+        b.jam_mulai = d.jam_mulai;
+        b.jam_selesai = d.jam_selesai;
+      }
+      tutupEdit();
+      renderTable();
+      showToast(idLama === d.booking_id
+        ? '✅ Tersimpan'
+        : '✅ Tersimpan. Booking ID: ' + idLama + ' → ' + d.booking_id, 5000);
+    }).catch(function (err) {
+      e.saving = false;
+      btn.innerText = '💾 Simpan perubahan';
+      btn.disabled = false;
+      setStatus('bad', '❌ Gagal menyimpan: ' + esc(err.message));
     });
-    document.getElementById('statBentrok').innerText = bentrokCount;
-
-    document.getElementById('countDirty').innerText = dirtyCount;
-    var btnSimpan = document.getElementById('btnSimpanSemua');
-    if (btnSimpan) btnSimpan.disabled = (dirtyCount === 0);
   }
+
+  // Klik area gelap menutup modal
+  $('editOverlay').addEventListener('click', function (ev) {
+    if (ev.target === this) tutupEdit();
+  });
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape' && state.edit) tutupEdit();
+  });
 
   window.applyFilter = applyFilter;
   window.loadData = loadData;
-  window.onChangeFotografer = onChangeFotografer;
-  window.simpanSatu = simpanSatu;
-  window.simpanSemuaPerubahan = simpanSemuaPerubahan;
+  window.bukaEdit = bukaEdit;
+  window.tutupEdit = tutupEdit;
+  window.onEditChange = onEditChange;
+  window.onMulaiChange = onMulaiChange;
+  window.simpanEdit = simpanEdit;
 
-  // Langsung init — tanpa login form
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init, { once: true });
   } else {
