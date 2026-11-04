@@ -79,7 +79,7 @@
 
   .error-box{
     display:none; color:#B3413E; font-size:13px; margin-top:8px;
-    background:#FDE8E8; padding:10px 14px; border-radius:6px;
+    background:#FDE8E8; padding:10px 14px; border-radius:6px; line-height:1.5;
   }
   .success-box{
     display:none; color:#065F46; font-size:13px; margin-top:8px;
@@ -106,7 +106,8 @@
   .toast{
     position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
     background:var(--ink); color:#fff; padding:12px 24px;
-    border-radius:8px; font-size:14px; z-index:100; animation:slideUp .3s;
+    border-radius:8px; font-size:14px; z-index:200; animation:slideUp .3s;
+    max-width:90vw; text-align:center;
   }
   @keyframes slideUp{
     from{transform:translate(-50%,20px);opacity:0;}
@@ -165,6 +166,18 @@
   }
   .calendar-btn:hover{ background:#1E40AF; color:#fff; }
 
+  /* Kolom Aksi (Edit + Hapus) */
+  .aksi-wrap{ display:flex; gap:4px; }
+  .mini-btn{
+    padding:3px 10px; border-radius:6px; background:var(--paper);
+    border:1px solid var(--line); color:var(--ink); font-size:11px;
+    font-weight:600; cursor:pointer; white-space:nowrap; font-family:'Inter',sans-serif;
+  }
+  .mini-btn:hover{ background:var(--rose); color:#fff; border-color:var(--rose); }
+  .mini-btn.danger{ background:#FDE8E8; color:#B3413E; border-color:#F3C6C4; }
+  .mini-btn.danger:hover{ background:#B3413E; color:#fff; border-color:#B3413E; }
+  .note-kecil{ font-size:11px; color:#92400E; background:#FEF3C7; padding:8px 10px; line-height:1.5; }
+
   .no-data{ text-align:center; color:var(--mute); padding:16px; font-size:13px; }
 
   .input-wrap{ position:relative; }
@@ -175,6 +188,19 @@
     color:var(--mute); padding:4px 6px;
   }
   .toggle-eye:hover{ color:var(--ink); }
+
+  /* Modal edit jadwal */
+  .overlay{
+    display:none; position:fixed; inset:0; background:rgba(46,37,50,.55);
+    z-index:150; align-items:center; justify-content:center; padding:20px;
+  }
+  .overlay.active{ display:flex; }
+  .modal-box{
+    background:var(--paper); border-radius:12px; padding:28px;
+    max-width:420px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,.3);
+  }
+  .modal-box h3{ font-size:22px; font-style:italic; font-weight:500; }
+  .modal-sub{ font-size:12px; color:var(--mute); margin:6px 0 18px; line-height:1.5; }
 </style>
 </head>
 <body>
@@ -327,6 +353,33 @@
 
 </div>
 
+<!-- MODAL EDIT JADWAL VENDOR LAIN -->
+<div class="overlay" id="editOverlay">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+    <h3 id="editTitle">✏️ Edit Jadwal</h3>
+    <div class="modal-sub">Jadwal vendor lain. Tanggal dan jam dicek bentrok saat disimpan.</div>
+
+    <div class="field">
+      <label>📅 Tanggal</label>
+      <input type="date" id="editTanggal">
+    </div>
+    <div class="row-2">
+      <div class="field">
+        <label>⏰ Jam Mulai</label>
+        <input type="time" id="editJamMulai" onchange="onEditMulaiChange()">
+      </div>
+      <div class="field">
+        <label>⏰ Jam Selesai</label>
+        <input type="time" id="editJamSelesai">
+      </div>
+    </div>
+
+    <button class="btn-primary" id="btnSimpanEdit" onclick="simpanEditJadwal()">💾 Simpan Perubahan</button>
+    <button class="btn-secondary" onclick="tutupEditJadwal()">Batal</button>
+    <div class="error-box" id="editError"></div>
+  </div>
+</div>
+
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -338,6 +391,9 @@
   var currentFotografer = null;
   var isFirstLoginMode = false;
   var lastJadwalLavelle = [];
+  var lastJadwalVendor = [];
+  var editVendorId = null;
+  var editLastMulai = '';
 
   try {
     supabase = window.supabase.createClient(
@@ -348,6 +404,39 @@
     console.log('✅ Supabase siap.');
   } catch (err) {
     console.error('❌ Supabase gagal:', err);
+  }
+
+  // ---------- HELPER ----------
+  function $(id) { return document.getElementById(id); }
+
+  // Data klien datang dari form publik, jadi selalu di-escape sebelum masuk innerHTML
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function fmtJam(s) { return String(s || '').substring(0, 5); }
+  function linkAman(url) { return /^https?:\/\//i.test(String(url || '')) ? url : ''; }
+  function toMin(t) {
+    var p = String(t || '').split(':');
+    return (parseInt(p[0], 10) || 0) * 60 + (parseInt(p[1], 10) || 0);
+  }
+  function fromMin(m) {
+    m = Math.max(0, Math.min(1439, m));
+    return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+  }
+  function pesanError(res) {
+    return (res.error && res.error.message) || (res.data && res.data.error) || '';
+  }
+
+  // PIN di database sudah tidak cocok (misalnya diganti dari perangkat lain)
+  function adaAuthError(res) {
+    return /pin tidak valid/i.test(pesanError(res));
+  }
+  function paksaLoginUlang() {
+    try { localStorage.removeItem('fotografer'); } catch (e) {}
+    showToast('⚠️ PIN berubah. Silakan login lagi.', 2500);
+    setTimeout(function () { location.reload(); }, 1800);
   }
 
   // ---------- TOAST ----------
@@ -364,7 +453,7 @@
 
   // ---------- SHOW/HIDE PIN ----------
   function toggleVisibility(inputId, btn) {
-    var el = document.getElementById(inputId);
+    var el = $(inputId);
     if (!el) return;
     if (el.type === 'password') {
       el.type = 'text';
@@ -377,15 +466,15 @@
 
   // ---------- SHOW PANEL ----------
   function showJadwalPanel(data) {
-    document.getElementById('loginCard').style.display = 'none';
-    document.getElementById('pinCard').style.display = 'none';
-    document.getElementById('jadwalCard').style.display = 'block';
+    $('loginCard').style.display = 'none';
+    $('pinCard').style.display = 'none';
+    $('jadwalCard').style.display = 'block';
 
-    document.getElementById('namaFotografer').textContent = data.nama || '-';
-    document.getElementById('kotaFotografer').textContent = data.kota || '-';
+    $('namaFotografer').textContent = data.nama || '-';
+    $('kotaFotografer').textContent = data.kota || '-';
 
     var today = new Date().toISOString().split('T')[0];
-    document.getElementById('inputTanggal').value = today;
+    $('inputTanggal').value = today;
 
     loadJadwal();
   }
@@ -393,24 +482,24 @@
   // ---------- OPEN UBAH PIN (first login) ----------
   function showFirstLoginPinChange(pin) {
     isFirstLoginMode = true;
-    document.getElementById('loginCard').style.display = 'none';
-    document.getElementById('pinCard').style.display = 'block';
-    document.getElementById('pinTitle').textContent = 'Selamat Datang!';
-    document.getElementById('pinSubtitle').textContent =
+    $('loginCard').style.display = 'none';
+    $('pinCard').style.display = 'block';
+    $('pinTitle').textContent = 'Selamat Datang!';
+    $('pinSubtitle').textContent =
       'Halo ' + currentFotografer.nama + ', buat PIN baru kamu.';
-    document.getElementById('firstLoginInfo').style.display = 'block';
-    document.getElementById('btnCancelPin').style.display = 'none';
-    document.getElementById('oldPin').value = pin || '';
-    document.getElementById('newPin').value = '';
-    document.getElementById('confirmPin').value = '';
+    $('firstLoginInfo').style.display = 'block';
+    $('btnCancelPin').style.display = 'none';
+    $('oldPin').value = pin || '';
+    $('newPin').value = '';
+    $('confirmPin').value = '';
   }
 
   // ---------- LOGIN ----------
   function handleLogin() {
-    var nama = document.getElementById('loginNama').value.trim();
-    var pin  = document.getElementById('loginPin').value.trim();
-    var errBox = document.getElementById('loginError');
-    var btn = document.getElementById('btnLogin');
+    var nama = $('loginNama').value.trim();
+    var pin  = $('loginPin').value.trim();
+    var errBox = $('loginError');
+    var btn = $('btnLogin');
 
     errBox.style.display = 'none';
 
@@ -476,12 +565,12 @@
 
   // ---------- SIMPAN PIN ----------
   function handleSavePin() {
-    var oldPin = document.getElementById('oldPin').value.trim();
-    var newPin = document.getElementById('newPin').value.trim();
-    var confirmPin = document.getElementById('confirmPin').value.trim();
-    var errBox = document.getElementById('pinError');
-    var okBox = document.getElementById('pinSuccess');
-    var btn = document.getElementById('btnSavePin');
+    var oldPin = $('oldPin').value.trim();
+    var newPin = $('newPin').value.trim();
+    var confirmPin = $('confirmPin').value.trim();
+    var errBox = $('pinError');
+    var okBox = $('pinSuccess');
+    var btn = $('btnSavePin');
 
     errBox.style.display = 'none';
     okBox.style.display = 'none';
@@ -539,17 +628,17 @@
         okBox.textContent = '✅ PIN berhasil diubah!';
         okBox.style.display = 'block';
 
-        document.getElementById('oldPin').value = '';
-        document.getElementById('newPin').value = '';
-        document.getElementById('confirmPin').value = '';
+        $('oldPin').value = '';
+        $('newPin').value = '';
+        $('confirmPin').value = '';
 
         setTimeout(function () {
           if (isFirstLoginMode) {
             isFirstLoginMode = false;
             showJadwalPanel(currentFotografer);
           } else {
-            document.getElementById('pinCard').style.display = 'none';
-            document.getElementById('jadwalCard').style.display = 'block';
+            $('pinCard').style.display = 'none';
+            $('jadwalCard').style.display = 'block';
           }
         }, 1000);
       });
@@ -559,24 +648,24 @@
   function openPinSettings() {
     if (!currentFotografer) return;
     isFirstLoginMode = false;
-    document.getElementById('pinTitle').textContent = 'Ubah PIN';
-    document.getElementById('pinSubtitle').textContent =
+    $('pinTitle').textContent = 'Ubah PIN';
+    $('pinSubtitle').textContent =
       'Masukkan PIN lama dan PIN baru (4 digit).';
-    document.getElementById('firstLoginInfo').style.display = 'none';
-    document.getElementById('btnCancelPin').style.display = 'block';
-    document.getElementById('oldPin').value = '';
-    document.getElementById('newPin').value = '';
-    document.getElementById('confirmPin').value = '';
-    document.getElementById('pinError').style.display = 'none';
-    document.getElementById('pinSuccess').style.display = 'none';
+    $('firstLoginInfo').style.display = 'none';
+    $('btnCancelPin').style.display = 'block';
+    $('oldPin').value = '';
+    $('newPin').value = '';
+    $('confirmPin').value = '';
+    $('pinError').style.display = 'none';
+    $('pinSuccess').style.display = 'none';
 
-    document.getElementById('jadwalCard').style.display = 'none';
-    document.getElementById('pinCard').style.display = 'block';
+    $('jadwalCard').style.display = 'none';
+    $('pinCard').style.display = 'block';
   }
 
   function handleCancelPin() {
-    document.getElementById('pinCard').style.display = 'none';
-    document.getElementById('jadwalCard').style.display = 'block';
+    $('pinCard').style.display = 'none';
+    $('jadwalCard').style.display = 'block';
   }
 
   // ---------- LOGOUT ----------
@@ -590,11 +679,11 @@
 
   // ---------- SIMPAN JADWAL VENDOR LAIN ----------
   function simpanJadwal() {
-    var tanggal = document.getElementById('inputTanggal').value;
-    var jamMulai = document.getElementById('inputJamMulai').value;
-    var jamSelesai = document.getElementById('inputJamSelesai').value;
-    var errorBox = document.getElementById('formError');
-    var successBox = document.getElementById('formSuccess');
+    var tanggal = $('inputTanggal').value;
+    var jamMulai = $('inputJamMulai').value;
+    var jamSelesai = $('inputJamSelesai').value;
+    var errorBox = $('formError');
+    var successBox = $('formSuccess');
 
     errorBox.style.display = 'none';
     successBox.style.display = 'none';
@@ -615,7 +704,7 @@
       return;
     }
 
-    var btn = document.getElementById('btnSimpan');
+    var btn = $('btnSimpan');
     btn.disabled = true;
     btn.classList.add('btn-loading');
 
@@ -647,9 +736,9 @@
         successBox.innerText = '✅ Jadwal berhasil disimpan!';
         successBox.style.display = 'block';
 
-        document.getElementById('inputTanggal').value = new Date().toISOString().split('T')[0];
-        document.getElementById('inputJamMulai').value = '';
-        document.getElementById('inputJamSelesai').value = '';
+        $('inputTanggal').value = new Date().toISOString().split('T')[0];
+        $('inputJamMulai').value = '';
+        $('inputJamSelesai').value = '';
 
         loadJadwal();
         showToast('✅ Jadwal vendor lain berhasil disimpan!');
@@ -665,10 +754,10 @@
 
   // ---------- TAB SWITCH ----------
   function gantiTabJadwal(tab) {
-    document.getElementById('tabLavelleBtn').classList.toggle('active', tab === 'lavelle');
-    document.getElementById('tabVendorBtn').classList.toggle('active', tab === 'vendor');
-    document.getElementById('tableJadwalLavelle').style.display = tab === 'lavelle' ? 'block' : 'none';
-    document.getElementById('tableJadwal').style.display = tab === 'vendor' ? 'block' : 'none';
+    $('tabLavelleBtn').classList.toggle('active', tab === 'lavelle');
+    $('tabVendorBtn').classList.toggle('active', tab === 'vendor');
+    $('tableJadwalLavelle').style.display = tab === 'lavelle' ? 'block' : 'none';
+    $('tableJadwal').style.display = tab === 'vendor' ? 'block' : 'none';
   }
 
   // ---------- WA HELPERS ----------
@@ -774,7 +863,7 @@
 
   // ---------- RENDER TABEL ----------
   function renderTabelLavelle(data) {
-    var container = document.getElementById('tableJadwalLavelle');
+    var container = $('tableJadwalLavelle');
 
     if (!data || data.length === 0) {
       container.innerHTML = '<div class="no-data">📭 Belum ada jadwal Lavelle</div>';
@@ -792,17 +881,18 @@
     data.forEach(function (row, i) {
       var jam = (row.jam_mulai || '').replace(':', '.') + ' - ' + (row.jam_selesai || '').replace(':', '.');
       var linkWa = buatLinkWaClient(row);
-      var waCell = linkWa ? '<a class="wa-link" href="' + linkWa + '" target="_blank">💬 Chat</a>' : '-';
-      var gdriveCell = row.link_gdrive ? '<a href="' + row.link_gdrive + '" target="_blank">📁 Buka</a>' : '-';
+      var waCell = linkWa ? '<a class="wa-link" href="' + esc(linkWa) + '" target="_blank" rel="noopener">💬 Chat</a>' : '-';
+      var gd = linkAman(row.link_gdrive);
+      var gdriveCell = gd ? '<a href="' + esc(gd) + '" target="_blank" rel="noopener">📁 Buka</a>' : '-';
 
       var linkKalender = buatLinkKalender(row, 'lavelle');
-      var kalenderCell = '<a class="calendar-btn" href="' + linkKalender + '" target="_blank">📅 Tambah</a>';
+      var kalenderCell = '<a class="calendar-btn" href="' + esc(linkKalender) + '" target="_blank" rel="noopener">📅 Tambah</a>';
 
       html += '<tr>' +
-        '<td>' + (row.tanggal || '-') + '</td>' +
-        '<td>' + jam + '</td>' +
-        '<td>' + (row.nama_client || '-') + '</td>' +
-        '<td>' + (row.lokasi || '-') + '</td>' +
+        '<td>' + esc(row.tanggal || '-') + '</td>' +
+        '<td>' + esc(jam) + '</td>' +
+        '<td>' + esc(row.nama_client || '-') + '</td>' +
+        '<td>' + esc(row.lokasi || '-') + '</td>' +
         '<td>' + gdriveCell + '</td>' +
         '<td>' + waCell + '</td>' +
         '<td>' + kalenderCell + '</td>' +
@@ -814,27 +904,43 @@
     container.innerHTML = html;
   }
 
-  function renderTabelVendor(data) {
-    var container = document.getElementById('tableJadwal');
+  // bisaEdit = true kalau data berasal dari fotografer_get_jadwal_vendor (membawa id)
+  function renderTabelVendor(data, bisaEdit) {
+    var container = $('tableJadwal');
+    lastJadwalVendor = bisaEdit ? (data || []) : [];
+
+    var catatan = bisaEdit ? '' :
+      '<div class="note-kecil">⚠️ Edit dan hapus belum aktif. Jalankan fotografer_jadwal_aksi.sql di Supabase.</div>';
 
     if (!data || data.length === 0) {
-      container.innerHTML = '<div class="no-data">📭 Belum ada jadwal vendor lain</div>';
+      container.innerHTML = catatan + '<div class="no-data">📭 Belum ada jadwal vendor lain</div>';
       return;
     }
 
-    var html = '<table><thead><tr>' +
+    var html = catatan + '<table><thead><tr>' +
       '<th>Tanggal</th><th>Jam</th><th>Sumber</th><th>Kalender</th>' +
+      (bisaEdit ? '<th>Aksi</th>' : '') +
       '</tr></thead><tbody>';
 
     data.forEach(function (row) {
       var linkKalender = buatLinkKalender(row, 'vendor');
-      var kalenderCell = '<a class="calendar-btn" href="' + linkKalender + '" target="_blank">📅 Tambah</a>';
+      var kalenderCell = '<a class="calendar-btn" href="' + esc(linkKalender) + '" target="_blank" rel="noopener">📅 Tambah</a>';
+
+      var aksiCell = '';
+      if (bisaEdit) {
+        var id = esc(row.id);
+        aksiCell = '<td><div class="aksi-wrap">' +
+          '<button class="mini-btn" data-id="' + id + '" onclick="bukaEditJadwal(this.dataset.id)">✏️ Edit</button>' +
+          '<button class="mini-btn danger" data-id="' + id + '" onclick="hapusJadwal(this.dataset.id)">🗑️ Hapus</button>' +
+          '</div></td>';
+      }
 
       html += '<tr>' +
-        '<td>' + (row.tanggal || '-') + '</td>' +
-        '<td>' + (row.jam_mulai || '') + ' - ' + (row.jam_selesai || '') + '</td>' +
+        '<td>' + esc(row.tanggal || '-') + '</td>' +
+        '<td>' + esc(fmtJam(row.jam_mulai)) + ' - ' + esc(fmtJam(row.jam_selesai)) + '</td>' +
         '<td><span class="badge-vendor">Vendor Lain</span></td>' +
         '<td>' + kalenderCell + '</td>' +
+        aksiCell +
         '</tr>';
     });
 
@@ -844,8 +950,8 @@
 
   // ---------- LOAD JADWAL ----------
   function loadJadwal() {
-    var containerLavelle = document.getElementById('tableJadwalLavelle');
-    var containerVendor = document.getElementById('tableJadwal');
+    var containerLavelle = $('tableJadwalLavelle');
+    var containerVendor = $('tableJadwal');
     containerLavelle.innerHTML = '<div class="no-data">⏳ Memuat...</div>';
     containerVendor.innerHTML = '<div class="no-data">⏳ Memuat...</div>';
 
@@ -858,32 +964,164 @@
       return;
     }
 
-    supabase.rpc('fotografer_get_jadwal', { p_fotografer_id: currentFotografer.fotografer_id })
-      .then(function (res) {
-        if (res.error) {
-          var p = '<div class="no-data">❌ ' + res.error.message + '</div>';
-          containerLavelle.innerHTML = p;
-          containerVendor.innerHTML = p;
-          return;
-        }
-
-        var d = res.data || {};
-        if (d.error) {
-          var p2 = '<div class="no-data">❌ ' + d.error + '</div>';
-          containerLavelle.innerHTML = p2;
-          containerVendor.innerHTML = p2;
-          return;
-        }
-
-        renderTabelLavelle(d.lavelle || []);
-        renderTabelVendor(d.vendor || []);
+    Promise.all([
+      supabase.rpc('fotografer_get_jadwal', { p_fotografer_id: currentFotografer.fotografer_id }),
+      supabase.rpc('fotografer_get_jadwal_vendor', {
+        p_fotografer_id: currentFotografer.fotografer_id,
+        p_pin: currentFotografer.pin
       })
-      .catch(function (err) {
-        var p = '<div class="no-data">❌ Gagal memuat jadwal</div>';
+    ]).then(function (hasil) {
+      var resLavelle = hasil[0];
+      var resVendor = hasil[1];
+
+      if (adaAuthError(resVendor)) { paksaLoginUlang(); return; }
+
+      var dLavelle = resLavelle.data || {};
+      var errLavelle = pesanError(resLavelle);
+      if (errLavelle) {
+        var p = '<div class="no-data">❌ ' + esc(errLavelle) + '</div>';
         containerLavelle.innerHTML = p;
         containerVendor.innerHTML = p;
-        console.error(err);
-      });
+        return;
+      }
+
+      renderTabelLavelle(dLavelle.lavelle || []);
+
+      var dVendor = resVendor.data || {};
+      if (resVendor.error || dVendor.error) {
+        // Fungsi baru belum dibuat / gagal: tampilkan data lama, tanpa tombol aksi
+        console.warn('fotografer_get_jadwal_vendor gagal:', pesanError(resVendor));
+        renderTabelVendor(dLavelle.vendor || [], false);
+        return;
+      }
+      renderTabelVendor(dVendor.vendor || [], true);
+    }).catch(function (err) {
+      var p = '<div class="no-data">❌ Gagal memuat jadwal</div>';
+      containerLavelle.innerHTML = p;
+      containerVendor.innerHTML = p;
+      console.error(err);
+    });
+  }
+
+  // ---------- EDIT JADWAL VENDOR ----------
+  function findVendor(id) {
+    return lastJadwalVendor.find(function (x) { return String(x.id) === String(id); });
+  }
+
+  function bukaEditJadwal(id) {
+    var row = findVendor(id);
+    if (!row) return;
+    editVendorId = row.id;
+    editLastMulai = fmtJam(row.jam_mulai);
+
+    $('editTanggal').value = String(row.tanggal || '').substring(0, 10);
+    $('editJamMulai').value = fmtJam(row.jam_mulai);
+    $('editJamSelesai').value = fmtJam(row.jam_selesai);
+    $('editError').style.display = 'none';
+    $('btnSimpanEdit').disabled = false;
+    $('editOverlay').classList.add('active');
+  }
+
+  function tutupEditJadwal() {
+    editVendorId = null;
+    $('editOverlay').classList.remove('active');
+  }
+
+  // Jam mulai digeser -> jam selesai ikut bergeser (durasi tetap)
+  function onEditMulaiChange() {
+    var baru = $('editJamMulai').value;
+    var sel = $('editJamSelesai').value;
+    if (baru && editLastMulai && sel) {
+      $('editJamSelesai').value = fromMin(toMin(sel) + toMin(baru) - toMin(editLastMulai));
+    }
+    editLastMulai = baru;
+  }
+
+  function bentrokText(list) {
+    return (list || []).map(function (k) {
+      var nama = k.nama_client === 'vendor_lain' ? 'Vendor lain' : (k.nama_client || '-');
+      return esc(nama) + ' (' + esc(k.jam_mulai) + '-' + esc(k.jam_selesai) + ')';
+    }).join(', ');
+  }
+
+  function simpanEditJadwal() {
+    if (!editVendorId || !currentFotografer) return;
+    var tanggal = $('editTanggal').value;
+    var mulai = $('editJamMulai').value;
+    var selesai = $('editJamSelesai').value;
+    var err = $('editError');
+    err.style.display = 'none';
+
+    if (!tanggal || !mulai || !selesai) {
+      err.innerText = '⚠️ Tanggal dan jam wajib diisi.';
+      err.style.display = 'block';
+      return;
+    }
+    if (mulai >= selesai) {
+      err.innerText = '⚠️ Jam selesai harus lebih besar dari jam mulai.';
+      err.style.display = 'block';
+      return;
+    }
+
+    var btn = $('btnSimpanEdit');
+    btn.disabled = true;
+    btn.classList.add('btn-loading');
+
+    supabase.rpc('fotografer_edit_jadwal', {
+      p_fotografer_id: currentFotografer.fotografer_id,
+      p_pin: currentFotografer.pin,
+      p_id: editVendorId,
+      p_tanggal: tanggal,
+      p_jam_mulai: mulai,
+      p_jam_selesai: selesai
+    }).then(function (res) {
+      btn.disabled = false;
+      btn.classList.remove('btn-loading');
+
+      if (adaAuthError(res)) { tutupEditJadwal(); paksaLoginUlang(); return; }
+
+      var msg = pesanError(res);
+      if (msg) {
+        var extra = (res.data && res.data.bentrok && res.data.bentrok.length)
+          ? '<br>Bentrok dengan: ' + bentrokText(res.data.bentrok) : '';
+        err.innerHTML = '❌ ' + esc(msg) + extra;
+        err.style.display = 'block';
+        return;
+      }
+
+      tutupEditJadwal();
+      loadJadwal();
+      showToast('✅ Jadwal diperbarui');
+    }).catch(function (e) {
+      btn.disabled = false;
+      btn.classList.remove('btn-loading');
+      err.innerText = '❌ Gagal menyimpan. Cek koneksi.';
+      err.style.display = 'block';
+      console.error(e);
+    });
+  }
+
+  // ---------- HAPUS JADWAL VENDOR ----------
+  function hapusJadwal(id) {
+    var row = findVendor(id);
+    if (!row || !currentFotografer) return;
+    var label = String(row.tanggal || '').substring(0, 10) + ' ' + fmtJam(row.jam_mulai) + '-' + fmtJam(row.jam_selesai);
+    if (!confirm('Hapus jadwal vendor lain ini?\n' + label)) return;
+
+    supabase.rpc('fotografer_hapus_jadwal', {
+      p_fotografer_id: currentFotografer.fotografer_id,
+      p_pin: currentFotografer.pin,
+      p_id: row.id
+    }).then(function (res) {
+      if (adaAuthError(res)) { paksaLoginUlang(); return; }
+      var msg = pesanError(res);
+      if (msg) { showToast('❌ ' + msg, 4000); return; }
+      showToast('✅ Jadwal dihapus');
+      loadJadwal();
+    }).catch(function (e) {
+      showToast('❌ Gagal menghapus. Cek koneksi.');
+      console.error(e);
+    });
   }
 
   // ---------- EXPOSE KE WINDOW ----------
@@ -898,12 +1136,22 @@
   window.copyJadwalLavelle = copyJadwalLavelle;
   window.copySemuaJadwalLavelle = copySemuaJadwalLavelle;
   window.toggleVisibility = toggleVisibility;
+  window.bukaEditJadwal = bukaEditJadwal;
+  window.tutupEditJadwal = tutupEditJadwal;
+  window.onEditMulaiChange = onEditMulaiChange;
+  window.simpanEditJadwal = simpanEditJadwal;
+  window.hapusJadwal = hapusJadwal;
 
-  // ---------- ENTER KEY ----------
+  // ---------- ENTER / ESC ----------
   document.addEventListener('keydown', function (e) {
+    var modalAktif = $('editOverlay').classList.contains('active');
+
+    if (e.key === 'Escape' && modalAktif) { tutupEditJadwal(); return; }
+
     if (e.key === 'Enter') {
-      var lc = document.getElementById('loginCard');
-      var pc = document.getElementById('pinCard');
+      if (modalAktif) { simpanEditJadwal(); return; }
+      var lc = $('loginCard');
+      var pc = $('pinCard');
       if (lc && lc.style.display !== 'none') {
         handleLogin();
       } else if (pc && pc.style.display !== 'none') {
@@ -912,9 +1160,14 @@
     }
   });
 
+  // Klik area gelap menutup modal edit
+  $('editOverlay').addEventListener('click', function (e) {
+    if (e.target === this) tutupEditJadwal();
+  });
+
   // ---------- INPUT: PIN HANYA 4 DIGIT ANGKA ----------
   ['loginPin', 'oldPin', 'newPin', 'confirmPin'].forEach(function (id) {
-    var el = document.getElementById(id);
+    var el = $(id);
     if (!el) return;
     el.addEventListener('input', function () {
       this.value = this.value.replace(/\D/g, '').slice(0, 4);
