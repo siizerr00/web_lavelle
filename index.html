@@ -557,7 +557,6 @@
         ADMIN_WA_PER_KOTA = data;
         ADMIN_WA_DEFAULT = data['Jogja'] || Object.keys(data).map(function(k){ return data[k]; })[0] || '';
         adminWaLoaded = true;
-        console.log('✅ Nomor WA admin dimuat:', data);
         return data;
       })
       .catch(function (err) {
