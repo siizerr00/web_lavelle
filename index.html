@@ -577,24 +577,22 @@
   // ============================================================
   // BULAN TERKUNCI (diatur admin lewat tabel blocked_months)
   // ============================================================
-  var BLOCKED_MONTHS = {};   // { "Jogja": ["2026-11", ...], "Solo": [...] }
+  var BLOCKED_MONTHS = [];   // ["2026-11", ...]
   function loadBlockedMonths(){
     if(!supabaseReady) return Promise.resolve(BLOCKED_MONTHS);
-    return supabase.from('blocked_months').select('kota,bulan')
+    return supabase.from('blocked_months').select('bulan')
       .then(function(res){
-        if(!res.error){
-          var hasil = {};
-          (res.data || []).forEach(function(r){
-            (hasil[r.kota] = hasil[r.kota] || []).push(r.bulan);
-          });
-          BLOCKED_MONTHS = hasil;
+        if(res.error){
+          console.error('❌ Gagal load blocked_months:', res.error.message);
+          return BLOCKED_MONTHS;
         }
+        BLOCKED_MONTHS = (res.data || []).map(function(r){ return r.bulan; });
         return BLOCKED_MONTHS;
       })
-      .catch(function(){ return BLOCKED_MONTHS; });
+      .catch(function(err){ console.error('❌ Error blocked_months:', err); return BLOCKED_MONTHS; });
   }
-  function bulanTerkunci(kota, yyyymm){
-    return (BLOCKED_MONTHS[kota] || []).indexOf(yyyymm) !== -1;
+  function bulanTerkunci(yyyymm){
+    return BLOCKED_MONTHS.indexOf(yyyymm) !== -1;
   }
   loadBlockedMonths();
 
@@ -1002,7 +1000,7 @@
   function fetchKalenderBulanKota(kota,y,m){
     var bulanStr = y + '-' + String(m+1).padStart(2,'0');
     if(!supabaseReady) return Promise.resolve({});
-    if(bulanTerkunci(kota, bulanStr)) return Promise.resolve({});
+    if(bulanTerkunci(bulanStr)) return Promise.resolve({});
 
     var totalHari = new Date(y,m+1,0).getDate();
     var key = kota+'|'+bulanStr;
@@ -1037,7 +1035,7 @@
     grid.innerHTML = html;
     document.getElementById('slotArea').innerHTML = '';
     var yyyymm = y+'-'+String(m+1).padStart(2,'0');
-    document.getElementById('calFullyBooked').classList.toggle('show', bulanTerkunci(state.kotaAktif, yyyymm));
+    document.getElementById('calFullyBooked').classList.toggle('show', bulanTerkunci(yyyymm));
   }
 
   function updateTombolNavigasiBulan(){
@@ -1079,7 +1077,7 @@
     var today = new Date(); today.setHours(0,0,0,0);
     var kalenderData = (state.allData && state.allData.kalender) || {};
     var yyyymm = y+'-'+String(m+1).padStart(2,'0');
-    var bulanDitutup = bulanTerkunci(state.kotaAktif, yyyymm);
+    var bulanDitutup = bulanTerkunci(yyyymm);
 
     for(var d=1;d<=totalHari;d++){
       var tglObj = new Date(y,m,d); tglObj.setHours(0,0,0,0);
