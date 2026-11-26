@@ -524,7 +524,6 @@
       window.LAVELLE_CONFIG.SUPABASE_KEY
     );
     supabaseReady = true;
-    console.log('✅ Supabase client siap.');
   } catch (err) {
     console.error('❌ Supabase gagal:', err);
   }
@@ -547,7 +546,7 @@
       .select('kota, wa_number')
       .then(function (res) {
         if (res.error) {
-          console.error('❌ Gagal load admin_wa:', res.error);
+          console.error('❌ Gagal load admin_wa');
           return {};
         }
         var data = {};
@@ -559,8 +558,8 @@
         adminWaLoaded = true;
         return data;
       })
-      .catch(function (err) {
-        console.error('❌ Error load admin_wa:', err);
+      .catch(function () {
+        console.error('❌ Error load admin_wa');
         return {};
       });
 
@@ -574,7 +573,31 @@
     { kota:"Solo", kode:"SLO" },
     { kota:"Surabaya", kode:"SBY" }
   ];
-  var BLOCKED_MONTHS = ["2026-09","2026-10"];
+
+  // ============================================================
+  // BULAN TERKUNCI (diatur admin lewat tabel blocked_months)
+  // ============================================================
+  var BLOCKED_MONTHS = {};   // { "Jogja": ["2026-11", ...], "Solo": [...] }
+  function loadBlockedMonths(){
+    if(!supabaseReady) return Promise.resolve(BLOCKED_MONTHS);
+    return supabase.from('blocked_months').select('kota,bulan')
+      .then(function(res){
+        if(!res.error){
+          var hasil = {};
+          (res.data || []).forEach(function(r){
+            (hasil[r.kota] = hasil[r.kota] || []).push(r.bulan);
+          });
+          BLOCKED_MONTHS = hasil;
+        }
+        return BLOCKED_MONTHS;
+      })
+      .catch(function(){ return BLOCKED_MONTHS; });
+  }
+  function bulanTerkunci(kota, yyyymm){
+    return (BLOCKED_MONTHS[kota] || []).indexOf(yyyymm) !== -1;
+  }
+  loadBlockedMonths();
+
   var MAKS_BULAN_KE_DEPAN = 6;
   var NAMA_BULAN = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
   var NAMA_HARI = ["Min","Sen","Sel","Rab","Kam","Jum","Sab"];
@@ -956,7 +979,11 @@
       .then(function(r){ return r.error ? [] : r.data; }).catch(function(){ return []; });
     var pPricelistMedia = supabase.from('pricelist_media').select('*').eq('kota',kota).order('urutan')
       .then(function(r){ return r.error ? [] : r.data; }).catch(function(){ return []; });
-    var pKalender = fetchKalenderBulanKota(kota,y,m);
+
+    // Muat ulang daftar bulan terkunci setiap pilih wilayah, supaya perubahan admin langsung berlaku
+    var pKalender = loadBlockedMonths().then(function(){
+      return fetchKalenderBulanKota(kota,y,m);
+    });
 
     pPricelist.then(function(d){ state.paketList = Array.isArray(d)?d:[]; });
     pPricelistMedia.then(function(d){ tampilkanPricelist(Array.isArray(d)?d:[]); });
@@ -975,7 +1002,7 @@
   function fetchKalenderBulanKota(kota,y,m){
     var bulanStr = y + '-' + String(m+1).padStart(2,'0');
     if(!supabaseReady) return Promise.resolve({});
-    if(BLOCKED_MONTHS.indexOf(bulanStr)!==-1) return Promise.resolve({});
+    if(bulanTerkunci(kota, bulanStr)) return Promise.resolve({});
 
     var totalHari = new Date(y,m+1,0).getDate();
     var key = kota+'|'+bulanStr;
@@ -1010,7 +1037,7 @@
     grid.innerHTML = html;
     document.getElementById('slotArea').innerHTML = '';
     var yyyymm = y+'-'+String(m+1).padStart(2,'0');
-    document.getElementById('calFullyBooked').classList.toggle('show', BLOCKED_MONTHS.indexOf(yyyymm)!==-1);
+    document.getElementById('calFullyBooked').classList.toggle('show', bulanTerkunci(state.kotaAktif, yyyymm));
   }
 
   function updateTombolNavigasiBulan(){
@@ -1052,7 +1079,7 @@
     var today = new Date(); today.setHours(0,0,0,0);
     var kalenderData = (state.allData && state.allData.kalender) || {};
     var yyyymm = y+'-'+String(m+1).padStart(2,'0');
-    var bulanDitutup = BLOCKED_MONTHS.indexOf(yyyymm)!==-1;
+    var bulanDitutup = bulanTerkunci(state.kotaAktif, yyyymm);
 
     for(var d=1;d<=totalHari;d++){
       var tglObj = new Date(y,m,d); tglObj.setHours(0,0,0,0);
