@@ -783,7 +783,7 @@
     list.sort(compareBooking);
 
     $('resultCount').innerText = list.length + ' data';
-    updateStats();
+    updateStats(list);
 
     if(!list.length){ c.innerHTML = '<div class="empty-state">📭 Tidak ada booking pada filter ini</div>'; return; }
 
@@ -1063,12 +1063,12 @@
       }).catch(function(e){ showToast('❌ '+e.message); });
   }
 
-  function updateStats(){
-    var aktif = state.bookings.filter(function(b){ return b.status !== 'done_edit'; });
-    $('statTotal').innerText = aktif.length;
-    $('statBooking').innerText = aktif.filter(function(b){ return b.status==='booking'; }).length;
-    $('statDp').innerText = aktif.filter(function(b){ return b.status==='dp'; }).length;
-    $('statSelesai').innerText = state.bookings.filter(function(b){ return b.status==='done_edit'; }).length;
+  function updateStats(list){
+    function hitung(st){ return list.filter(function(b){ return b.status === st; }).length; }
+    $('statTotal').innerText   = list.length;
+    $('statBooking').innerText = hitung('booking');
+    $('statDp').innerText      = hitung('dp');
+    $('statSelesai').innerText = hitung('done_edit');
   }
 
   // ---------- KUNCI BULAN ----------
