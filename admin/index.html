@@ -78,6 +78,7 @@
     transition:background .2s;
   }
   .btn-success:hover{background:#597A5F;}
+  .btn-success:disabled{opacity:0.6;cursor:not-allowed;}
 
   .btn-danger{
     padding:6px 14px;background:#B3413E;color:#fff;border:none;border-radius:6px;
@@ -85,6 +86,7 @@
     transition:background .2s;
   }
   .btn-danger:hover{background:#991B1B;}
+  .btn-danger:disabled{opacity:0.6;cursor:not-allowed;}
   .btn-warning{
     padding:6px 14px;background:#D97706;color:#fff;border:none;border-radius:6px;
     font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;
@@ -140,6 +142,12 @@
   td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle;}
   tr:hover td{background:#FAF8F6;}
 
+  .th-sort{cursor:pointer;user-select:none;white-space:nowrap;}
+  .th-sort:hover{color:var(--ink);}
+  .th-sort .arr{opacity:.5;font-size:10px;}
+  .th-sort.aktif{color:var(--ink);}
+  .th-sort.aktif .arr{opacity:1;color:var(--rose);}
+
   .badge{
     display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;
   }
@@ -161,6 +169,10 @@
     padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;background:#fff;
   }
   .filter-bar select:focus,.filter-bar input:focus{outline:none;border-color:var(--rose);}
+
+  .lock-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);}
+  .lock-row:last-child{border-bottom:none;}
+  #lockList{max-height:55vh;overflow-y:auto;margin-bottom:8px;}
 
   .toast{
     position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
@@ -244,6 +256,7 @@
       <div class="flex">
         <span class="text-muted" id="adminInfo">👤 Admin</span>
         <a href="admin/jadwal-fg.html" class="btn-secondary" style="padding:6px 16px;">📅 Jadwal Fotografer</a>
+        <button class="btn-secondary" onclick="openLockModal()" style="padding:6px 16px;">🔒 Kunci Bulan</button>
         <button class="btn-secondary" onclick="logoutAdmin()" style="padding:6px 16px;">🚪 Logout</button>
       </div>
     </div>
@@ -286,6 +299,11 @@
           <option value="Surabaya">Surabaya</option>
           <option value="Jakarta">Jakarta</option>
         </select>
+        <span class="text-muted">Tgl foto:</span>
+        <input type="date" id="filterDari" onchange="renderBookings()" title="Dari tanggal">
+        <span class="text-muted">s/d</span>
+        <input type="date" id="filterSampai" onchange="renderBookings()" title="Sampai tanggal">
+        <button class="btn-secondary" onclick="resetFilterTanggal()" style="padding:8px 12px;">Semua tanggal</button>
         <input
           type="text"
           id="searchInput"
@@ -332,6 +350,19 @@
   </div>
 </div>
 
+<!-- MODAL KUNCI BULAN -->
+<div class="modal-overlay" id="modalLock">
+  <div class="modal-box">
+    <h3>🔒 Kunci Bulan</h3>
+    <div class="sub">Bulan yang dikunci tampil "Fully Booked" di halaman booking dan tidak menerima booking baru.</div>
+    <div id="lockList"></div>
+    <div class="error-box" id="lockError"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeLockModal()">Tutup</button>
+    </div>
+  </div>
+</div>
+
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -366,11 +397,22 @@
     isLoggedIn: false,
     adminToken: null,
     adminNama: '',
-    gdriveBookingId: null
+    gdriveBookingId: null,
+    sortKey: null,
+    sortDir: 'asc',
+    lockedMonths: []
   };
 
   // ---------- HELPER ----------
   function $(id){ return document.getElementById(id); }
+
+  var NAMA_BULAN = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+  var STATUS_ORDER = ['booking','dp','lunas','upload_gdrive','edit_foto','done_edit','expired'];
+  var LOCK_BULAN_KE_DEPAN = 12;
+
+  function tglLokal(d){
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
 
   // Data klien datang dari form publik, jadi selalu di-escape sebelum masuk innerHTML
   function esc(s){
@@ -536,32 +578,76 @@
       });
   }
 
+  // ---------- SORT ----------
+  function nilaiSort(b, key){
+    if(key === 'status'){
+      var i = STATUS_ORDER.indexOf(b.status);
+      return i === -1 ? 99 : i;
+    }
+    return String(b[key] == null ? '' : b[key]).toLowerCase();
+  }
+
+  function compareBooking(a, b){
+    var tie = (b.tanggal_dibuat||'').localeCompare(a.tanggal_dibuat||'');
+    var key = state.sortKey;
+    if(!key) return tie; // default: terbaru dibuat di atas
+    var va = nilaiSort(a, key), vb = nilaiSort(b, key);
+    var r = (typeof va === 'number') ? (va - vb) : va.localeCompare(vb, 'id', { numeric: true });
+    if(r === 0) return tie;
+    return state.sortDir === 'asc' ? r : -r;
+  }
+
+  function sortBy(key){
+    if(state.sortKey === key) state.sortDir = (state.sortDir === 'asc') ? 'desc' : 'asc';
+    else { state.sortKey = key; state.sortDir = 'asc'; }
+    renderBookings();
+  }
+
+  function th(label, key){
+    var aktif = state.sortKey === key;
+    var arr = aktif ? (state.sortDir === 'asc' ? ' ▲' : ' ▼') : ' ↕';
+    return '<th class="th-sort' + (aktif ? ' aktif' : '') + '" onclick="sortBy(\'' + key + '\')">' +
+           label + '<span class="arr">' + arr + '</span></th>';
+  }
+
+  function resetFilterTanggal(){
+    $('filterDari').value = '';
+    $('filterSampai').value = '';
+    renderBookings();
+  }
+
+  // ---------- RENDER TABEL ----------
   function renderBookings(){
     var c = $('tableContainer');
     if(!c) return;
     var fs = $('filterStatus').value;
     var fk = $('filterKota').value;
+    var dari = $('filterDari').value;       // YYYY-MM-DD atau ''
+    var sampai = $('filterSampai').value;
     var q = ($('searchInput').value || '').toLowerCase().trim();
 
     var list = state.bookings.slice().filter(function(b){ return b.status !== 'done_edit'; });
     if(fs === 'done_edit') list = state.bookings.filter(function(b){ return b.status === 'done_edit'; });
     else if(fs !== 'all') list = list.filter(function(b){ return b.status === fs; });
     if(fk !== 'all') list = list.filter(function(b){ return b.kota === fk; });
+    if(dari)   list = list.filter(function(b){ return (b.tanggal||'').substring(0,10) >= dari; });
+    if(sampai) list = list.filter(function(b){ return (b.tanggal||'').substring(0,10) <= sampai; });
     if(q) list = list.filter(function(b){
       return (b.booking_id||'').toLowerCase().indexOf(q) !== -1 ||
              (b.nama_client||'').toLowerCase().indexOf(q) !== -1 ||
              (b.kampus||'').toLowerCase().indexOf(q) !== -1;
     });
-    list.sort(function(a,b){ return (b.tanggal_dibuat||'').localeCompare(a.tanggal_dibuat||''); });
+    list.sort(compareBooking);
 
     $('resultCount').innerText = list.length + ' data';
     updateStats();
 
-    if(!list.length){ c.innerHTML = '<div class="empty-state">📭 Tidak ada booking aktif</div>'; return; }
+    if(!list.length){ c.innerHTML = '<div class="empty-state">📭 Tidak ada booking pada filter ini</div>'; return; }
 
     var html = '<table><thead><tr>'+
-      '<th>Booking ID</th><th>Client</th><th>Kampus</th><th>Kota</th>'+
-      '<th>Tanggal Foto</th><th>Status</th><th style="min-width:250px;">Aksi</th>'+
+      th('Booking ID','booking_id') + th('Client','nama_client') + th('Kampus','kampus') +
+      th('Kota','kota') + th('Tanggal Foto','tanggal') + th('Status','status') +
+      '<th style="min-width:250px;">Aksi</th>'+
       '</tr></thead><tbody>';
 
     list.forEach(function(b){
@@ -842,6 +928,75 @@
     $('statSelesai').innerText = state.bookings.filter(function(b){ return b.status==='done_edit'; }).length;
   }
 
+  // ---------- KUNCI BULAN ----------
+  function loadLocks(){
+    return supabase.from('blocked_months').select('bulan').then(function(res){
+      if(res.error){
+        $('lockList').innerHTML = '<div class="empty-state">❌ '+esc(res.error.message)+'</div>';
+        return;
+      }
+      state.lockedMonths = (res.data || []).map(function(r){ return r.bulan; });
+      renderLockList();
+    }).catch(function(e){
+      $('lockList').innerHTML = '<div class="empty-state">❌ '+esc(e.message)+'</div>';
+    });
+  }
+
+  function renderLockList(){
+    var now = new Date();
+    var html = '';
+    for(var i = 0; i <= LOCK_BULAN_KE_DEPAN; i++){
+      var d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      var key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+      var locked = state.lockedMonths.indexOf(key) !== -1;
+      html += '<div class="lock-row">' +
+        '<div><strong>' + NAMA_BULAN[d.getMonth()] + ' ' + d.getFullYear() + '</strong> ' +
+          '<span class="badge ' + (locked ? 'badge-expired' : 'badge-pelunasan') + '">' +
+          (locked ? '🔒 Terkunci' : '🟢 Terbuka') + '</span></div>' +
+        '<button class="' + (locked ? 'btn-success' : 'btn-danger') + '" data-bulan="' + key + '" ' +
+          'data-lock="' + (locked ? '0' : '1') + '" onclick="toggleLock(this)">' +
+          (locked ? '🔓 Buka' : '🔒 Kunci') + '</button>' +
+      '</div>';
+    }
+    $('lockList').innerHTML = html;
+  }
+
+  function openLockModal(){
+    $('lockError').style.display = 'none';
+    $('lockList').innerHTML = '<div class="text-center" style="padding:24px;"><span class="loading-spinner"></span> Memuat...</div>';
+    $('modalLock').classList.add('active');
+    loadLocks();
+  }
+  function closeLockModal(){ $('modalLock').classList.remove('active'); }
+
+  function toggleLock(btn){
+    var bulan = btn.dataset.bulan;
+    var kunci = btn.dataset.lock === '1';
+    if(!confirm((kunci ? 'Kunci' : 'Buka') + ' bulan ' + bulan + '?')) return;
+
+    var err = $('lockError');
+    err.style.display = 'none';
+    btn.disabled = true;
+
+    supabase.rpc('admin_set_month_lock', {
+      p_token: state.adminToken, p_bulan: bulan, p_locked: kunci
+    }).then(function(res){
+      if(adaError(res)){
+        if(sesiHabis(res)){ closeLockModal(); sesiBerakhir(); return; }
+        btn.disabled = false;
+        err.innerText = '❌ ' + pesanError(res);
+        err.style.display = 'block';
+        return;
+      }
+      showToast('✅ ' + ((res.data && res.data.message) || 'Tersimpan'));
+      loadLocks();
+    }).catch(function(e){
+      btn.disabled = false;
+      err.innerText = '❌ ' + e.message;
+      err.style.display = 'block';
+    });
+  }
+
   // ---------- EXPOSE KE WINDOW ----------
   window.loginAdmin = loginAdmin;
   window.logoutAdmin = logoutAdmin;
@@ -855,13 +1010,28 @@
   window.startCopyProcess = startCopyProcess;
   window.copyMagicLink = copyMagicLink;
   window.copyTokenText = copyTokenText;
+  window.sortBy = sortBy;
+  window.resetFilterTanggal = resetFilterTanggal;
+  window.openLockModal = openLockModal;
+  window.closeLockModal = closeLockModal;
+  window.toggleLock = toggleLock;
 
   // ---------- INIT ----------
   function init(){
+    // Default filter tanggal foto: 30 hari terakhir (tanpa batas akhir)
+    var d30 = new Date(); d30.setDate(d30.getDate() - 30);
+    $('filterDari').value = tglLokal(d30);
+
     var modalG = $('modalGdrive');
     if(modalG){
       modalG.addEventListener('click', function(e){
         if(e.target === this) closeGdriveModal();
+      });
+    }
+    var modalL = $('modalLock');
+    if(modalL){
+      modalL.addEventListener('click', function(e){
+        if(e.target === this) closeLockModal();
       });
     }
 
