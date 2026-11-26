@@ -170,6 +170,33 @@
   }
   .filter-bar select:focus,.filter-bar input:focus{outline:none;border-color:var(--rose);}
 
+  /* ===== RANGE PICKER TANGGAL ===== */
+  .drp{position:relative;}
+  .drp-btn{padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:#fff;font-family:'Inter',sans-serif;font-size:13px;color:var(--ink);cursor:pointer;white-space:nowrap;}
+  .drp-btn:hover{border-color:var(--rose);}
+  .drp-pop{display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:50;width:330px;max-width:92vw;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 40px rgba(46,37,50,.18);overflow:hidden;}
+  .drp-pop.open{display:block;}
+  .drp-inc{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#F4F6FB;font-size:13px;font-weight:600;color:#4A5568;cursor:pointer;border-bottom:1px solid var(--line);}
+  .drp-inc input{width:18px;height:18px;accent-color:#E91E63;margin:0;padding:0;border:none;}
+  .drp-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 6px;}
+  .drp-title{font-family:'Fraunces',serif;font-size:18px;}
+  .drp-nav{background:none;border:none;font-size:22px;line-height:1;cursor:pointer;color:var(--ink);padding:2px 10px;border-radius:6px;}
+  .drp-nav:hover{background:#F0ECE9;}
+  .drp-grid{display:grid;grid-template-columns:repeat(7,1fr);padding:0 8px 8px;}
+  .drp-dow{text-align:center;font-size:12px;font-weight:600;color:var(--mute);padding:6px 0;}
+  .drp-day{height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;user-select:none;}
+  .drp-day:hover{background:#EEEAE7;border-radius:20px;}
+  .drp-day.luar{color:#C9BFC3;cursor:default;}
+  .drp-day.luar:hover{background:none;}
+  .drp-day.in{background:#E4E4E4;}
+  .drp-day.in:hover{border-radius:0;}
+  .drp-day.ujung,.drp-day.ujung:hover{background:#5B9DF5;color:#fff;font-weight:600;border-radius:20px;}
+  .drp-day.mulai,.drp-day.mulai:hover{border-radius:20px 0 0 20px;}
+  .drp-day.akhir,.drp-day.akhir:hover{border-radius:0 20px 20px 0;}
+  .drp-foot{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;border-top:1px solid var(--line);}
+  .drp-foot button{padding:5px 10px;border:1px solid var(--line);border-radius:14px;background:#fff;font-size:12px;font-family:'Inter',sans-serif;color:var(--mute);cursor:pointer;}
+  .drp-foot button:hover{border-color:var(--rose);color:var(--rose);}
+
   .lock-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);}
   .lock-row:last-child{border-bottom:none;}
   #lockList{max-height:55vh;overflow-y:auto;margin-bottom:8px;}
@@ -299,11 +326,26 @@
           <option value="Surabaya">Surabaya</option>
           <option value="Jakarta">Jakarta</option>
         </select>
-        <span class="text-muted">Tgl foto:</span>
-        <input type="date" id="filterDari" onchange="renderBookings()" title="Dari tanggal">
-        <span class="text-muted">s/d</span>
-        <input type="date" id="filterSampai" onchange="renderBookings()" title="Sampai tanggal">
-        <button class="btn-secondary" onclick="resetFilterTanggal()" style="padding:8px 12px;">Semua tanggal</button>
+        <div class="drp" id="drp">
+          <input type="hidden" id="filterDari">
+          <input type="hidden" id="filterSampai">
+          <button type="button" class="drp-btn" onclick="toggleDrp()" title="Filter tanggal foto">📅 <span id="drpLabel"></span></button>
+          <div class="drp-pop" id="drpPop">
+            <label class="drp-inc"><input type="checkbox" id="drpInclude" checked onchange="drpIncludeChange()"> Include today</label>
+            <div class="drp-head">
+              <button type="button" class="drp-nav" onclick="drpNav(-1)">&lsaquo;</button>
+              <div class="drp-title" id="drpTitle"></div>
+              <button type="button" class="drp-nav" onclick="drpNav(1)">&rsaquo;</button>
+            </div>
+            <div class="drp-grid" id="drpGrid"></div>
+            <div class="drp-foot">
+              <button type="button" onclick="drpPreset(7)">7 hari</button>
+              <button type="button" onclick="drpPreset(30)">30 hari</button>
+              <button type="button" onclick="drpPreset('bulan')">Bulan ini</button>
+              <button type="button" onclick="drpPreset('semua')">Semua tanggal</button>
+            </div>
+          </div>
+        </div>
         <input
           type="text"
           id="searchInput"
@@ -610,11 +652,112 @@
            label + '<span class="arr">' + arr + '</span></th>';
   }
 
-  function resetFilterTanggal(){
-    $('filterDari').value = '';
-    $('filterSampai').value = '';
-    renderBookings();
+  // ---------- RANGE PICKER TANGGAL FOTO ----------
+  var drp = { view: new Date(), picking: false };
+  var HARI_SINGKAT = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+
+  function hariIni(){ return tglLokal(new Date()); }
+  function kemarin(){ var d = new Date(); d.setDate(d.getDate()-1); return tglLokal(d); }
+
+  function fmtTampil(s){
+    var p = s.split('-');
+    return parseInt(p[2],10) + ' ' + NAMA_BULAN[parseInt(p[1],10)-1].substring(0,3) + ' ' + p[0];
   }
+
+  function updateDrpLabel(){
+    var a = $('filterDari').value, b = $('filterSampai').value, t;
+    if(!a && !b) t = 'Semua tanggal';
+    else if(a && !b) t = fmtTampil(a) + ' – seterusnya';
+    else if(!a && b) t = 'Sampai ' + fmtTampil(b);
+    else t = fmtTampil(a) + ' – ' + fmtTampil(b);
+    $('drpLabel').innerText = t;
+  }
+
+  function setRange(a, b, tanpaRender){
+    $('filterDari').value = a || '';
+    $('filterSampai').value = b || '';
+    updateDrpLabel();
+    renderDrp();
+    if(!tanpaRender) renderBookings();
+  }
+
+  function renderDrp(){
+    var grid = $('drpGrid');
+    if(!grid) return;
+    var y = drp.view.getFullYear(), m = drp.view.getMonth();
+    $('drpTitle').innerText = NAMA_BULAN[m] + ' ' + y;
+    var a = $('filterDari').value, b = $('filterSampai').value;
+    var mulai = new Date(y, m, 1 - new Date(y, m, 1).getDay());
+    var html = HARI_SINGKAT.map(function(h){ return '<div class="drp-dow">'+h+'</div>'; }).join('');
+    for(var i = 0; i < 42; i++){
+      var d = new Date(mulai.getFullYear(), mulai.getMonth(), mulai.getDate() + i);
+      var s = tglLokal(d);
+      if(d.getMonth() !== m){
+        html += '<div class="drp-day luar">' + d.getDate() + '</div>';
+        continue;
+      }
+      var cls = 'drp-day';
+      var isA = (s === a), isB = (s === b);
+      if(a && b && s > a && s < b) cls += ' in';
+      if(isA || isB) cls += ' ujung';
+      if(isA && b && b !== a) cls += ' mulai';
+      if(isB && a && a !== b) cls += ' akhir';
+      html += '<div class="' + cls + '" data-d="' + s + '" onclick="drpPick(this.dataset.d)">' + d.getDate() + '</div>';
+    }
+    grid.innerHTML = html;
+  }
+
+  // Klik pertama = tanggal awal, klik kedua = tanggal akhir
+  function drpPick(s){
+    var a = $('filterDari').value;
+    if(!drp.picking || !a || s < a){
+      drp.picking = true;
+      setRange(s, '');
+    } else {
+      drp.picking = false;
+      setRange(a, s);
+      closeDrp();
+    }
+  }
+
+  function drpNav(delta){
+    drp.view = new Date(drp.view.getFullYear(), drp.view.getMonth() + delta, 1);
+    renderDrp();
+  }
+
+  function drpIncludeChange(){
+    var inc = $('drpInclude').checked;
+    var a = $('filterDari').value, b = $('filterSampai').value;
+    if(!inc && b === hariIni() && kemarin() >= a) setRange(a, kemarin());
+    else if(inc && b === kemarin()) setRange(a, hariIni());
+  }
+
+  function drpPreset(jenis){
+    drp.picking = false;
+    if(jenis === 'semua'){ setRange('', ''); closeDrp(); return; }
+    var akhir = new Date();
+    if(!$('drpInclude').checked) akhir.setDate(akhir.getDate() - 1);
+    var awal;
+    if(jenis === 'bulan') awal = new Date(akhir.getFullYear(), akhir.getMonth(), 1);
+    else { awal = new Date(akhir); awal.setDate(awal.getDate() - (jenis - 1)); }
+    drp.view = new Date(akhir.getFullYear(), akhir.getMonth(), 1);
+    setRange(tglLokal(awal), tglLokal(akhir));
+    closeDrp();
+  }
+
+  function openDrp(){
+    var a = $('filterDari').value;
+    var v = a ? new Date(a + 'T00:00:00') : new Date();
+    drp.view = new Date(v.getFullYear(), v.getMonth(), 1);
+    renderDrp();
+    $('drpPop').classList.add('open');
+  }
+  function closeDrp(){ $('drpPop').classList.remove('open'); drp.picking = false; }
+  function toggleDrp(){
+    if($('drpPop').classList.contains('open')) closeDrp(); else openDrp();
+  }
+
+  function resetFilterTanggal(){ drpPreset('semua'); }
 
   // ---------- RENDER TABEL ----------
   function renderBookings(){
@@ -1015,12 +1158,22 @@
   window.openLockModal = openLockModal;
   window.closeLockModal = closeLockModal;
   window.toggleLock = toggleLock;
+  window.toggleDrp = toggleDrp;
+  window.drpNav = drpNav;
+  window.drpPick = drpPick;
+  window.drpPreset = drpPreset;
+  window.drpIncludeChange = drpIncludeChange;
 
   // ---------- INIT ----------
   function init(){
     // Default filter tanggal foto: 30 hari terakhir (tanpa batas akhir)
     var d30 = new Date(); d30.setDate(d30.getDate() - 30);
-    $('filterDari').value = tglLokal(d30);
+    setRange(tglLokal(d30), '', true);
+    // mousedown (bukan click) supaya target belum terlepas dari DOM saat kalender dirender ulang
+    document.addEventListener('mousedown', function(e){
+      var box = $('drp');
+      if(box && !box.contains(e.target)) closeDrp();
+    });
 
     var modalG = $('modalGdrive');
     if(modalG){
